@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@theme {
+  --color-canvas: #f6f4f0;
+  --color-surface: #ffffff;
+  --color-ink-primary: #1a1a2e;
+  --color-ink-secondary: #4a4a5e;
+  --color-ink-tertiary: #8a8a9e;
+  --color-ink-wash: #e8e5df;
+  --color-accent-indigo: #4f46e5;
+  --color-accent-teal: #0a4a4a;
+  --color-accent-amber: #7a5c00;
+  --color-accent-crimson: #a61b1b;
+  --font-mono: 'Geist Mono', ui-monospace, monospace;
+}
+
+body {
+  background-color: var(--color-canvas);
+  color: var(--color-ink-primary);
+  font-family: 'Geist', Inter, system-ui, sans-serif;
+}
+
+.animate-spin-slow {
+  animation: spin 3s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
