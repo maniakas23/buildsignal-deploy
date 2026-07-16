@@ -5,17 +5,5 @@
   "type": "module",
   "scripts": {
     "build": "mkdir -p dist && echo 'Build complete'"
-  },
-  "dependencies": {
-    "@planetscale/database": "^1.20.1",
-    "hono": "^4.8.3",
-    "hono-rate-limiter": "^0.5.3",
-    "@trpc/server": "^11.8.1",
-    "stripe": "^22.3.2",
-    "superjson": "^2.2.6",
-    "zod": "^4.3.5",
-    "jose": "^6.1.3",
-    "drizzle-orm": "^0.45.1",
-    "cookie": "^1.1.1"
   }
 }
