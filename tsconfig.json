@@ -22,5 +22,5 @@
   },
   "include": ["api", "contracts", "db", "functions", "vite.config.ts"],
   "exclude": ["node_modules", "dist"],
-  "references": [{ "path": "./tsconfig.app.json"}]
+  "references": [{ "path": "./tsconfig.app.json" }]
 }
