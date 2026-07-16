@@ -1,9 +1,5 @@
 /**
  * Cloudflare-compatible Hono application.
- *
- * Exports the Hono app with all API routes, middleware,
- * health endpoints, tRPC, Stripe webhooks, and OAuth.
- * No Node.js-specific dependencies.
  */
 
 import { Hono } from "hono";
@@ -20,9 +16,6 @@ import { Paths } from "@contracts/constants";
 
 const serverStartTime = Date.now();
 const app = new Hono();
-
-// Detect if running on Cloudflare Workers (no setInterval allowed)
-const isCloudflareWorkers = typeof globalThis !== "undefined" && !(globalThis as any).process?.versions?.node;
 
 // Security headers
 app.use(secureHeaders({
@@ -43,21 +36,8 @@ app.use(cors({
   credentials: true,
 }));
 
-// Rate limiting — SKIP on Cloudflare Workers (hono-rate-limiter uses setInterval)
-// On Node.js, the rate limiter is applied in api/boot.ts
-if (!isCloudflareWorkers) {
-  try {
-    const { rateLimiter } = await import("hono-rate-limiter");
-    app.use(rateLimiter({
-      windowMs: 15 * 60 * 1000,
-      limit: 100,
-      standardHeaders: true,
-      keyGenerator: (c) => c.req.header("x-forwarded-for") || c.req.header("x-real-ip") || "unknown",
-    }));
-  } catch {
-    // hono-rate-limiter not available
-  }
-}
+// Note: Rate limiting is handled at Cloudflare edge (Configure in CF Dashboard)
+// hono-rate-limiter uses setInterval which is not allowed in Workers
 
 // ─── Health Endpoints ───
 app.get("/health", (c) => c.json({
@@ -70,25 +50,18 @@ app.get("/health", (c) => c.json({
 }));
 
 app.get("/ready", async (c) => {
-  const checks: Record<string, boolean> = {
-    signalcore: true,
-    auth: true,
-    database: true,
-    analytics: true,
-    notifications: true,
-    reports: true,
-    billing: true,
+  const checks = {
+    signalcore: true, auth: true, database: true,
+    analytics: true, notifications: true, reports: true, billing: true,
   };
   const allReady = Object.values(checks).every(Boolean);
   return c.json({ ready: allReady, checks, timestamp: new Date().toISOString() }, allReady ? 200 : 503);
 });
 
 app.get("/version", (c) => c.json({
-  application: "1.0.0",
-  build: "24.0",
+  application: "1.0.0", build: "24.0",
   deployment: env.isProduction ? "production" : "development",
-  builtAt: new Date().toISOString(),
-  engineApi: "v1",
+  builtAt: new Date().toISOString(), engineApi: "v1",
 }));
 
 // Body limit
@@ -112,14 +85,12 @@ app.post("/api/webhooks/stripe", async (c) => {
 // tRPC API
 app.use("/api/trpc/*", async (c) => {
   return fetchRequestHandler({
-    endpoint: "/api/trpc",
-    req: c.req.raw,
-    router: appRouter,
-    createContext,
+    endpoint: "/api/trpc", req: c.req.raw,
+    router: appRouter, createContext,
   });
 });
 
-// 404 for unmatched API routes
+// 404 catch-all
 app.all("/api/*", (c) => c.json({ error: "Not Found" }, 404));
 
 export default app;
