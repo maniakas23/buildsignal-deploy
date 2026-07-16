@@ -10,7 +10,6 @@ import { Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
 import { cors } from "hono/cors";
 import { secureHeaders } from "hono/secure-headers";
-import { rateLimiter } from "hono-rate-limiter";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { appRouter } from "./router";
 import { createContext } from "./context";
@@ -21,6 +20,9 @@ import { Paths } from "@contracts/constants";
 
 const serverStartTime = Date.now();
 const app = new Hono();
+
+// Detect if running on Cloudflare Workers (no setInterval allowed)
+const isCloudflareWorkers = typeof globalThis !== "undefined" && !(globalThis as any).process?.versions?.node;
 
 // Security headers
 app.use(secureHeaders({
@@ -41,13 +43,21 @@ app.use(cors({
   credentials: true,
 }));
 
-// Rate limiting
-app.use(rateLimiter({
-  windowMs: 15 * 60 * 1000,
-  limit: 100,
-  standardHeaders: true,
-  keyGenerator: (c) => c.req.header("x-forwarded-for") || c.req.header("x-real-ip") || "unknown",
-}));
+// Rate limiting — SKIP on Cloudflare Workers (hono-rate-limiter uses setInterval)
+// On Node.js, the rate limiter is applied in api/boot.ts
+if (!isCloudflareWorkers) {
+  try {
+    const { rateLimiter } = await import("hono-rate-limiter");
+    app.use(rateLimiter({
+      windowMs: 15 * 60 * 1000,
+      limit: 100,
+      standardHeaders: true,
+      keyGenerator: (c) => c.req.header("x-forwarded-for") || c.req.header("x-real-ip") || "unknown",
+    }));
+  } catch {
+    // hono-rate-limiter not available
+  }
+}
 
 // ─── Health Endpoints ───
 app.get("/health", (c) => c.json({
