@@ -1,0 +1,1 @@
+import{j as e}from"./index-BQUzuALz.js";const o="/assets/Login-DwkzWIUm.js";export{o as __vite__mapDeps};import{u as n}from"./index.es-UDGdYOs-.js";import"./vendor-DtcMCNhz.js";import"./ui-BR08ht_1.js";function t(){return e.jsx("div",{children:"Login"})}export{t as default};

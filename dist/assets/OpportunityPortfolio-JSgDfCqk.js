@@ -1,0 +1,1 @@
+import{j as e}from"./index-BQUzuALz.js";const t="/assets/OpportunityPortfolio-JSgDfCqk.js";export{t as __vite__mapDeps};import{u as o}from"./index.es-UDGdYOs-.js";import"./vendor-DtcMCNhz.js";import"./ui-BR08ht_1.js";function n(){return e.jsx("div",{children:"Portfolio"})}export{n as default};

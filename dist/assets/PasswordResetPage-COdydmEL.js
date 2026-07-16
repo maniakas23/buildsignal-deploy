@@ -1,0 +1,1 @@
+import{j as e}from"./index-BQUzuALz.js";const t="/assets/PasswordResetPage-COdydmEL.js";export{t as __vite__mapDeps};import{u as s}from"./index.es-UDGdYOs-.js";import"./vendor-DtcMCNhz.js";function n(){return e.jsx("div",{children:"Password Reset"})}export{n as default};

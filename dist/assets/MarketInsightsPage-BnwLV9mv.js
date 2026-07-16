@@ -1,0 +1,1 @@
+import{j as e}from"./index-BQUzuALz.js";const t="/assets/MarketInsightsPage-BnwLV9mv.js";export{t as __vite__mapDeps};import{u as n}from"./index.es-UDGdYOs-.js";import"./vendor-DtcMCNhz.js";import"./ui-BR08ht_1.js";function s(){return e.jsx("div",{children:"Market Insights"})}export{s as default};

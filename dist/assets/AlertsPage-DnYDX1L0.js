@@ -1,0 +1,1 @@
+import{j as e}from"./index-BQUzuALz.js";import{r as l}from"./index-CrATeNxd.js";const r="/assets/AlertsPage-DnYDX1L0.js";export{r as __vite__mapDeps};import{u as t,c as n,A as i,B as s}from"./index.es-UDGdYOs-.js";import"./vendor-DtcMCNhz.js";import"./ui-BR08ht_1.js";function a(){return e.jsx("div",{children:"Alerts"})}export{a as default};

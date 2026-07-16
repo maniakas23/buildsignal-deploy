@@ -1,0 +1,1 @@
+import{j as e}from"./index-BQUzuALz.js";const t="/assets/PricingPage-BBwdbvCp.js";export{t as __vite__mapDeps};import{u as c}from"./index.es-UDGdYOs-.js";import"./vendor-DtcMCNhz.js";import"./ui-BR08ht_1.js";function n(){return e.jsx("div",{children:"Pricing"})}export{n as default};
