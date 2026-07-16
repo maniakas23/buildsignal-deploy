@@ -1,17 +1,20 @@
-name = "buildsignal-v2"
+# Cloudflare Pages configuration for BuildSignal v1.0
+# Docs: https://developers.cloudflare.com/pages/functions/wrangler-configuration/
+
+name = "buildsignal"
 pages_build_output_dir = "dist"
 compatibility_date = "2026-07-16"
 compatibility_flags = ["nodejs_compat"]
 
+# ─── Functions Build Configuration ───
+# Tell esbuild to use the server tsconfig for path alias resolution
+[build]
+tsconfig = "./tsconfig.server.json"
+
+# ─── Environment Variables ───
+# Set these via `wrangler pages secret put <NAME>` for sensitive values
+
 [vars]
 NODE_ENV = "production"
-KIMI_AUTH_URL = "https://auth.kimi.com"
-KIMI_OPEN_URL = "https://open.kimi.com"
-APP_ID = "19f47c33-2f72-8a26-8000-0000eb10b849"
-APP_SECRET = "swCf09IRhDDVlCBnH2B3tzuITb0sxiJx"
-DATABASE_URL = "mysql://2v4mF4TW7kiiaYU.root:tksk4wqhOI6qKGEXprHxaVnFrODoQtjr@ep-t4ni387b5e83b7519dc8.epsrv-t4n281l4mrmemi4zls9a.ap-southeast-1.privatelink.aliyuncs.com:4000/19f47b9b-9052-822f-8000-0932657c0e92"
-OWNER_UNION_ID = "d8qnd5f67m2uipitc090"
-STRIPE_SECRET_KEY = "sk_test_dummy"
-STRIPE_WEBHOOK_SECRET = "whsec_dummy"
-STRIPE_PRICE_PRO = "price_dummy"
-STRIPE_PRICE_ENTERPRISE = "price_dummy"
+KIMI_AUTH_URL = "https://kimi-api.moonshot.cn"
+KIMI_OPEN_URL = "https://kimi-api.moonshot.cn"
