@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /health
+Disallow: /ready
+Disallow: /version
+
+Sitemap: https://buildsignal.com/sitemap.xml
