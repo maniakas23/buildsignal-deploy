@@ -5,7 +5,3 @@ compatibility_flags = ["nodejs_compat"]
 
 [vars]
 NODE_ENV = "production"
-
-# Build configuration
-[build]
-command = "npm install && npx vite build"
