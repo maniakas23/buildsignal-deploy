@@ -1,81 +1,52 @@
 /**
- * BuildSignal v1.0 — Cloudflare Pages Function
- * Zero-dependency implementation for maximum compatibility.
+ * BuildSignal v1.0 — Cloudflare Pages Function Entry Point
+ * Full Hono app with health endpoints, tRPC, auth, Stripe, and monitoring.
  */
 
-export interface Env {
-  [key: string]: string;
+import type { PagesFunction } from "@cloudflare/workers-types";
+import app from "../api/app";
+
+/**
+ * Polyfill process.env for modules that depend on it (api/lib/env.ts,
+ * stripe-router, etc.). Cloudflare Workers don't have process.env natively —
+ * environment variables are passed as bindings via the context object.
+ */
+function polyfillProcessEnv(cfEnv: Record<string, unknown>) {
+  const g = globalThis as unknown as Record<string, unknown>;
+  if (!g.process) {
+    g.process = { env: {} } as unknown as NodeJS.Process;
+  }
+  const proc = g.process as unknown as { env: Record<string, unknown> };
+  if (!proc.env) {
+    proc.env = {};
+  }
+  for (const [key, value] of Object.entries(cfEnv)) {
+    if (typeof value === "string" && !proc.env[key]) {
+      proc.env[key] = value;
+    }
+  }
 }
 
-const startTime = Date.now();
+export const onRequest: PagesFunction = async (context) => {
+  // Polyfill process.env from Cloudflare environment bindings
+  polyfillProcessEnv(context.env);
 
-// Simple router
-function route(request: Request): Response {
-  const url = new URL(request.url);
-  const path = url.pathname;
-
-  // CORS headers
-  const corsHeaders = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization",
-    "Access-Control-Allow-Credentials": "true",
-    "Content-Type": "application/json"
-  };
-
-  if (request.method === "OPTIONS") {
-    return new Response(null, { status: 204, headers: corsHeaders });
+  // Set NODE_ENV if not already set
+  const g = globalThis as unknown as Record<string, unknown>;
+  const proc = g.process as unknown as { env: Record<string, unknown> };
+  if (!proc.env.NODE_ENV) {
+    proc.env.NODE_ENV = "production";
   }
 
-  // Health endpoints
-  if (path === "/health" && request.method === "GET") {
-    return new Response(JSON.stringify({
-      service: "buildsignal",
-      version: "1.0.0",
-      environment: "production",
-      status: "healthy",
-      uptimeSeconds: Math.floor((Date.now() - startTime) / 1000),
-      timestamp: new Date().toISOString(),
-      source: "cloudflare-pages-functions"
-    }), { headers: corsHeaders });
+  // Route API requests through Hono, static files through Pages
+  const url = new URL(context.request.url);
+  if (url.pathname.startsWith("/api/") ||
+      url.pathname === "/health" ||
+      url.pathname === "/ready" ||
+      url.pathname === "/version") {
+    return app.fetch(context.request, context.env, context as any);
   }
 
-  if (path === "/ready" && request.method === "GET") {
-    return new Response(JSON.stringify({
-      ready: true,
-      checks: {
-        signalcore: true,
-        auth: true,
-        database: true,
-        billing: true,
-        api: true
-      },
-      timestamp: new Date().toISOString()
-    }), { headers: corsHeaders });
-  }
-
-  if (path === "/version" && request.method === "GET") {
-    return new Response(JSON.stringify({
-      application: "1.0.0",
-      build: "24.0",
-      deployment: "production",
-      engineApi: "v1",
-      environment: "production"
-    }), { headers: corsHeaders });
-  }
-
-  // API routes
-  if (path.startsWith("/api/")) {
-    return new Response(JSON.stringify({ error: "Not Found" }), {
-      status: 404,
-      headers: corsHeaders
-    });
-  }
-
-  // SPA fallback — let Pages handle static files
-  return fetch(request);
-}
-
-export const onRequest: PagesFunction<Env> = async (context) => {
-  return route(context.request);
+  // Fall through to static file serving
+  return context.env.ASSETS.fetch(context.request);
 };
