@@ -11,10 +11,21 @@ import { users as kimiUsers } from "./platform";
 import { findUserByUnionId, upsertUser } from "../queries/users";
 import type { TokenResponse } from "./types";
 
+// Lazy JWKS initialization — env may not be available at module load time
+let jwksCache: ReturnType<typeof jose.createRemoteJWKSet> | null = null;
+function getJwks() {
+  if (!jwksCache) {
+    const url = env.kimiAuthUrl || "https://kimi-api.moonshot.cn";
+    jwksCache = jose.createRemoteJWKSet(new URL(`${url}/api/.well-known/jwks.json`));
+  }
+  return jwksCache;
+}
+
 async function exchangeAuthCode(
   code: string,
   redirectUri: string,
 ): Promise<TokenResponse> {
+  const authUrl = env.kimiAuthUrl || "https://kimi-api.moonshot.cn";
   const body = new URLSearchParams({
     grant_type: "authorization_code",
     code,
@@ -23,7 +34,7 @@ async function exchangeAuthCode(
     client_secret: env.appSecret,
   });
 
-  const resp = await fetch(`${env.kimiAuthUrl}/api/oauth/token`, {
+  const resp = await fetch(`${authUrl}/api/oauth/token`, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: body.toString(),
@@ -37,14 +48,10 @@ async function exchangeAuthCode(
   return resp.json() as Promise<TokenResponse>;
 }
 
-const jwks = jose.createRemoteJWKSet(
-  new URL(`${env.kimiAuthUrl}/api/.well-known/jwks.json`),
-);
-
 async function verifyAccessToken(
   accessToken: string,
 ): Promise<{ userId: string; clientId: string }> {
-  const { payload } = await jose.jwtVerify(accessToken, jwks);
+  const { payload } = await jose.jwtVerify(accessToken, getJwks());
   const userId = payload.user_id as string;
   const clientId = payload.client_id as string;
   if (!userId) {
