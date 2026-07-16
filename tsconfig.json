@@ -20,6 +20,7 @@
       "@db/*": ["./db/*"]
     }
   },
-  "include": ["api", "contracts", "db", "functions"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["api", "contracts", "db", "functions", "vite.config.ts"],
+  "exclude": ["node_modules", "dist"],
+  "references": [{ "path": "./tsconfig.app.json"}]
 }
