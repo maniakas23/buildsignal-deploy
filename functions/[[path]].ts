@@ -1,8 +1,5 @@
 /**
  * Cloudflare Pages Function — catch-all handler.
- *
- * Imports the full Hono app from api/app.ts and polyfills
- * process.env from Cloudflare environment bindings.
  */
 
 import type { PagesFunction } from "@cloudflare/workers-types";
@@ -27,21 +24,11 @@ function polyfillProcessEnv(cfEnv: Record<string, unknown>) {
 export const onRequest: PagesFunction = async (context) => {
   polyfillProcessEnv(context.env);
 
+  // Force NODE_ENV to production on Cloudflare (runtime defaults to "development")
   const g = globalThis as unknown as Record<string, unknown>;
   const proc = g.process as unknown as { env: Record<string, unknown> };
-  if (!proc.env.NODE_ENV) {
-    proc.env.NODE_ENV = "production";
-  }
+  proc.env.NODE_ENV = "production";
 
-  // Route API requests through Hono, static files through Pages
-  const url = new URL(context.request.url);
-  if (url.pathname.startsWith("/api/") ||
-      url.pathname === "/health" ||
-      url.pathname === "/ready" ||
-      url.pathname === "/version") {
-    return app.fetch(context.request, context.env, context as any);
-  }
-
-  // Fall through to static file serving
-  return context.env.ASSETS.fetch(context.request);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return app.fetch(context.request, context.env, context as any);
 };

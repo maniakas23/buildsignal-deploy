@@ -86,15 +86,16 @@ app.get("/ready", async (c) => {
 
   // 4. SignalCore Engine connectivity
   const engineStart = Date.now();
+  const engineUrl = process.env.SIGNALCORE_API_URL || "https://engine.buildsignal.net";
   try {
-    const engineResp = await fetch(`${env.kimiOpenUrl}/v1/health`, { method: "GET" });
+    const engineResp = await fetch(`${engineUrl}/health`, { method: "GET", signal: AbortSignal.timeout(5000) });
     if (engineResp.ok) {
       checks.signalCoreEngine = { status: "passed", latencyMs: Date.now() - engineStart };
     } else {
       checks.signalCoreEngine = { status: "degraded", latencyMs: Date.now() - engineStart, detail: `HTTP ${engineResp.status}` };
     }
   } catch {
-    checks.signalCoreEngine = { status: "failed", latencyMs: Date.now() - engineStart, detail: "Unreachable" };
+    checks.signalCoreEngine = { status: "degraded", latencyMs: Date.now() - engineStart, detail: "Unreachable or timeout" };
   }
 
   // 5. Billing subsystem
