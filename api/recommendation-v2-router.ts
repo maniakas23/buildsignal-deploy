@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { createRouter, publicQuery } from "./middleware";
 import { confidenceScores, recommendationOutcomes, patternLibrary } from "@db/schema-sqlite";
-import { eq, desc, and, sql } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import { getDbFromContext } from "./queries/connection";
 
 export const recommendationV2Router = createRouter({
@@ -41,13 +41,15 @@ export const recommendationV2Router = createRouter({
     limit: z.number().min(1).max(200).optional().default(50),
   }).optional()).query(async ({ ctx, input }) => {
     const db = getDbFromContext(ctx.env);
-    const conditions = [];
-    if (input?.status && input.status !== "all") conditions.push(eq(recommendationOutcomes.outcomeStatus, input.status));
-    const where = conditions.length > 0 ? and(...conditions) : undefined;
-    const rows = await db.select().from(recommendationOutcomes).where(where).orderBy(desc(recommendationOutcomes.createdAt)).limit(input?.limit || 50);
-    const statusCounts = await db.select({ status: recommendationOutcomes.outcomeStatus, count: sql<number>`count(*)` }).from(recommendationOutcomes).groupBy(recommendationOutcomes.outcomeStatus);
-    const byStatus: Record<string,number> = {}; for (const s of statusCounts) byStatus[s.status] = s.count;
-    return { outcomes: rows, total: rows.length, byStatus };
+    const rows = await db.select().from(recommendationOutcomes).orderBy(desc(recommendationOutcomes.createdAt)).limit(input?.limit || 50);
+    let filtered = rows;
+    if (input?.status && input.status !== "all") {
+      filtered = rows.filter((r: any) => r.outcomeStatus === input.status);
+    }
+    // JS-based status counts instead of sql template literal
+    const byStatus: Record<string,number> = { pending:0, confirmed:0, partially_confirmed:0, incorrect:0, expired:0 };
+    for (const r of rows) { byStatus[r.outcomeStatus] = (byStatus[r.outcomeStatus] || 0) + 1; }
+    return { outcomes: filtered, total: filtered.length, byStatus };
   }),
 
   recordOutcome: publicQuery.input(z.object({
@@ -64,24 +66,27 @@ export const recommendationV2Router = createRouter({
 
   patterns: publicQuery.input(z.object({ patternType: z.string().optional(), isActive: z.boolean().optional() }).optional()).query(async ({ ctx, input }) => {
     const db = getDbFromContext(ctx.env);
-    const conditions = [];
-    if (input?.patternType) conditions.push(eq(patternLibrary.patternType, input.patternType));
-    if (input?.isActive !== undefined) conditions.push(eq(patternLibrary.isActive, input.isActive));
-    const where = conditions.length > 0 ? and(...conditions) : undefined;
-    const rows = await db.select().from(patternLibrary).where(where).orderBy(desc(patternLibrary.historicalSuccessRate));
-    return { patterns: rows };
+    const rows = await db.select().from(patternLibrary).orderBy(desc(patternLibrary.historicalSuccessRate));
+    let filtered = rows;
+    if (input?.patternType) filtered = filtered.filter((r: any) => r.patternType === input.patternType);
+    if (input?.isActive !== undefined) filtered = filtered.filter((r: any) => r.isActive === input.isActive);
+    return { patterns: filtered };
   }),
 
   stats: publicQuery.query(async ({ ctx }) => {
     const db = getDbFromContext(ctx.env);
     const [outcomes, patterns] = await Promise.all([
       db.select().from(recommendationOutcomes),
-      db.select().from(patternLibrary).where(eq(patternLibrary.isActive, true)),
+      db.select().from(patternLibrary),
     ]);
+    const activePatterns = patterns.filter((p: any) => p.isActive).length;
     const confirmed = outcomes.filter((o:any)=>o.outcomeStatus==="confirmed");
     const accuracy = outcomes.length>0 ? Math.round(outcomes.reduce((sum:number,o:any)=>sum+(o.accuracyScore||0),0)/outcomes.length) : 0;
     const confirmedRate = outcomes.length>0 ? Math.round((confirmed.length/outcomes.length)*100) : 0;
-    const avgTimeToDev = outcomes.filter((o:any)=>o.timeToDevelopmentDays).length>0 ? Math.round(outcomes.filter((o:any)=>o.timeToDevelopmentDays).reduce((sum:number,o:any)=>sum+(o.timeToDevelopmentDays||0),0)/outcomes.filter((o:any)=>o.timeToDevelopmentDays).length) : 0;
-    return { totalOutcomes:outcomes.length, confirmedCount:confirmed.length, accuracy, confirmedRate, activePatterns:patterns.length, avgTimeToDevelopmentDays:avgTimeToDev, outcomesByStatus: Object.fromEntries(["pending","confirmed","partially_confirmed","incorrect","expired"].map(s=>[s,outcomes.filter((o:any)=>o.outcomeStatus===s).length])) };
+    const withTime = outcomes.filter((o:any)=>o.timeToDevelopmentDays);
+    const avgTimeToDev = withTime.length>0 ? Math.round(withTime.reduce((sum:number,o:any)=>sum+(o.timeToDevelopmentDays||0),0)/withTime.length) : 0;
+    const outcomesByStatus: Record<string,number> = { pending:0, confirmed:0, partially_confirmed:0, incorrect:0, expired:0 };
+    for (const o of outcomes) { outcomesByStatus[o.outcomeStatus] = (outcomesByStatus[o.outcomeStatus] || 0) + 1; }
+    return { totalOutcomes:outcomes.length, confirmedCount:confirmed.length, accuracy, confirmedRate, activePatterns, avgTimeToDevelopmentDays:avgTimeToDev, outcomesByStatus };
   }),
 });
