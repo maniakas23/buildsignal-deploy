@@ -1,39 +1,70 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@theme {
-  --color-canvas: #f6f4f0;
-  --color-surface: #ffffff;
-  --color-ink-primary: #1a1a2e;
-  --color-ink-secondary: #4a4a5e;
-  --color-ink-tertiary: #8a8a9e;
-  --color-ink-wash: #e8e5df;
-  --color-accent-indigo: #4f46e5;
-  --color-accent-teal: #0a4a4a;
-  --color-accent-amber: #7a5c00;
-  --color-accent-crimson: #a61b1b;
-  --font-mono: 'Geist Mono', ui-monospace, monospace;
+@layer base {
+  :root {
+    --canvas: #081018;
+    --surface: #121C27;
+    --surface-hover: #182536;
+    --border: #243444;
+    --ink-primary: #F7FAFC;
+    --ink-secondary: #AEB8C4;
+    --ink-tertiary: #7A8A9A;
+    --accent-indigo: #5B8DEF;
+    --accent-indigo-dim: #3D6BC8;
+    --accent-teal: #3ECF8E;
+    --accent-amber: #F0B429;
+    --accent-crimson: #EF4444;
+    --accent-violet: #8B7BFF;
+    --signal-verified: #3ECF8E;
+    --signal-pending: #F0B429;
+    --signal-error: #EF4444;
+    --background: 210 40% 5%;
+    --foreground: 210 20% 96%;
+    --card: 210 30% 11%;
+    --card-foreground: 210 20% 96%;
+    --popover: 210 30% 11%;
+    --popover-foreground: 210 20% 96%;
+    --primary: 217 80% 64%;
+    --primary-foreground: 210 20% 96%;
+    --secondary: 210 20% 18%;
+    --secondary-foreground: 210 20% 96%;
+    --muted: 210 20% 14%;
+    --muted-foreground: 210 15% 60%;
+    --accent: 210 20% 14%;
+    --accent-foreground: 210 20% 96%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 20% 96%;
+    --border: 210 20% 18%;
+    --input: 210 20% 18%;
+    --ring: 217 80% 64%;
+    --radius: 0.75rem;
+    --sidebar-background: 210 40% 5%;
+    --sidebar-foreground: 210 20% 96%;
+    --sidebar-primary: 217 80% 64%;
+    --sidebar-primary-foreground: 210 20% 96%;
+    --sidebar-accent: 210 20% 14%;
+    --sidebar-accent-foreground: 210 20% 96%;
+    --sidebar-border: 210 20% 18%;
+    --sidebar-ring: 217 80% 64%;
+  }
+
+  body {
+    @apply bg-canvas text-ink-primary;
+    font-family: 'Geist', 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: #081018;
+  }
+
+  * {
+    border-color: var(--border);
+  }
 }
 
-body {
-  background-color: var(--color-canvas);
-  color: var(--color-ink-primary);
-  font-family: 'Geist', Inter, system-ui, sans-serif;
-}
-
-.animate-spin-slow {
-  animation: spin 3s linear infinite;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.animate-fade-in-up {
-  animation: fadeInUp 0.5s ease-out forwards;
-}
-
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+@layer utilities {
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-accent-indigo to-accent-violet;
+  }
 }
