@@ -29,16 +29,13 @@ export const handleApi: PagesFunction = async (context) => {
   const proc = g.process as unknown as { env: Record<string, unknown> };
   proc.env.NODE_ENV = "production";
 
-  // Log env for debugging
-  const envKeys = Object.keys(context.env).filter(k => !k.includes('SECRET') && !k.includes('KEY'));
-  console.log(`[handleApi] env keys: ${envKeys.join(', ')}`);
-  console.log(`[handleApi] has DB: ${!!(context.env as any).DB}`);
+  // Store full env on globalThis for tRPC context access
+  (g as any).__CF_ENV__ = context.env;
 
   // Bind D1 if available
   const dbBinding = (context.env as Record<string, unknown>).DB as D1Database | undefined;
   if (dbBinding) {
-    console.log(`[handleApi] Setting D1 binding`);
-    (globalThis as unknown as Record<string, unknown>).__D1_BINDING__ = dbBinding;
+    (g as any).__D1_BINDING__ = dbBinding;
     setD1Binding(dbBinding);
   }
 
