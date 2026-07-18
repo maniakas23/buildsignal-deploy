@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && esbuild api/boot.ts --platform=node --bundle --format=esm --outdir=dist --banner:js=\"import { createRequire } from 'module';const require = createRequire(import.meta.url);\"",
+    "build": "vite build && esbuild api/boot.ts --platform=node --bundle --format=esm --outdir=dist --external:better-sqlite3 --banner:js=\"import { createRequire } from 'module';const require = createRequire(import.meta.url);\"",
     "typecheck": "tsc -b --pretty false",
     "lint": "eslint .",
     "preview": "vite preview",
@@ -102,7 +102,7 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.20260716.1",
+    "@cloudflare/workers-types": "^4.20250408.0",
     "@eslint/js": "^9.39.1",
     "@hono/vite-dev-server": "^0.19.0",
     "@types/node": "^24.13.3",
