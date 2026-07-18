@@ -1,0 +1,2 @@
+Redeploy triggered after adding D1 binding to Pages project config.
+Timestamp: 2026-07-19
