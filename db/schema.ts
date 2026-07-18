@@ -416,3 +416,36 @@ export const dailySummaries = sqliteTable("daily_summaries", {
   insights: text("insights"),
   generatedAt: integer("generatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
+
+// ============================================================
+// GATE 20 — GOVERNANCE & COMPLIANCE AUDIT TABLES
+// ============================================================
+
+export const aiGovernanceAudit = sqliteTable("ai_governance_audit", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  recommendationId: integer("recommendationId").notNull(),
+  passed: integer("passed", { mode: "boolean" }).default(false),
+  score: integer("score").default(0),
+  version: text("version").default("v1.0"),
+  checkedAt: integer("checkedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+export const dataAuditLog = sqliteTable("data_audit_log", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  entityType: text("entityType").notNull(),
+  entityId: integer("entityId").notNull(),
+  action: text("action").notNull(),
+  userId: integer("userId"),
+  details: text("details"),
+  timestamp: integer("timestamp", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+export const securityEvents = sqliteTable("security_events", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  eventType: text("eventType").notNull(),
+  severity: text("severity").notNull().default("info"),
+  source: text("source").notNull(),
+  details: text("details"),
+  userId: integer("userId"),
+  timestamp: integer("timestamp", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
