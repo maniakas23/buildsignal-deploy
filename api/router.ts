@@ -1,4 +1,6 @@
 import { createRouter, publicQuery } from "./middleware";
+import { getDbFromContext } from "./queries/connection";
+import { sql } from "drizzle-orm";
 import { authRouter } from "./auth-router";
 import { mapRouter } from "./map-router";
 import { notificationsRouter } from "./notifications-router";
@@ -23,23 +25,22 @@ import { pipelineMetricsRouter } from "./pipeline-metrics-router";
 import { geographicRouter } from "./geographic-router";
 import { knowledgeGraphRouter } from "./knowledge-graph-router";
 import { historicalValidationRouter } from "./historical-validation-router";
-// ─── Gate 19 Routers ───
+// Gate 19
 import { historicalRouter } from "./historical-router";
 import { confidenceRouter } from "./confidence-router";
 import { patternRouter } from "./pattern-router";
 import { learningLoopRouter } from "./learning-loop-router";
 import { dailyOpsRouter } from "./daily-ops-router";
-// ─── Gate 20 Routers (Governance & IP) ───
+// Gate 20
 import { governanceRouter } from "./governance-router";
 import { aiGovernanceRouter } from "./ai-governance-router";
 import { dataGovernanceRouter } from "./data-governance-router";
 import { securityRouter } from "./security-router";
 import { ipRegisterRouter } from "./ip-register-router";
-// ─── Gate 20 Routers (Live Intelligence) ───
 import { liveIntelligenceRouter } from "./live-intelligence-router";
 import { executiveOpsRouter } from "./executive-ops-router";
 import { completionRouter } from "./completion-router";
-// ─── Gate 21 Routers (Production Intelligence Network) ───
+// Gate 21
 import { ingestionRouter } from "./ingestion-router";
 import { validationRouter } from "./validation-router";
 import { enrichmentRouter } from "./enrichment-router";
@@ -51,6 +52,28 @@ import { briefingRouter } from "./briefing-router";
 
 export const appRouter = createRouter({
   health: publicQuery.query(() => ({ status: "ok", service: "buildsignal", version: "1.0.0" })),
+  debug: publicQuery.query(async ({ ctx }) => {
+    const env = ctx.env || {};
+    const hasD1 = !!env.DB;
+    const globalD1 = !!(globalThis as any).__D1_BINDING__;
+    let queryResult = "not attempted";
+    if (hasD1) {
+      try {
+        const db = getDbFromContext(env);
+        await db.select({ one: sql`1` });
+        queryResult = "success";
+      } catch (e: any) {
+        queryResult = `error: ${e.message}`;
+      }
+    }
+    return {
+      hasD1Binding: hasD1,
+      globalD1Binding: globalD1,
+      envKeys: Object.keys(env).filter(k => !k.includes('SECRET') && !k.includes('KEY')),
+      queryResult,
+      timestamp: new Date().toISOString(),
+    };
+  }),
   auth: authRouter,
   map: mapRouter,
   notifications: notificationsRouter,
@@ -76,23 +99,19 @@ export const appRouter = createRouter({
   geographic: geographicRouter,
   knowledgeGraph: knowledgeGraphRouter,
   historicalValidation: historicalValidationRouter,
-  // ─── Gate 19 ───
   historical: historicalRouter,
   confidence: confidenceRouter,
   pattern: patternRouter,
   learningLoop: learningLoopRouter,
   dailyOps: dailyOpsRouter,
-  // ─── Gate 20 (Governance & IP) ───
   governance: governanceRouter,
   aiGovernance: aiGovernanceRouter,
   dataGovernance: dataGovernanceRouter,
   security: securityRouter,
   ipRegister: ipRegisterRouter,
-  // ─── Gate 20 (Live Intelligence) ───
   live: liveIntelligenceRouter,
   executive: executiveOpsRouter,
   completion: completionRouter,
-  // ─── Gate 21 (Production Intelligence Network) ───
   ingestion: ingestionRouter,
   validation: validationRouter,
   enrichment: enrichmentRouter,
