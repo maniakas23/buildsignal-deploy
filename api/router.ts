@@ -29,12 +29,16 @@ import { confidenceRouter } from "./confidence-router";
 import { patternRouter } from "./pattern-router";
 import { learningLoopRouter } from "./learning-loop-router";
 import { dailyOpsRouter } from "./daily-ops-router";
-// Gate 20
+// Gate 20 (Governance & IP)
 import { governanceRouter } from "./governance-router";
 import { aiGovernanceRouter } from "./ai-governance-router";
 import { dataGovernanceRouter } from "./data-governance-router";
 import { securityRouter } from "./security-router";
 import { ipRegisterRouter } from "./ip-register-router";
+// Gate 20 (Live Intelligence)
+import { liveIntelligenceRouter } from "./live-intelligence-router";
+import { executiveOpsRouter } from "./executive-ops-router";
+import { completionRouter } from "./completion-router";
 
 export const appRouter = createRouter({
   health: publicQuery.query(() => ({ status: "ok", service: "buildsignal", version: "1.0.0" })),
@@ -73,6 +77,9 @@ export const appRouter = createRouter({
   dataGovernance: dataGovernanceRouter,
   security: securityRouter,
   ipRegister: ipRegisterRouter,
+  live: liveIntelligenceRouter,
+  executive: executiveOpsRouter,
+  completion: completionRouter,
 });
 
 export type AppRouter = typeof appRouter;
