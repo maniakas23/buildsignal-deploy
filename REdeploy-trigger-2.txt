@@ -1,0 +1,2 @@
+Trigger fresh deployment after D1 binding added to Pages project.
+Timestamp: 2026-07-19T21:50:00Z
