@@ -80,8 +80,8 @@ export const recommendationV2Router = createRouter({
     ]);
     const confirmed = outcomes.filter((o:any)=>o.outcomeStatus==="confirmed");
     const accuracy = outcomes.length>0 ? Math.round(outcomes.reduce((sum:number,o:any)=>sum+(o.accuracyScore||0),0)/outcomes.length) : 0;
-    const statusMap: Record<string,number> = {}; for (const o of outcomes) statusMap[o.outcomeStatus] = (statusMap[o.outcomeStatus]||0)+1;
-    const typeMap = new Map(); for (const p of patterns) typeMap.set(p.patternType,(typeMap.get(p.patternType)||0)+1);
-    return { totalOutcomes:outcomes.length, confirmed:confirmed.length, accuracy, avgConfidence:outcomes.length>0?Math.round(outcomes.reduce((sum:number,o:any)=>sum+(o.confidenceAtPrediction||0),0)/outcomes.length):0, patternsActive:patterns.length, patternsByType:Array.from(typeMap.entries()).map(([t,c])=>({type:t,count:c})), outcomesByStatus:statusMap };
+    const confirmedRate = outcomes.length>0 ? Math.round((confirmed.length/outcomes.length)*100) : 0;
+    const avgTimeToDev = outcomes.filter((o:any)=>o.timeToDevelopmentDays).length>0 ? Math.round(outcomes.filter((o:any)=>o.timeToDevelopmentDays).reduce((sum:number,o:any)=>sum+(o.timeToDevelopmentDays||0),0)/outcomes.filter((o:any)=>o.timeToDevelopmentDays).length) : 0;
+    return { totalOutcomes:outcomes.length, confirmedCount:confirmed.length, accuracy, confirmedRate, activePatterns:patterns.length, avgTimeToDevelopmentDays:avgTimeToDev, outcomesByStatus: Object.fromEntries(["pending","confirmed","partially_confirmed","incorrect","expired"].map(s=>[s,outcomes.filter((o:any)=>o.outcomeStatus===s).length])) };
   }),
 });

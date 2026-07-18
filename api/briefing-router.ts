@@ -1,86 +1,74 @@
 import { z } from "zod";
 import { createRouter, publicQuery } from "./middleware";
 import { dailyBriefings } from "@db/schema-sqlite";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, sql } from "drizzle-orm";
 import { getDbFromContext } from "./queries/connection";
 
 export const briefingRouter = createRouter({
   list: publicQuery.input(z.object({
-    scope: z.enum(["national","state","county","user"]).optional(),
-    deliveryStatus: z.enum(["draft","reviewed","delivered","archived","all"]).optional().default("all"),
+    category: z.string().optional(),
     limit: z.number().min(1).max(100).optional().default(30),
   }).optional()).query(async ({ ctx, input }) => {
     const db = getDbFromContext(ctx.env);
     const conditions = [];
-    if (input?.scope) conditions.push(eq(dailyBriefings.scope, input.scope));
-    if (input?.deliveryStatus && input.deliveryStatus !== "all") conditions.push(eq(dailyBriefings.deliveryStatus, input.deliveryStatus));
+    if (input?.category) conditions.push(eq(dailyBriefings.category, input.category));
     const where = conditions.length > 0 ? and(...conditions) : undefined;
     const rows = await db.select().from(dailyBriefings).where(where).orderBy(desc(dailyBriefings.briefingDate)).limit(input?.limit || 30);
     return { briefings: rows, total: rows.length };
   }),
 
-  today: publicQuery.input(z.object({
-    scope: z.enum(["national","state","county","user"]).optional().default("national"),
-    scopeId: z.string().optional(),
-  }).optional()).query(async ({ ctx, input }) => {
-    const db = getDbFromContext(ctx.env);
-    const today = new Date().toISOString().split("T")[0];
-    const conditions = [eq(dailyBriefings.briefingDate, today), eq(dailyBriefings.scope, input?.scope || "national")];
-    if (input?.scopeId) conditions.push(eq(dailyBriefings.scopeId, input.scopeId));
-    const rows = await db.select().from(dailyBriefings).where(and(...conditions));
-    return rows[0] || null;
-  }),
-
-  getByDate: publicQuery.input(z.object({ date: z.string(), scope: z.enum(["national","state","county","user"]).optional().default("national"), scopeId: z.string().optional() })).query(async ({ ctx, input }) => {
-    const db = getDbFromContext(ctx.env);
-    const conditions = [eq(dailyBriefings.briefingDate, input.date), eq(dailyBriefings.scope, input.scope)];
-    if (input.scopeId) conditions.push(eq(dailyBriefings.scopeId, input.scopeId));
-    const rows = await db.select().from(dailyBriefings).where(and(...conditions));
-    return rows[0] || null;
-  }),
-
-  generate: publicQuery.input(z.object({
-    briefingDate: z.string(), scope: z.enum(["national","state","county","user"]).default("national"), scopeId: z.string().optional(),
-    topOpportunities: z.string().optional(), newActivity: z.string().optional(),
-    priorityCounties: z.string().optional(), recommendationChanges: z.string().optional(),
-    providerHealth: z.string().optional(), coverageGrowth: z.string().optional(),
-    operationalSummary: z.string().optional(), executiveActions: z.string().optional(), narrative: z.string().optional(),
+  create: publicQuery.input(z.object({
+    title: z.string().min(1), category: z.enum(["new_opportunities","validation_alerts","enrichment_updates","confidence_changes","provider_health","expansion_progress","system_metrics","quality_scores","executive_summary"]),
+    summary: z.string(), details: z.string().optional(), actionItems: z.string().optional(),
+    priority: z.enum(["low","medium","high","critical"]).default("medium"),
+    county: z.string().optional(), state: z.string().optional(),
+    tags: z.string().optional(),
   })).mutation(async ({ ctx, input }) => {
     const db = getDbFromContext(ctx.env);
-    const existing = await db.select().from(dailyBriefings).where(and(eq(dailyBriefings.briefingDate, input.briefingDate), eq(dailyBriefings.scope, input.scope)));
-    if (existing.length > 0) {
-      await db.update(dailyBriefings).set({ ...input, deliveryStatus: "draft" as const }).where(eq(dailyBriefings.id, existing[0].id));
-      return { success: true, briefing: { ...existing[0], ...input }, updated: true };
-    }
-    const result = await db.insert(dailyBriefings).values({ ...input, deliveryStatus: "draft" }).returning();
-    return { success: true, briefing: result[0], updated: false };
+    const result = await db.insert(dailyBriefings).values({ ...input, briefingDate: new Date() }).returning();
+    return { success: true, briefing: result[0] };
   }),
 
-  deliver: publicQuery.input(z.object({ id: z.number() })).mutation(async ({ ctx, input }) => {
+  markRead: publicQuery.input(z.object({ id: z.number() })).mutation(async ({ ctx, input }) => {
     const db = getDbFromContext(ctx.env);
-    await db.update(dailyBriefings).set({ deliveryStatus: "delivered", deliveredAt: new Date() }).where(eq(dailyBriefings.id, input.id));
+    await db.update(dailyBriefings).set({ isRead: true }).where(eq(dailyBriefings.id, input.id));
     return { success: true };
   }),
 
-  stats: publicQuery.query(async ({ ctx }) => {
+  today: publicQuery.query(async ({ ctx }) => {
     const db = getDbFromContext(ctx.env);
-    const all = await db.select().from(dailyBriefings);
-    const now = new Date(); const weekAgo = new Date(now.getTime()-7*24*60*60*1000); const twoWeeksAgo = new Date(now.getTime()-14*24*60*60*1000);
-    const scopeMap = new Map(); for (const b of all) scopeMap.set(b.scope, (scopeMap.get(b.scope)||0)+1);
-    return { totalBriefings:all.length, delivered:all.filter((b:any)=>b.deliveryStatus==="delivered").length, draft:all.filter((b:any)=>b.deliveryStatus==="draft").length, reviewed:all.filter((b:any)=>b.deliveryStatus==="reviewed").length, archived:all.filter((b:any)=>b.deliveryStatus==="archived").length, byScope:Array.from(scopeMap.entries()).map(([scope,count])=>({scope,count})), thisWeek:all.filter((b:any)=>new Date(b.generatedAt)>=weekAgo).length, lastWeek:all.filter((b:any)=>{ const d=new Date(b.generatedAt); return d>=twoWeeksAgo&&d<weekAgo; }).length };
+    const today = new Date().toISOString().slice(0, 10);
+    const rows = await db.select().from(dailyBriefings).where(sql`date(${dailyBriefings.briefingDate}) = ${today}`).orderBy(desc(dailyBriefings.createdAt));
+    const unread = rows.filter((r: any) => !r.isRead);
+    const critical = rows.filter((r: any) => r.priority === "critical");
+    const high = rows.filter((r: any) => r.priority === "high");
+    return { briefings: rows, total: rows.length, unreadCount: unread.length, criticalCount: critical.length, highPriorityCount: high.length };
   }),
 
-  template: publicQuery.query(() => ({
-    sections: [
-      { id: "topOpportunities", label: "Top Opportunities", required: true },
-      { id: "newActivity", label: "New Infrastructure Activity", required: true },
-      { id: "priorityCounties", label: "Priority Counties", required: false },
-      { id: "recommendationChanges", label: "Recommendation Changes", required: true },
-      { id: "providerHealth", label: "Provider Health", required: true },
-      { id: "coverageGrowth", label: "Coverage Growth", required: false },
-      { id: "operationalSummary", label: "Operational Summary", required: true },
-      { id: "executiveActions", label: "Executive Actions", required: true },
-      { id: "narrative", label: "Executive Narrative", required: true },
+  dashboard: publicQuery.query(async ({ ctx }) => {
+    const db = getDbFromContext(ctx.env);
+    const last7 = await db.select().from(dailyBriefings).orderBy(desc(dailyBriefings.briefingDate)).limit(100);
+    const catMap = new Map(); const trendMap = new Map();
+    for (const b of last7) {
+      catMap.set(b.category, (catMap.get(b.category) || 0) + 1);
+      const d = new Date(b.briefingDate).toISOString().slice(0, 10);
+      if (!trendMap.has(d)) trendMap.set(d, { date: d, count: 0, critical: 0, high: 0 });
+      const td = trendMap.get(d); td.count++; if (b.priority === "critical") td.critical++; if (b.priority === "high") td.high++;
+    }
+    return { totalBriefings: last7.length, byCategory: Array.from(catMap.entries()).map(([c, n]) => ({ category: c, count: n })), unreadCount: last7.filter((b: any) => !b.isRead).length, dailyTrend: Array.from(trendMap.values()).sort((a: any, b: any) => a.date.localeCompare(b.date)).slice(-7) };
+  }),
+
+  categories: publicQuery.query(() => ({
+    categories: [
+      { id: "new_opportunities", label: "New Opportunities", description: "Fresh intelligence on construction and development opportunities" },
+      { id: "validation_alerts", label: "Validation Alerts", description: "Data quality issues requiring attention" },
+      { id: "enrichment_updates", label: "Enrichment Updates", description: "New context data added to existing events" },
+      { id: "confidence_changes", label: "Confidence Changes", description: "Significant shifts in recommendation confidence" },
+      { id: "provider_health", label: "Provider Health", description: "Data source status and performance" },
+      { id: "expansion_progress", label: "Expansion Progress", description: "New jurisdictions and coverage updates" },
+      { id: "system_metrics", label: "System Metrics", description: "Platform performance and reliability" },
+      { id: "quality_scores", label: "Quality Scores", description: "Accuracy and precision tracking" },
+      { id: "executive_summary", label: "Executive Summary", description: "High-level daily overview for leadership" },
     ],
   })),
 });
