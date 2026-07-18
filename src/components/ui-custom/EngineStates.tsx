@@ -58,6 +58,16 @@ export function SkeletonCard({ className = '' }: { className?: string }) {
   );
 }
 
+export function SkeletonGrid({ count = 6, className = '' }: { count?: number; className?: string }) {
+  return (
+    <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 ${className}`}>
+      {Array.from({ length: count }).map((_, i) => (
+        <SkeletonCard key={i} />
+      ))}
+    </div>
+  );
+}
+
 export function EmptyState({ title = 'No results found', description = 'Try adjusting your filters or search criteria.', icon = 'inbox' }: { title?: string; description?: string; icon?: 'inbox' | 'map' | 'bell' | 'database' }) {
   const icons = { inbox: Inbox, map: MapPin, bell: Bell, database: Database };
   const Icon = icons[icon] || Inbox;
@@ -100,4 +110,16 @@ export function ConfidenceBadge({ score }: { score: number }) {
   if (score >= 90) return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-accent-teal/10 text-accent-teal">High</span>;
   if (score >= 70) return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-accent-amber/10 text-accent-amber">Medium</span>;
   return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-accent-crimson/10 text-accent-crimson">Low</span>;
+}
+
+export function SectionHeader({ title, subtitle, action }: { title: string; subtitle?: string; action?: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between mb-4">
+      <div>
+        <h2 className="text-[14px] font-semibold text-ink-primary">{title}</h2>
+        {subtitle && <p className="text-[11px] text-ink-tertiary">{subtitle}</p>}
+      </div>
+      {action}
+    </div>
+  );
 }
