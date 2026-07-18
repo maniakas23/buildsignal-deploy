@@ -1,7 +1,7 @@
 name = "buildsignal-v2"
-main = "functions/[[path]].ts"
 compatibility_date = "2026-07-16"
 compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "./dist"
 
 # Gate 21: Production Intelligence Network - D1 binding
 [[d1_databases]]
@@ -9,6 +9,3 @@ binding = "DB"
 database_name = "buildsignal-db"
 database_id = "a8ecb143-6aa6-4741-b4e8-fe3e16695452"
 preview_database_id = "a8ecb143-6aa6-4741-b4e8-fe3e16695452"
-
-[site]
-bucket = "./dist"
