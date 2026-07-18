@@ -23,6 +23,12 @@ import { pipelineMetricsRouter } from "./pipeline-metrics-router";
 import { geographicRouter } from "./geographic-router";
 import { knowledgeGraphRouter } from "./knowledge-graph-router";
 import { historicalValidationRouter } from "./historical-validation-router";
+// Gate 19
+import { historicalRouter } from "./historical-router";
+import { confidenceRouter } from "./confidence-router";
+import { patternRouter } from "./pattern-router";
+import { learningLoopRouter } from "./learning-loop-router";
+import { dailyOpsRouter } from "./daily-ops-router";
 
 export const appRouter = createRouter({
   health: publicQuery.query(() => ({ status: "ok", service: "buildsignal", version: "1.0.0" })),
@@ -51,6 +57,12 @@ export const appRouter = createRouter({
   geographic: geographicRouter,
   knowledgeGraph: knowledgeGraphRouter,
   historicalValidation: historicalValidationRouter,
+  // Gate 19
+  historical: historicalRouter,
+  confidence: confidenceRouter,
+  pattern: patternRouter,
+  learningLoop: learningLoopRouter,
+  dailyOps: dailyOpsRouter,
 });
 
 export type AppRouter = typeof appRouter;
