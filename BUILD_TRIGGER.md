@@ -1,3 +1,3 @@
-# BuildSignal v1.0 — National Intelligence Network
+# BuildSignal v1.0
 
-Gate 18 capstone deployment with `--include=dev` fix.
+Trigger rebuild with external:better-sqlite3 fix.
