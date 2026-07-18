@@ -26,3 +26,5 @@ export function track(event: TrackEvent) {
     (window as any).bsTrack(event);
   }
 }
+
+export function recordFirstOpportunity() { }
