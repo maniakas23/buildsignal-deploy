@@ -35,7 +35,7 @@ const TABS = [
 ] as const;
 
 export default function NationalIntelligencePage() {
-  const [activeTab, setActiveTab] = useState<(typeof TABS)[number]["id"]>"overview");
+  const [activeTab, setActiveTab] = useState<(typeof TABS)[number]["id"]>("overview");
   const { data: geoData } = trpc.geographic.list.useQuery();
   const { data: geoSumm } = trpc.geographic.summary.useQuery();
   const { data: kgStats } = trpc.knowledgeGraph.stats.useQuery();
