@@ -1,6 +1,4 @@
 import { createRouter, publicQuery } from "./middleware";
-import { getDbFromContext } from "./queries/connection";
-import { sql } from "drizzle-orm";
 import { authRouter } from "./auth-router";
 import { mapRouter } from "./map-router";
 import { notificationsRouter } from "./notifications-router";
@@ -52,21 +50,6 @@ import { briefingRouter } from "./briefing-router";
 
 export const appRouter = createRouter({
   health: publicQuery.query(() => ({ status: "ok", service: "buildsignal", version: "1.0.0" })),
-  debug: publicQuery.query(async ({ ctx }) => {
-    // Minimal diagnostic — test D1 connectivity without exposing env keys
-    let d1Status = "unknown";
-    try {
-      const db = getDbFromContext(ctx.env);
-      const result = await db.select({ one: sql`1` });
-      d1Status = result.length > 0 ? "connected" : "no_result";
-    } catch (e: any) {
-      d1Status = `error: ${e.message}`;
-    }
-    return {
-      d1: d1Status,
-      timestamp: new Date().toISOString(),
-    };
-  }),
   auth: authRouter,
   map: mapRouter,
   notifications: notificationsRouter,
