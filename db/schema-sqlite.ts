@@ -1,6 +1,11 @@
+/**
+ * SQLite/D1-compatible schema — mirrors db/schema.ts exactly.
+ * All column names match the MySQL schema for code compatibility.
+ */
+
 import { sqliteTable, integer, text, real, uniqueIndex } from "drizzle-orm/sqlite-core";
 
-// Users
+// ─── Users ───
 export const users = sqliteTable("users", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   unionId: text("unionId").notNull(),
@@ -11,9 +16,10 @@ export const users = sqliteTable("users", {
   isAdmin: integer("isAdmin", { mode: "boolean" }).default(false),
   createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
 }, (t) => [uniqueIndex("users_union_idx").on(t.unionId)]);
+
 export type InsertUser = typeof users.$inferInsert;
 
-// Saved Areas
+// ─── Saved Areas ───
 export const savedAreas = sqliteTable("saved_areas", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   userId: integer("userId").notNull(),
@@ -29,7 +35,7 @@ export const savedAreas = sqliteTable("saved_areas", {
   createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
-// Notifications
+// ─── Notifications ───
 export const notifications = sqliteTable("notifications", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   userId: integer("userId").notNull(),
@@ -41,290 +47,383 @@ export const notifications = sqliteTable("notifications", {
   createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
-// Feedback
-export const feedback = sqliteTable("feedback", {
+// ─── Feedback ───
+export const feedbackItems = sqliteTable("feedback", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  userId: integer("userId"),
+  category: text("category").notNull(),
+  message: text("message").notNull(),
+  rating: integer("rating"),
+  status: text("status").default("open"),
+  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+// ─── Watchlist ───
+export const watchlist = sqliteTable("watchlist", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   userId: integer("userId").notNull(),
-  type: text("type").notNull(),
-  content: text("content").notNull(),
-  rating: integer("rating"),
-  metadata: text("metadata"),
-  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-});
-
-// SignalCore Recommendations
-export const signalcoreRecommendations = sqliteTable("signalcore_recommendations", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  recommendationId: text("recommendationId").notNull().unique(),
-  sourceProduct: text("sourceProduct").notNull().default("buildsignal"),
-  targetProduct: text("targetProduct").notNull().default("all"),
-  status: text("status").notNull().default("active"),
-  priority: integer("priority").default(50),
-  title: text("title").notNull(),
+  opportunityId: text("opportunityId").notNull(),
   county: text("county"),
   state: text("state"),
-  eventTypes: text("eventTypes"),
-  patternIds: text("patternIds"),
-  evidenceSummary: text("evidenceSummary"),
-  confidenceScore: integer("confidenceScore").default(0),
-  actionRequired: text("actionRequired"),
-  timelineEstimate: text("timelineEstimate"),
-  generatedAt: integer("generatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  deliveredAt: integer("deliveredAt", { mode: "timestamp" }),
-  deliveryResult: text("deliveryResult"),
-  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-});
-export type SignalCoreRecommendation = typeof signalcoreRecommendations.$inferSelect;
-
-// SignalCore Recommendation Evidence
-export const signalcoreRecommendationEvidence = sqliteTable("signalcore_recommendation_evidence", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  recommendationId: integer("recommendationId").notNull(),
-  evidenceType: text("evidenceType").notNull(),
-  source: text("source").notNull(),
-  detail: text("detail"),
-  weight: integer("weight").default(1),
+  notes: text("notes"),
+  alertEnabled: integer("alertEnabled", { mode: "boolean" }).default(true),
   createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
-// SignalCore Deliveries
-export const signalcoreDeliveries = sqliteTable("signalcore_deliveries", {
+// ─── Pipeline Events ───
+export const pipelineEvents = sqliteTable("pipeline_events", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  recommendationId: integer("recommendationId").notNull(),
-  product: text("product").notNull(),
-  status: text("status").notNull().default("queued"),
-  deliveryMethod: text("deliveryMethod").default("api"),
-  payload: text("payload"),
-  response: text("response"),
-  deliveredAt: integer("deliveredAt", { mode: "timestamp" }),
-  confirmedAt: integer("confirmedAt", { mode: "timestamp" }),
-  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-});
-
-// SignalCore Telemetry
-export const signalcoreTelemetry = sqliteTable("signalcore_telemetry", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  component: text("component").notNull(),
-  metricName: text("metricName").notNull(),
-  metricValue: integer("metricValue").notNull(),
-  unit: text("unit").default("count"),
-  recordedAt: integer("recordedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-});
-
-// SignalCore Feedback
-export const signalcoreFeedback = sqliteTable("signalcore_feedback", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  recommendationId: integer("recommendationId").notNull(),
-  feedbackType: text("feedbackType").notNull(),
-  comment: text("comment"),
-  userId: integer("userId"),
-  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-});
-
-// Beta Feedback Events
-export const betaFeedbackEvents = sqliteTable("beta_feedback_events", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  userId: integer("userId"),
+  eventId: text("eventId").notNull(),
   eventType: text("eventType").notNull(),
-  entityId: text("entityId"),
-  entityType: text("entityType"),
-  metadata: text("metadata"),
-  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-});
-
-// ============================================================
-// GATE 19 — PROPRIETARY INTELLIGENCE SCHEMA
-// ============================================================
-
-export const providerRegistry = sqliteTable("provider_registry", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  providerName: text("providerName").notNull(),
-  providerType: text("providerType").notNull(),
-  jurisdictionLevel: text("jurisdictionLevel").notNull().default("county"),
-  coverageArea: text("coverageArea").notNull(),
-  dataCategories: text("dataCategories").notNull(),
-  apiAvailable: integer("apiAvailable", { mode: "boolean" }).default(false),
-  apiEndpoint: text("apiEndpoint"),
-  apiAuthType: text("apiAuthType"),
-  importMethod: text("importMethod").notNull().default("api"),
-  refreshSchedule: text("refreshSchedule").notNull().default("daily"),
-  healthScore: integer("healthScore").default(100),
-  historicalReliability: integer("historicalReliability").default(100),
-  validationStatus: text("validationStatus").notNull().default("pending"),
-  recordsTotal: integer("recordsTotal").default(0),
-  recordsLast30Days: integer("recordsLast30Days").default(0),
-  avgLatencyMs: integer("avgLatencyMs").default(0),
-  lastSyncAt: integer("lastSyncAt", { mode: "timestamp" }),
-  nextSyncAt: integer("nextSyncAt", { mode: "timestamp" }),
-  errorCount30d: integer("errorCount30d").default(0),
-  onboardedAt: integer("onboardedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  updatedAt: integer("updatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-});
-
-export const historicalEvents = sqliteTable("historical_events", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  externalId: text("externalId"),
-  providerId: integer("providerId").notNull(),
-  eventType: text("eventType").notNull(),
-  eventCategory: text("eventCategory").notNull(),
-  title: text("title").notNull(),
-  description: text("description"),
-  county: text("county"),
+  county: text("county").notNull(),
   state: text("state").notNull(),
   city: text("city"),
-  zipCode: text("zipCode"),
-  address: text("address"),
   lat: text("lat"),
   lng: text("lng"),
-  value: integer("value"),
-  confidence: integer("confidence").default(50),
-  status: text("status").notNull().default("recorded"),
-  rawData: text("rawData"),
-  normalizedData: text("normalizedData"),
-  publishedAt: integer("publishedAt", { mode: "timestamp" }),
-  ingestedAt: integer("ingestedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-});
-
-export const kgRelationships = sqliteTable("kg_relationships", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  sourceNodeId: integer("sourceNodeId").notNull(),
-  targetNodeId: integer("targetNodeId").notNull(),
-  relationType: text("relationType").notNull(),
-  strength: integer("strength").default(50),
-  evidenceCount: integer("evidenceCount").default(1),
-  firstObservedAt: integer("firstObservedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  lastObservedAt: integer("lastObservedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-});
-
-export const confidenceScores = sqliteTable("confidence_scores", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  entityType: text("entityType").notNull(),
-  entityId: integer("entityId").notNull(),
-  overallScore: integer("overallScore").notNull(),
-  providerReliability: integer("providerReliability").default(0),
-  historicalAccuracy: integer("historicalAccuracy").default(0),
-  crossSourceAgreement: integer("crossSourceAgreement").default(0),
-  dataFreshness: integer("dataFreshness").default(0),
-  patternMatch: integer("patternMatch").default(0),
-  geographicContext: integer("geographicContext").default(0),
-  eventCorrelation: integer("eventCorrelation").default(0),
-  historicalOutcomes: integer("historicalOutcomes").default(0),
-  explanation: text("explanation"),
-  calculatedAt: integer("calculatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-});
-
-export const patternLibrary = sqliteTable("pattern_library", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  patternName: text("patternName").notNull(),
-  patternType: text("patternType").notNull(),
+  eventDate: text("eventDate"),
+  source: text("source").notNull(),
+  sourceUrl: text("sourceUrl"),
   description: text("description"),
-  signalIndicators: text("signalIndicators"),
-  requiredEventTypes: text("requiredEventTypes"),
-  minConfidenceThreshold: integer("minConfidenceThreshold").default(70),
-  historicalSuccessRate: integer("historicalSuccessRate").default(0),
-  totalApplications: integer("totalApplications").default(0),
-  successfulPredictions: integer("successfulPredictions").default(0),
-  avgTimeToDevelopment: integer("avgTimeToDevelopment").default(0),
-  avgReturnScore: integer("avgReturnScore").default(0),
-  applicableStates: text("applicableStates"),
-  isActive: integer("isActive", { mode: "boolean" }).default(true),
+  value: integer("value"),
+  stage: text("stage").default("identification"),
+  confidence: integer("confidence").default(50),
+  metadata: text("metadata"),
   createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  updatedAt: integer("updatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
-export const recommendationOutcomes = sqliteTable("recommendation_outcomes", {
+// ─── Event Classifications ───
+export const eventClassifications = sqliteTable("event_classifications", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  recommendationId: integer("recommendationId").notNull(),
-  patternId: integer("patternId"),
+  eventId: text("eventId").notNull(),
+  classifierName: text("classifier_name").notNull(),
+  category: text("category"),
+  label: text("label"),
+  confidence: integer("confidence").default(50),
+  classifiedAt: integer("classified_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+// ─── Provider Sources ───
+export const providerSources = sqliteTable("provider_sources", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  providerName: text("provider_name").notNull(),
+  sourceType: text("source_type").notNull(),
+  endpointUrl: text("endpoint_url"),
+  updateFrequency: text("update_frequency").default("daily"),
+  coverageArea: text("coverage_area"),
+  isActive: integer("is_active", { mode: "boolean" }).default(true),
+  reliability: integer("reliability").default(80),
+  lastUpdated: integer("last_updated", { mode: "timestamp" }),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+// ─── County Cache ───
+export const countyCache = sqliteTable("county_cache", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  county: text("county").notNull(),
+  state: text("state").notNull(),
+  totalEvents: integer("total_events").default(0),
+  lastEventAt: integer("last_event_at", { mode: "timestamp" }),
+  avgConfidence: integer("avg_confidence").default(0),
+  topSources: text("top_sources"),
+  demographics: text("demographics"),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+// ─── Intelligence Briefs ───
+export const intelligenceBriefs = sqliteTable("intelligence_briefs", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  briefId: text("brief_id").notNull(),
+  title: text("title").notNull(),
+  summary: text("summary"),
   county: text("county"),
   state: text("state"),
-  predictedEventTypes: text("predictedEventTypes"),
-  actualEventTypes: text("actualEventTypes"),
-  outcomeStatus: text("outcomeStatus").notNull().default("pending"),
-  accuracyScore: integer("accuracyScore"),
-  timeToDevelopmentDays: integer("timeToDevelopmentDays"),
-  infrastructureCompleted: integer("infrastructureCompleted", { mode: "boolean" }).default(false),
-  confidenceAtPrediction: integer("confidenceAtPrediction"),
-  confidenceActualized: integer("confidenceActualized"),
-  returnScore: integer("returnScore"),
-  patternSuccessRate: integer("patternSuccessRate"),
-  lessonsLearned: text("lessonsLearned"),
-  validatedAt: integer("validatedAt", { mode: "timestamp" }),
+  eventTypes: text("event_types"),
+  confidenceLevel: text("confidence_level").default("medium"),
+  generatedAt: integer("generated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  expiresAt: integer("expires_at", { mode: "timestamp" }),
+  isActive: integer("is_active", { mode: "boolean" }).default(true),
+});
+
+// ─── User Activity ───
+export const userActivity = sqliteTable("user_activity", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  userId: integer("userId").notNull(),
+  action: text("action").notNull(),
+  resourceType: text("resource_type"),
+  resourceId: text("resource_id"),
+  metadata: text("metadata"),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+// ─── Learning Entries ───
+export const learningEntries = sqliteTable("learning_entries", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  pattern: text("pattern").notNull(),
+  category: text("category").notNull(),
+  confidence: integer("confidence").default(50),
+  occurrences: integer("occurrences").default(1),
+  lastSeen: text("last_seen"),
+  isActive: integer("is_active", { mode: "boolean" }).default(true),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+// ─── Saved Searches ───
+export const savedSearches = sqliteTable("saved_searches", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  userId: integer("userId").notNull(),
+  query: text("query").notNull(),
+  filters: text("filters"),
+  alertEnabled: integer("alertEnabled", { mode: "boolean" }).default(false),
   createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
-export const learningEvents = sqliteTable("learning_events", {
+// ─── Audit Log ───
+export const auditLog = sqliteTable("audit_log", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  eventType: text("eventType").notNull(),
-  recommendationId: integer("recommendationId"),
-  patternId: integer("patternId"),
-  previousValue: text("previousValue"),
-  newValue: text("newValue"),
+  actorId: text("actor_id"),
+  actorType: text("actor_type").default("user"),
+  action: text("action").notNull(),
+  resourceType: text("resource_type"),
+  resourceId: text("resource_id"),
+  details: text("details"),
+  ipAddress: text("ip_address"),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+// ─── Beta Feedback ───
+export const betaFeedback = sqliteTable("beta_feedback", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   userId: integer("userId"),
-  feedback: text("feedback"),
-  adjustmentReason: text("adjustmentReason"),
-  impactScore: integer("impactScore").default(0),
-  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  category: text("category").notNull(),
+  priority: text("priority").default("medium"),
+  message: text("message").notNull(),
+  screenshotUrl: text("screenshot_url"),
+  status: text("status").default("open"),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
-export const dailySummaries = sqliteTable("daily_summaries", {
+// ─── Organizations ───
+export const organizations = sqliteTable("organizations", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  summaryType: text("summaryType").notNull(),
-  scopeId: text("scopeId"),
-  summaryDate: text("summaryDate").notNull(),
-  totalEvents: integer("totalEvents").default(0),
-  newPermits: integer("newPermits").default(0),
-  newRezonings: integer("newRezonings").default(0),
-  newPlanningMeetings: integer("newPlanningMeetings").default(0),
-  newUtilityProjects: integer("newUtilityProjects").default(0),
-  newRoadProjects: integer("newRoadProjects").default(0),
-  priorityOpportunities: text("priorityOpportunities"),
-  providerHealthChanges: text("providerHealthChanges"),
-  watchlistMatches: integer("watchlistMatches").default(0),
-  recommendationChanges: integer("recommendationChanges").default(0),
-  topPatterns: text("topPatterns"),
-  confidenceTrend: text("confidenceTrend").default("stable"),
-  insights: text("insights"),
-  generatedAt: integer("generatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  plan: text("plan").default("starter"),
+  settings: text("settings"),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
-// ============================================================
-// GATE 20 — GOVERNANCE & COMPLIANCE AUDIT TABLES
-// ============================================================
+// ─── Organization Members ───
+export const organizationMembers = sqliteTable("organization_members", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  organizationId: integer("organization_id").notNull(),
+  userId: integer("user_id").notNull(),
+  role: text("role").default("member"),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
 
+// ─── Notification Preferences ───
+export const notificationPreferences = sqliteTable("notification_preferences", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  userId: integer("user_id").notNull(),
+  channel: text("channel").notNull(),
+  eventType: text("event_type").notNull(),
+  enabled: integer("enabled", { mode: "boolean" }).default(true),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+// ─── Coverage Areas ───
+export const coverageAreas = sqliteTable("coverage_areas", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  state: text("state").notNull(),
+  county: text("county").notNull(),
+  city: text("city"),
+  status: text("status").default("active"),
+  providerCount: integer("provider_count").default(0),
+  lastUpdated: integer("last_updated", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+// ─── Feedback Queue ───
+export const feedbackQueue = sqliteTable("feedback_queue", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  itemType: text("item_type").notNull(),
+  itemId: text("item_id").notNull(),
+  feedbackType: text("feedback_type").notNull(),
+  feedbackText: text("feedback_text"),
+  userId: integer("user_id"),
+  status: text("status").default("pending"),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+// ─── Pipeline Metrics ───
+export const pipelineMetrics = sqliteTable("pipeline_metrics", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  county: text("county").notNull(),
+  state: text("state").notNull(),
+  permitsThisMonth: integer("permits_this_month").default(0),
+  avgProjectValue: integer("avg_project_value").default(0),
+  topContractor: text("top_contractor"),
+  growthRate: integer("growth_rate").default(0),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+// ─── Confidence Scores ───
+export const confidenceScores = sqliteTable("confidence_scores", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  entityType: text("entity_type").notNull(),
+  entityId: integer("entity_id").notNull(),
+  overallScore: integer("overall_score").default(0),
+  providerReliability: integer("provider_reliability").default(0),
+  historicalAccuracy: integer("historical_accuracy").default(0),
+  crossSourceAgreement: integer("cross_source_agreement").default(0),
+  dataFreshness: integer("data_freshness").default(0),
+  patternMatch: integer("pattern_match").default(0),
+  geographicContext: integer("geographic_context").default(0),
+  eventCorrelation: integer("event_correlation").default(0),
+  historicalOutcomes: integer("historical_outcomes").default(0),
+  explanation: text("explanation"),
+  calculatedAt: integer("calculated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+// ─── Pattern Library ───
+export const patternLibrary = sqliteTable("pattern_library", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  patternType: text("pattern_type").notNull(),
+  patternName: text("pattern_name").notNull(),
+  description: text("description"),
+  conditions: text("conditions"),
+  historicalSuccessRate: integer("historical_success_rate").default(0),
+  isActive: integer("is_active", { mode: "boolean" }).default(true),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+// ─── Recommendation Outcomes ───
+export const recommendationOutcomes = sqliteTable("recommendation_outcomes", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  recommendationId: integer("recommendation_id").notNull(),
+  patternId: integer("pattern_id"),
+  county: text("county"),
+  state: text("state"),
+  predictedEventTypes: text("predicted_event_types"),
+  actualEventTypes: text("actual_event_types"),
+  outcomeStatus: text("outcome_status").default("pending"),
+  accuracyScore: integer("accuracy_score"),
+  timeToDevelopmentDays: integer("time_to_development_days"),
+  confidenceAtPrediction: integer("confidence_at_prediction"),
+  lessonsLearned: text("lessons_learned"),
+  validatedAt: integer("validated_at", { mode: "timestamp" }),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+// ─── Historical Snapshots ───
+export const historicalSnapshots = sqliteTable("historical_snapshots", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  county: text("county").notNull(),
+  state: text("state").notNull(),
+  year: integer("year").notNull(),
+  permitsIssued: integer("permits_issued").default(0),
+  projectsCompleted: integer("projects_completed").default(0),
+  totalValue: integer("total_value").default(0),
+  topEventType: text("top_event_type"),
+  data: text("data"),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+// ─── Knowledge Graph ───
+export const knowledgeGraph = sqliteTable("knowledge_graph", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  sourceEntity: text("source_entity").notNull(),
+  sourceType: text("source_type").notNull(),
+  relationType: text("relation_type").notNull(),
+  targetEntity: text("target_entity").notNull(),
+  targetType: text("target_type").notNull(),
+  confidence: integer("confidence").default(50),
+  evidence: text("evidence"),
+  isActive: integer("is_active", { mode: "boolean" }).default(true),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+// ─── Historical Validation ───
+export const historicalValidation = sqliteTable("historical_validation", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  eventId: text("event_id").notNull(),
+  backtestDate: text("backtest_date").notNull(),
+  actualOutcome: text("actual_outcome"),
+  predictedOutcome: text("predicted_outcome"),
+  accuracy: integer("accuracy"),
+  deviation: text("deviation"),
+  validatedAt: integer("validated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+// ─── AI Governance Audit ───
 export const aiGovernanceAudit = sqliteTable("ai_governance_audit", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  recommendationId: integer("recommendationId").notNull(),
-  passed: integer("passed", { mode: "boolean" }).default(false),
-  score: integer("score").default(0),
-  version: text("version").default("v1.0"),
-  checkedAt: integer("checkedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  modelVersion: text("model_version").notNull(),
+  decisionType: text("decision_type").notNull(),
+  inputFeatures: text("input_features"),
+  outputDecision: text("output_decision"),
+  confidence: integer("confidence"),
+  humanReviewed: integer("human_reviewed", { mode: "boolean" }).default(false),
+  reviewerId: integer("reviewer_id"),
+  reviewNotes: text("review_notes"),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
+// ─── Data Audit Log ───
 export const dataAuditLog = sqliteTable("data_audit_log", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  entityType: text("entityType").notNull(),
-  entityId: integer("entityId").notNull(),
+  tableName: text("table_name").notNull(),
+  recordId: text("record_id").notNull(),
   action: text("action").notNull(),
-  userId: integer("userId"),
-  details: text("details"),
-  timestamp: integer("timestamp", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  oldValues: text("old_values"),
+  newValues: text("new_values"),
+  actorId: text("actor_id"),
+  actorType: text("actor_type").default("system"),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
+// ─── Security Events ───
 export const securityEvents = sqliteTable("security_events", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  eventType: text("eventType").notNull(),
-  severity: text("severity").notNull().default("info"),
-  source: text("source").notNull(),
-  details: text("details"),
-  userId: integer("userId"),
-  timestamp: integer("timestamp", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  eventType: text("event_type").notNull(),
+  severity: text("severity").default("low"),
+  description: text("description"),
+  sourceIp: text("source_ip"),
+  userAgent: text("user_agent"),
+  actorId: text("actor_id"),
+  metadata: text("metadata"),
+  resolvedAt: integer("resolved_at", { mode: "timestamp" }),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
-// ============================================================
-// GATE 21 — PRODUCTION INTELLIGENCE NETWORK
-// ============================================================
+// ─── Live Intelligence ───
+export const liveIntelligence = sqliteTable("live_intelligence", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  signalId: text("signal_id").notNull(),
+  signalType: text("signal_type").notNull(),
+  county: text("county").notNull(),
+  state: text("state").notNull(),
+  description: text("description"),
+  confidence: integer("confidence").default(50),
+  status: text("status").default("active"),
+  expiresAt: integer("expires_at", { mode: "timestamp" }),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
 
+// ─── Daily Ops ───
+export const dailyOps = sqliteTable("daily_ops", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  reportDate: text("report_date").notNull(),
+  recordsProcessed: integer("records_processed").default(0),
+  eventsIdentified: integer("events_identified").default(0),
+  countiesScanned: integer("counties_scanned").default(0),
+  newProviders: integer("new_providers").default(0),
+  alertsTriggered: integer("alerts_triggered").default(0),
+  avgProcessingLatencyMs: integer("avg_processing_latency_ms").default(0),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+// ─── Section 1: Ingestion Sources ───
 export const ingestionSources = sqliteTable("ingestion_sources", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   sourceName: text("sourceName").notNull(),
@@ -337,7 +436,6 @@ export const ingestionSources = sqliteTable("ingestion_sources", {
   schedule: text("schedule").notNull().default("daily"),
   isActive: integer("isActive", { mode: "boolean" }).default(true),
   healthScore: integer("healthScore").default(100),
-  recordsTotal: integer("recordsTotal").default(0),
   recordsLast30Days: integer("recordsLast30Days").default(0),
   avgLatencyMs: integer("avgLatencyMs").default(0),
   errorCount30d: integer("errorCount30d").default(0),
@@ -347,59 +445,54 @@ export const ingestionSources = sqliteTable("ingestion_sources", {
   updatedAt: integer("updatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
+// ─── Section 2: Data Validation Queue ───
 export const dataValidationQueue = sqliteTable("data_validation_queue", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   sourceId: integer("sourceId").notNull(),
   externalRecordId: text("externalRecordId").notNull(),
   recordType: text("recordType").notNull(),
   rawPayload: text("rawPayload").notNull(),
-  validationStatus: text("validationStatus").notNull().default("pending"),
   requiredFieldsCheck: integer("requiredFieldsCheck", { mode: "boolean" }).default(false),
   dateValidationCheck: integer("dateValidationCheck", { mode: "boolean" }).default(false),
   addressValidationCheck: integer("addressValidationCheck", { mode: "boolean" }).default(false),
   coordinateValidationCheck: integer("coordinateValidationCheck", { mode: "boolean" }).default(false),
-  duplicateCheck: integer("duplicateCheck", { mode: "boolean" }).default(false),
   schemaComplianceCheck: integer("schemaComplianceCheck", { mode: "boolean" }).default(false),
   providerIntegrityCheck: integer("providerIntegrityCheck", { mode: "boolean" }).default(false),
   confidenceScore: integer("confidenceScore").default(0),
+  validationStatus: text("validationStatus").notNull().default("pending"),
   validationErrors: text("validationErrors"),
-  reviewerNotes: text("reviewerNotes"),
   reviewedBy: integer("reviewedBy"),
+  reviewerNotes: text("reviewerNotes"),
   reviewedAt: integer("reviewedAt", { mode: "timestamp" }),
   createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
+// ─── Section 3: Enrichment Log ───
 export const enrichmentLog = sqliteTable("enrichment_log", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   eventId: integer("eventId").notNull(),
   enrichmentType: text("enrichmentType").notNull(),
   enrichmentData: text("enrichmentData").notNull(),
-  confidence: integer("confidence").default(80),
   source: text("source").notNull(),
+  confidence: integer("confidence").default(80),
   processedAt: integer("processedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
+// ─── Section 4: Historical Warehouse ───
 export const historicalWarehouse = sqliteTable("historical_warehouse", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  eventId: integer("eventId").notNull(),
-  archiveDate: text("archiveDate").notNull(),
+  entityType: text("entityType").notNull(),
+  entityId: integer("entityId").notNull(),
   eventType: text("eventType").notNull(),
-  eventCategory: text("eventCategory").notNull(),
-  county: text("county"),
+  county: text("county").notNull(),
   state: text("state").notNull(),
-  city: text("city"),
-  year: integer("year").notNull(),
-  quarter: integer("quarter").notNull(),
-  month: integer("month").notNull(),
-  value: integer("value"),
+  snapshotData: text("snapshotData").notNull(),
+  eventDate: integer("eventDate", { mode: "timestamp" }),
   confidence: integer("confidence").default(50),
-  trendDirection: text("trendDirection").default("stable"),
-  seasonalFactor: real("seasonalFactor").default(1.0),
-  comparableEvents: text("comparableEvents"),
-  enrichedContext: text("enrichedContext"),
-  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  snapshotDate: integer("snapshotDate", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
+// ─── Section 5: Expansion Registry ───
 export const expansionRegistry = sqliteTable("expansion_registry", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   state: text("state").notNull(),
@@ -420,6 +513,7 @@ export const expansionRegistry = sqliteTable("expansion_registry", {
   updatedAt: integer("updatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
+// ─── Section 6: Quality Metrics ───
 export const qualityMetrics = sqliteTable("quality_metrics", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   metricDate: text("metricDate").notNull(),
@@ -439,6 +533,7 @@ export const qualityMetrics = sqliteTable("quality_metrics", {
   recordedAt: integer("recordedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
+// ─── Section 7: Daily Briefings ───
 export const dailyBriefings = sqliteTable("daily_briefings", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   briefingDate: text("briefingDate").notNull(),
@@ -458,6 +553,7 @@ export const dailyBriefings = sqliteTable("daily_briefings", {
   deliveryStatus: text("deliveryStatus").default("draft"),
 });
 
+// ─── Section 8: Learning Models ───
 export const learningModels = sqliteTable("learning_models", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   modelName: text("modelName").notNull(),
