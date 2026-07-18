@@ -23,19 +23,23 @@ import { pipelineMetricsRouter } from "./pipeline-metrics-router";
 import { geographicRouter } from "./geographic-router";
 import { knowledgeGraphRouter } from "./knowledge-graph-router";
 import { historicalValidationRouter } from "./historical-validation-router";
+// ─── Gate 19 Routers ───
 import { historicalRouter } from "./historical-router";
 import { confidenceRouter } from "./confidence-router";
 import { patternRouter } from "./pattern-router";
 import { learningLoopRouter } from "./learning-loop-router";
 import { dailyOpsRouter } from "./daily-ops-router";
+// ─── Gate 20 Routers (Governance & IP) ───
 import { governanceRouter } from "./governance-router";
 import { aiGovernanceRouter } from "./ai-governance-router";
 import { dataGovernanceRouter } from "./data-governance-router";
 import { securityRouter } from "./security-router";
 import { ipRegisterRouter } from "./ip-register-router";
+// ─── Gate 20 Routers (Live Intelligence) ───
 import { liveIntelligenceRouter } from "./live-intelligence-router";
 import { executiveOpsRouter } from "./executive-ops-router";
 import { completionRouter } from "./completion-router";
+// ─── Gate 21 Routers (Production Intelligence Network) ───
 import { ingestionRouter } from "./ingestion-router";
 import { validationRouter } from "./validation-router";
 import { enrichmentRouter } from "./enrichment-router";
@@ -44,7 +48,6 @@ import { warehouseRouter } from "./warehouse-router";
 import { expansionRouter } from "./expansion-router";
 import { qualityRouter } from "./quality-router";
 import { briefingRouter } from "./briefing-router";
-import { debugRouter } from "./debug-router";
 
 export const appRouter = createRouter({
   health: publicQuery.query(() => ({ status: "ok", service: "buildsignal", version: "1.0.0" })),
@@ -73,19 +76,23 @@ export const appRouter = createRouter({
   geographic: geographicRouter,
   knowledgeGraph: knowledgeGraphRouter,
   historicalValidation: historicalValidationRouter,
+  // ─── Gate 19 ───
   historical: historicalRouter,
   confidence: confidenceRouter,
   pattern: patternRouter,
   learningLoop: learningLoopRouter,
   dailyOps: dailyOpsRouter,
+  // ─── Gate 20 (Governance & IP) ───
   governance: governanceRouter,
   aiGovernance: aiGovernanceRouter,
   dataGovernance: dataGovernanceRouter,
   security: securityRouter,
   ipRegister: ipRegisterRouter,
+  // ─── Gate 20 (Live Intelligence) ───
   live: liveIntelligenceRouter,
   executive: executiveOpsRouter,
   completion: completionRouter,
+  // ─── Gate 21 (Production Intelligence Network) ───
   ingestion: ingestionRouter,
   validation: validationRouter,
   enrichment: enrichmentRouter,
@@ -94,7 +101,6 @@ export const appRouter = createRouter({
   expansion: expansionRouter,
   quality: qualityRouter,
   briefing: briefingRouter,
-  debug: debugRouter,
 });
 
 export type AppRouter = typeof appRouter;

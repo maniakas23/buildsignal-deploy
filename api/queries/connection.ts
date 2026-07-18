@@ -21,6 +21,18 @@ const fullMysqlSchema = { ...mysqlSchema, ...relations };
 let instance: any;
 let d1Binding: D1Database | undefined;
 
+/** Get D1 binding from module-level variable or globalThis (for cross-chunk sharing) */
+function getResolvedD1Binding(): D1Database | undefined {
+  if (d1Binding) return d1Binding;
+  // Fallback: check globalThis (set by functions/[[path]].ts in a different bundler chunk)
+  const globalBinding = (globalThis as unknown as Record<string, unknown>).__D1_BINDING__;
+  if (globalBinding) {
+    d1Binding = globalBinding as D1Database; // cache it locally
+    return d1Binding;
+  }
+  return undefined;
+}
+
 /** Set the D1 binding from Cloudflare Pages Functions context */
 export function setD1Binding(db: D1Database) {
   d1Binding = db;
@@ -29,14 +41,28 @@ export function setD1Binding(db: D1Database) {
 
 /** Check if D1 is active */
 export function isD1(): boolean {
-  return !!d1Binding;
+  return !!getResolvedD1Binding();
+}
+
+// Helper to get DB from tRPC context (for use in routers)
+export function getDbFromContext(env: Record<string, unknown> | undefined) {
+  if (env?.DB) {
+    return drizzleD1(env.DB as D1Database, { schema: fullSqliteSchema });
+  }
+  // Check globalThis fallback before falling back to PlanetScale
+  const globalBinding = (globalThis as unknown as Record<string, unknown>).__D1_BINDING__;
+  if (globalBinding) {
+    return drizzleD1(globalBinding as D1Database, { schema: fullSqliteSchema });
+  }
+  return getDb(); // fallback to global instance
 }
 
 export function getDb() {
   if (!instance) {
     // Prefer D1 binding if available (Cloudflare Workers)
-    if (d1Binding) {
-      instance = drizzleD1(d1Binding, { schema: fullSqliteSchema });
+    const resolved = getResolvedD1Binding();
+    if (resolved) {
+      instance = drizzleD1(resolved, { schema: fullSqliteSchema });
       return instance;
     }
 
@@ -47,14 +73,6 @@ export function getDb() {
     instance = drizzlePlanetScale(client, { schema: fullMysqlSchema });
   }
   return instance;
-}
-
-/** Get DB from tRPC context (for per-request D1 access in Pages Functions) */
-export function getDbFromContext(ctxEnv: Record<string, unknown> | undefined) {
-  if (ctxEnv?.DB) {
-    return drizzleD1(ctxEnv.DB as D1Database, { schema: fullSqliteSchema });
-  }
-  return getDb(); // fallback to global instance
 }
 
 /** Get the active schema (SQLite for D1, MySQL otherwise) */

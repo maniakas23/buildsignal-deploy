@@ -56,8 +56,11 @@ export const onRequest: PagesFunction = async (context) => {
   polyfillProcessEnv(context.env);
 
   // Bind D1 database if available (Cloudflare D1)
-  if ((context.env as Record<string, unknown>).DB) {
-    setD1Binding((context.env as Record<string, unknown>).DB as D1Database);
+  const dbBinding = (context.env as Record<string, unknown>).DB as D1Database | undefined;
+  if (dbBinding) {
+    // Store on globalThis so api/ chunk (separate bundler chunk) can access it
+    (globalThis as unknown as Record<string, unknown>).__D1_BINDING__ = dbBinding;
+    setD1Binding(dbBinding);
   }
 
   // Force NODE_ENV to production BEFORE importing app modules
