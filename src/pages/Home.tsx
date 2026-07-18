@@ -111,7 +111,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-        </div>
+      </div>
 
       {/* CTA Footer */}
       <div className="max-w-[720px] mx-auto px-6 py-16 text-center">
