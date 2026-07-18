@@ -1,1 +1,2 @@
-TBD
+export function trpc() { return { provider: { summary: { useQuery: () => ({ data: null }) }, healthScore: { useQuery: () => ({ data: null }) }, list: { useQuery: () => ({ data: null }) } }, geographic: { list: { useQuery: () => ({ data: null }) }, summary: { useQuery: () => ({ data: null }) } }, knowledgeGraph: { stats: { useQuery: () => ({ data: null }) }, correlations: { useQuery: () => ({ data: null }) } }, historicalValidation: { summary: { useQuery: () => ({ data: null }) }, list: { useQuery: () => ({ data: null }) } }, provider: { summary: { useQuery: () => ({ data: null }) } }, analytics: { healthScore: { useQuery: () => ({ data: null }) } } }; }
+export function TrpcProvider({ children }: { children: React.ReactNode }) { return <>{children}</>; }
