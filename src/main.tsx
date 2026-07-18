@@ -4,7 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 const __BUILD_TIMESTAMP = Date.now();
 import { TRPCProvider } from "@/providers/trpc"
-import { AccessibilityInit } from "@/components/AccessibilityInit"
+import AccessibilityInit from "@/components/AccessibilityInit"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
 import App from './App.tsx'
 
