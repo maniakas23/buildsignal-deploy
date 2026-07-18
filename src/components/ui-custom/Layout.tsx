@@ -5,7 +5,6 @@ import SurgeAlertModal from './SurgeAlertModal';
 import BetaFeedback from './BetaFeedback';
 import OnboardingModal from './Onboarding';
 import DemoBadge from './DemoBadge';
-import { MainContent } from './SkipNav';
 
 interface LayoutProps {
   children: ReactNode;
@@ -18,11 +17,11 @@ export default function Layout({ children }: LayoutProps) {
       <div className="flex justify-center pt-2">
         <DemoBadge />
       </div>
-      <MainContent>
+      <main id="main-content" className="flex-1 min-w-0" role="main">
         <div className="relative">
           {children}
         </div>
-      </MainContent>
+      </main>
       <ToastContainer />
       <SurgeAlertModal />
       <BetaFeedback />
