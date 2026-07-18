@@ -1,2 +1,42 @@
-export function trpc() { return { provider: { summary: { useQuery: () => ({ data: null }) }, healthScore: { useQuery: () => ({ data: null }) }, list: { useQuery: () => ({ data: null }) } }, geographic: { list: { useQuery: () => ({ data: null }) }, summary: { useQuery: () => ({ data: null }) } }, knowledgeGraph: { stats: { useQuery: () => ({ data: null }) }, correlations: { useQuery: () => ({ data: null }) } }, historicalValidation: { summary: { useQuery: () => ({ data: null }) }, list: { useQuery: () => ({ data: null }) } }, provider: { summary: { useQuery: () => ({ data: null }) } }, analytics: { healthScore: { useQuery: () => ({ data: null }) } } }; }
-export function TrpcProvider({ children }: { children: React.ReactNode }) { return <>{children}</>; }
+import { createTRPCReact, httpBatchLink } from "@trpc/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import superjson from "superjson";
+import type { AppRouter } from "../../api/router";
+import type { ReactNode } from "react";
+
+export const trpc = createTRPCReact<AppRouter>();
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30000,
+      retry: 2,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
+export const trpcClient = trpc.createClient({
+  links: [
+    httpBatchLink({
+      url: "/api/trpc",
+      transformer: superjson,
+      fetch(input, init) {
+        return globalThis.fetch(input, {
+          ...(init ?? {}),
+          credentials: "include",
+        });
+      },
+    }),
+  ],
+});
+
+export function TRPCProvider({ children }: { children: ReactNode }) {
+  return (
+    <trpc.Provider client={trpcClient} queryClient={queryClient}>
+      <QueryClientProvider client={queryClient}>
+        {children}
+      </QueryClientProvider>
+    </trpc.Provider>
+  );
+}
