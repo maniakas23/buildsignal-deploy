@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { createRouter, publicQuery } from "./middleware";
 import { dailyBriefings } from "@db/schema-sqlite";
-import { eq, desc, and, sql } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import { getDbFromContext } from "./queries/connection";
 
 export const briefingRouter = createRouter({
@@ -38,11 +38,16 @@ export const briefingRouter = createRouter({
   today: publicQuery.query(async ({ ctx }) => {
     const db = getDbFromContext(ctx.env);
     const today = new Date().toISOString().slice(0, 10);
-    const rows = await db.select().from(dailyBriefings).where(sql`date(${dailyBriefings.briefingDate}) = ${today}`).orderBy(desc(dailyBriefings.createdAt));
-    const unread = rows.filter((r: any) => !r.isRead);
-    const critical = rows.filter((r: any) => r.priority === "critical");
-    const high = rows.filter((r: any) => r.priority === "high");
-    return { briefings: rows, total: rows.length, unreadCount: unread.length, criticalCount: critical.length, highPriorityCount: high.length };
+    // Fetch recent briefings and filter in JS (D1-compatible, avoids sql template literal)
+    const rows = await db.select().from(dailyBriefings).orderBy(desc(dailyBriefings.briefingDate)).limit(200);
+    const filtered = rows.filter((r: any) => {
+      const d = r.briefingDate ? new Date(r.briefingDate).toISOString().slice(0, 10) : "";
+      return d === today;
+    });
+    const unread = filtered.filter((r: any) => !r.isRead);
+    const critical = filtered.filter((r: any) => r.priority === "critical");
+    const high = filtered.filter((r: any) => r.priority === "high");
+    return { briefings: filtered, total: filtered.length, unreadCount: unread.length, criticalCount: critical.length, highPriorityCount: high.length };
   }),
 
   dashboard: publicQuery.query(async ({ ctx }) => {
