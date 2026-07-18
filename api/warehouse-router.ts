@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { createRouter, publicQuery } from "./middleware";
 import { historicalWarehouse } from "@db/schema-sqlite";
-import { eq, desc, and, sql } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import { getDbFromContext } from "./queries/connection";
 
 export const warehouseRouter = createRouter({
@@ -17,7 +17,15 @@ export const warehouseRouter = createRouter({
     if (input?.eventType) conditions.push(eq(historicalWarehouse.eventType, input.eventType));
     if (input?.county) conditions.push(eq(historicalWarehouse.county, input.county));
     if (input?.state) conditions.push(eq(historicalWarehouse.state, input.state));
-    if (input?.year) conditions.push(sql`${historicalWarehouse.snapshotDate} >= ${input.year + "-01-01"} AND ${historicalWarehouse.snapshotDate} <= ${input.year + "-12-31"}`);
+    if (input?.year) {
+      const y = String(input.year);
+      const all = await db.select().from(historicalWarehouse).orderBy(desc(historicalWarehouse.snapshotDate));
+      const filtered = all.filter((r: any) => {
+        const d = r.snapshotDate ? new Date(r.snapshotDate).getFullYear() : 0;
+        return d === input.year;
+      });
+      return { snapshots: filtered.slice(0, input?.limit || 100), total: filtered.length };
+    }
     const where = conditions.length > 0 ? and(...conditions) : undefined;
     const rows = await db.select().from(historicalWarehouse).where(where).orderBy(desc(historicalWarehouse.snapshotDate)).limit(input?.limit || 100);
     return { snapshots: rows, total: rows.length };
@@ -62,11 +70,17 @@ export const warehouseRouter = createRouter({
 
   stats: publicQuery.query(async ({ ctx }) => {
     const db = getDbFromContext(ctx.env);
-    const [countResult, earliest, latest] = await Promise.all([
-      db.select({ count: sql<number>`count(*)` }).from(historicalWarehouse),
-      db.select().from(historicalWarehouse).orderBy(historicalWarehouse.snapshotDate).limit(1),
-      db.select().from(historicalWarehouse).orderBy(desc(historicalWarehouse.snapshotDate)).limit(1),
-    ]);
-    return { totalSnapshots: countResult[0]?.count || 0, dateRange: { earliest: earliest[0]?.snapshotDate, latest: latest[0]?.snapshotDate } };
+    // Use JS count instead of sql template literal for D1 compatibility
+    const rows = await db.select().from(historicalWarehouse).orderBy(desc(historicalWarehouse.snapshotDate));
+    const count = rows.length;
+    const earliest = count > 0 ? rows[count - 1] : null;
+    const latest = count > 0 ? rows[0] : null;
+    return {
+      totalSnapshots: count,
+      dateRange: {
+        earliest: earliest?.snapshotDate ?? null,
+        latest: latest?.snapshotDate ?? null,
+      },
+    };
   }),
 });
