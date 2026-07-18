@@ -1,15 +1,16 @@
 import { z } from "zod";
 import { createRouter, publicQuery } from "./middleware";
 import { expansionRegistry } from "@db/schema-sqlite";
-import { eq, desc, and, sql } from "drizzle-orm";
+import { eq, desc, and, sql } from "drizzle-orm"
+import { getDb } from "./queries/connection";
 
 export const expansionRouter = createRouter({
   list: publicQuery.input(z.object({
     state: z.string().optional(),
     status: z.enum(["queued","in_progress","active","paused","completed","all"]).optional().default("all"),
     limit: z.number().min(1).max(500).optional().default(100),
-  }).optional()).query(async ({ ctx, input }) => {
-    const db = (ctx as any).db; if (!db) return { entries: [], total: 0 };
+  }).optional()).query(async ({ input }) => {
+    const db = getDb();
     const conditions = [];
     if (input?.state) conditions.push(eq(expansionRegistry.state, input.state));
     if (input?.status && input.status !== "all") conditions.push(eq(expansionRegistry.expansionStatus, input.status));
@@ -22,8 +23,8 @@ export const expansionRouter = createRouter({
     state: z.string().min(1), county: z.string().min(1), city: z.string().optional(),
     planningAuthority: z.string().optional(), utilityProviders: z.string().optional(),
     population: z.number().optional(), dataSourcesAvailable: z.number().optional(),
-  })).mutation(async ({ ctx, input }) => {
-    const db = (ctx as any).db; if (!db) return { success: false };
+  })).mutation(async ({ input }) => {
+    const db = getDb();
     const result = await db.insert(expansionRegistry).values({ ...input, expansionStatus: "queued", coveragePercent: 0 }).returning();
     return { success: true, entry: result[0] };
   }),
@@ -32,8 +33,8 @@ export const expansionRouter = createRouter({
     id: z.number(), status: z.enum(["queued","in_progress","active","paused","completed"]),
     coveragePercent: z.number().min(0).max(100).optional(), activeProviders: z.number().optional(),
     providerHealth: z.number().min(0).max(100).optional(), dataSourcesActive: z.number().optional(),
-  })).mutation(async ({ ctx, input }) => {
-    const db = (ctx as any).db; if (!db) return { success: false };
+  })).mutation(async ({ input }) => {
+    const db = getDb();
     const { id, status, ...data } = input;
     const update: any = { expansionStatus: status, updatedAt: new Date(), ...data };
     if (status === "active" && !update.onboardedAt) update.onboardedAt = new Date();
@@ -41,9 +42,8 @@ export const expansionRouter = createRouter({
     return { success: true };
   }),
 
-  dashboard: publicQuery.query(async ({ ctx }) => {
-    const db = (ctx as any).db;
-    if (!db) return { totalJurisdictions:0, active:0, inProgress:0, queued:0, totalPopulation:0, avgCoverage:0, states:0, counties:0, byStatus:{}, byState:[] };
+  dashboard: publicQuery.query(async () => {
+    const db = getDb();
     const all = await db.select().from(expansionRegistry);
     const statusMap: Record<string,number> = {}; const stateMap = new Map();
     for (const e of all) {
@@ -56,8 +56,8 @@ export const expansionRouter = createRouter({
     return { totalJurisdictions:all.length, active:statusMap["active"]||0, inProgress:statusMap["in_progress"]||0, queued:statusMap["queued"]||0, paused:statusMap["paused"]||0, completed:statusMap["completed"]||0, totalPopulation:all.reduce((sum:number,e:any)=>sum+(e.population||0),0), avgCoverage, states:stateMap.size, counties:new Set(all.map((e:any)=>e.county)).size, byStatus:statusMap, byState:Array.from(stateMap.entries()).map(([state,data])=>({state,...data})) };
   }),
 
-  states: publicQuery.query(async ({ ctx }) => {
-    const db = (ctx as any).db; if (!db) return { states: [] };
+  states: publicQuery.query(async () => {
+    const db = getDb();
     const all = await db.select().from(expansionRegistry);
     const stateMap = new Map();
     for (const e of all) {

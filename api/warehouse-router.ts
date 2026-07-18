@@ -1,7 +1,8 @@
 import { z } from "zod";
 import { createRouter, publicQuery } from "./middleware";
 import { historicalWarehouse } from "@db/schema-sqlite";
-import { eq, desc, and, sql } from "drizzle-orm";
+import { eq, desc, and, sql } from "drizzle-orm"
+import { getDb } from "./queries/connection";
 
 export const warehouseRouter = createRouter({
   query: publicQuery.input(z.object({
@@ -10,8 +11,8 @@ export const warehouseRouter = createRouter({
     year: z.number().optional(), quarter: z.number().min(1).max(4).optional(),
     trendDirection: z.enum(["increasing","decreasing","stable","volatile"]).optional(),
     limit: z.number().min(1).max(500).optional().default(100), offset: z.number().min(0).optional().default(0),
-  }).optional()).query(async ({ ctx, input }) => {
-    const db = (ctx as any).db; if (!db) return { records: [], total: 0 };
+  }).optional()).query(async ({ input }) => {
+    const db = getDb();
     const conditions = [];
     if (input?.state) conditions.push(eq(historicalWarehouse.state, input.state));
     if (input?.county) conditions.push(eq(historicalWarehouse.county, input.county));
@@ -37,17 +38,16 @@ export const warehouseRouter = createRouter({
     value: z.number().optional(), confidence: z.number().optional(),
     trendDirection: z.enum(["increasing","decreasing","stable","volatile"]).optional(),
     seasonalFactor: z.number().optional(), comparableEvents: z.string().optional(), enrichedContext: z.string().optional(),
-  })).mutation(async ({ ctx, input }) => {
-    const db = (ctx as any).db; if (!db) return { success: false };
+  })).mutation(async ({ input }) => {
+    const db = getDb();
     const result = await db.insert(historicalWarehouse).values(input).returning();
     return { success: true, record: result[0] };
   }),
 
   trends: publicQuery.input(z.object({
     state: z.string(), county: z.string().optional(), eventType: z.string().optional(), years: z.number().min(1).max(10).optional().default(5),
-  })).query(async ({ ctx, input }) => {
-    const db = (ctx as any).db;
-    if (!db) return { state: input.state, yearlyTrends: [], categoryBreakdown: [], totalEvents: 0, avgConfidence: 0 };
+  })).query(async ({ input }) => {
+    const db = getDb();
     const currentYear = new Date().getFullYear(); const startYear = currentYear - input.years;
     const conditions = [eq(historicalWarehouse.state, input.state), sql`${historicalWarehouse.year} >= ${startYear}`];
     if (input.county) conditions.push(eq(historicalWarehouse.county, input.county));
@@ -69,9 +69,8 @@ export const warehouseRouter = createRouter({
     };
   }),
 
-  stats: publicQuery.query(async ({ ctx }) => {
-    const db = (ctx as any).db;
-    if (!db) return { totalRecords:0, states:0, counties:0, yearRange:{min:0,max:0}, byCategory:[], byTrend:[] };
+  stats: publicQuery.query(async () => {
+    const db = getDb();
     const all = await db.select().from(historicalWarehouse);
     const states = new Set(all.map((r:any)=>r.state)).size;
     const counties = new Set(all.map((r:any)=>r.county).filter(Boolean)).size;

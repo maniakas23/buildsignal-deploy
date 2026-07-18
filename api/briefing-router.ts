@@ -1,15 +1,16 @@
 import { z } from "zod";
 import { createRouter, publicQuery } from "./middleware";
 import { dailyBriefings } from "@db/schema-sqlite";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm"
+import { getDb } from "./queries/connection";
 
 export const briefingRouter = createRouter({
   list: publicQuery.input(z.object({
     scope: z.enum(["national","state","county","user"]).optional(),
     deliveryStatus: z.enum(["draft","reviewed","delivered","archived","all"]).optional().default("all"),
     limit: z.number().min(1).max(100).optional().default(30),
-  }).optional()).query(async ({ ctx, input }) => {
-    const db = (ctx as any).db; if (!db) return { briefings: [], total: 0 };
+  }).optional()).query(async ({ input }) => {
+    const db = getDb();
     const conditions = [];
     if (input?.scope) conditions.push(eq(dailyBriefings.scope, input.scope));
     if (input?.deliveryStatus && input.deliveryStatus !== "all") conditions.push(eq(dailyBriefings.deliveryStatus, input.deliveryStatus));
@@ -21,8 +22,8 @@ export const briefingRouter = createRouter({
   today: publicQuery.input(z.object({
     scope: z.enum(["national","state","county","user"]).optional().default("national"),
     scopeId: z.string().optional(),
-  }).optional()).query(async ({ ctx, input }) => {
-    const db = (ctx as any).db; if (!db) return null;
+  }).optional()).query(async ({ input }) => {
+    const db = getDb();
     const today = new Date().toISOString().split("T")[0];
     const conditions = [eq(dailyBriefings.briefingDate, today), eq(dailyBriefings.scope, input?.scope || "national")];
     if (input?.scopeId) conditions.push(eq(dailyBriefings.scopeId, input.scopeId));
@@ -30,8 +31,8 @@ export const briefingRouter = createRouter({
     return rows[0] || null;
   }),
 
-  getByDate: publicQuery.input(z.object({ date: z.string(), scope: z.enum(["national","state","county","user"]).optional().default("national"), scopeId: z.string().optional() })).query(async ({ ctx, input }) => {
-    const db = (ctx as any).db; if (!db) return null;
+  getByDate: publicQuery.input(z.object({ date: z.string(), scope: z.enum(["national","state","county","user"]).optional().default("national"), scopeId: z.string().optional() })).query(async ({ input }) => {
+    const db = getDb();
     const conditions = [eq(dailyBriefings.briefingDate, input.date), eq(dailyBriefings.scope, input.scope)];
     if (input.scopeId) conditions.push(eq(dailyBriefings.scopeId, input.scopeId));
     const rows = await db.select().from(dailyBriefings).where(and(...conditions));
@@ -44,8 +45,8 @@ export const briefingRouter = createRouter({
     priorityCounties: z.string().optional(), recommendationChanges: z.string().optional(),
     providerHealth: z.string().optional(), coverageGrowth: z.string().optional(),
     operationalSummary: z.string().optional(), executiveActions: z.string().optional(), narrative: z.string().optional(),
-  })).mutation(async ({ ctx, input }) => {
-    const db = (ctx as any).db; if (!db) return { success: false, error: "Database not available" };
+  })).mutation(async ({ input }) => {
+    const db = getDb();
     const existing = await db.select().from(dailyBriefings).where(and(eq(dailyBriefings.briefingDate, input.briefingDate), eq(dailyBriefings.scope, input.scope)));
     if (existing.length > 0) {
       await db.update(dailyBriefings).set({ ...input, deliveryStatus: "draft" as const }).where(eq(dailyBriefings.id, existing[0].id));
@@ -55,15 +56,14 @@ export const briefingRouter = createRouter({
     return { success: true, briefing: result[0], updated: false };
   }),
 
-  deliver: publicQuery.input(z.object({ id: z.number() })).mutation(async ({ ctx, input }) => {
-    const db = (ctx as any).db; if (!db) return { success: false };
+  deliver: publicQuery.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+    const db = getDb();
     await db.update(dailyBriefings).set({ deliveryStatus: "delivered", deliveredAt: new Date() }).where(eq(dailyBriefings.id, input.id));
     return { success: true };
   }),
 
-  stats: publicQuery.query(async ({ ctx }) => {
-    const db = (ctx as any).db;
-    if (!db) return { totalBriefings:0, delivered:0, draft:0, byScope:[], thisWeek:0, lastWeek:0 };
+  stats: publicQuery.query(async () => {
+    const db = getDb();
     const all = await db.select().from(dailyBriefings);
     const now = new Date(); const weekAgo = new Date(now.getTime()-7*24*60*60*1000); const twoWeeksAgo = new Date(now.getTime()-14*24*60*60*1000);
     const scopeMap = new Map(); for (const b of all) scopeMap.set(b.scope, (scopeMap.get(b.scope)||0)+1);
