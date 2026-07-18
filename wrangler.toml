@@ -1,20 +1,12 @@
-# Cloudflare Pages configuration for BuildSignal v1.0
-# Docs: https://developers.cloudflare.com/pages/functions/wrangler-configuration/
-
-name = "buildsignal"
-pages_build_output_dir = "dist"
+name = "buildsignal-v2"
 compatibility_date = "2026-07-16"
 compatibility_flags = ["nodejs_compat"]
 
-# ─── Functions Build Configuration ───
-# Tell esbuild to use the server tsconfig for path alias resolution
-[build]
-tsconfig = "./tsconfig.server.json"
+# Gate 21: Production Intelligence Network - D1 binding
+[[d1_databases]]
+binding = "DB"
+database_name = "buildsignal-db"
+database_id = "a8ecb143-6aa6-4741-b4e8-fe3e16695452"
 
-# ─── Environment Variables ───
-# Set these via `wrangler pages secret put <NAME>` for sensitive values
-
-[vars]
-NODE_ENV = "production"
-KIMI_AUTH_URL = "https://kimi-api.moonshot.cn"
-KIMI_OPEN_URL = "https://kimi-api.moonshot.cn"
+[site]
+bucket = "./dist"
