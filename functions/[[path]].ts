@@ -1,5 +1,6 @@
 /**
  * Cloudflare Pages Function — catch-all handler.
+ * Routes /api/* to the Hono API app; all other paths to static assets.
  */
 
 import type { PagesFunction } from "@cloudflare/workers-types";
@@ -24,24 +25,18 @@ function polyfillProcessEnv(cfEnv: Record<string, unknown>) {
 export const onRequest: PagesFunction = async (context) => {
   const url = new URL(context.request.url);
 
+  // Serve static assets for non-API routes
   if (!isApiRoute(url.pathname)) {
     return context.env.ASSETS.fetch(context.request);
   }
 
-  // Log env keys for debugging (no secrets)
-  const envKeys = Object.keys(context.env).filter(k => !k.includes('SECRET') && !k.includes('KEY') && !k.includes('TOKEN'));
-  console.log(`[CF] Env keys: ${envKeys.join(', ')}`);
-  console.log(`[CF] Has DB: ${!!(context.env as any).DB}`);
-
   polyfillProcessEnv(context.env);
 
+  // Bind D1 if available — used as fallback for cross-chunk DB access
   const dbBinding = (context.env as Record<string, unknown>).DB as D1Database | undefined;
   if (dbBinding) {
-    console.log(`[CF] D1 binding found, storing on globalThis`);
     (globalThis as unknown as Record<string, unknown>).__D1_BINDING__ = dbBinding;
     setD1Binding(dbBinding);
-  } else {
-    console.log(`[CF] D1 binding NOT found in context.env`);
   }
 
   const g = globalThis as unknown as Record<string, unknown>;
