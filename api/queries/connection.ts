@@ -49,6 +49,14 @@ export function getDb() {
   return instance;
 }
 
+/** Get DB from tRPC context (for per-request D1 access in Pages Functions) */
+export function getDbFromContext(ctxEnv: Record<string, unknown> | undefined) {
+  if (ctxEnv?.DB) {
+    return drizzleD1(ctxEnv.DB as D1Database, { schema: fullSqliteSchema });
+  }
+  return getDb(); // fallback to global instance
+}
+
 /** Get the active schema (SQLite for D1, MySQL otherwise) */
 export function getSchema() {
   if (d1Binding) {
