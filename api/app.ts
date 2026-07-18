@@ -15,10 +15,6 @@ app.use(bodyLimit({ maxSize: 50 * 1024 * 1024 }));
 app.get("/health", (c) => c.json({ status: "ok", service: "buildsignal", version: "1.0.0" }));
 
 app.use("/api/trpc/*", async (c) => {
-  const envKeys = Object.keys(c.env || {}).filter(k => !k.includes('SECRET'));
-  console.log(`[Hono] c.env keys: ${envKeys.join(', ')}`);
-  console.log(`[Hono] c.env.DB: ${!!c.env?.DB}`);
-  
   return fetchRequestHandler({
     endpoint: "/api/trpc",
     req: c.req.raw,
