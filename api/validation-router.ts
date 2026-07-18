@@ -1,16 +1,16 @@
 import { z } from "zod";
 import { createRouter, publicQuery } from "./middleware";
 import { dataValidationQueue } from "@db/schema-sqlite";
-import { eq, desc, and, sql } from "drizzle-orm"
-import { getDb } from "./queries/connection";
+import { eq, desc, and, sql } from "drizzle-orm";
+import { getDbFromContext } from "./queries/connection";
 
 export const validationRouter = createRouter({
   list: publicQuery.input(z.object({
     status: z.enum(["pending","passed","failed","review","all"]).optional().default("all"),
     limit: z.number().min(1).max(500).optional().default(100),
     offset: z.number().min(0).optional().default(0),
-  }).optional()).query(async ({ input }) => {
-    const db = getDb();
+  }).optional()).query(async ({ ctx, input }) => {
+    const db = getDbFromContext(ctx.env);
     const conditions = [];
     if (input?.status && input.status !== "all") conditions.push(eq(dataValidationQueue.validationStatus, input.status));
     const where = conditions.length > 0 ? and(...conditions) : undefined;
@@ -26,8 +26,8 @@ export const validationRouter = createRouter({
 
   submit: publicQuery.input(z.object({
     sourceId: z.number(), externalRecordId: z.string(), recordType: z.string(), rawPayload: z.string(),
-  })).mutation(async ({ input }) => {
-    const db = getDb();
+  })).mutation(async ({ ctx, input }) => {
+    const db = getDbFromContext(ctx.env);
     let payload: any = {}; try { payload = JSON.parse(input.rawPayload); } catch { /* ignore */ }
     const requiredFieldsCheck = !!(payload.title || payload.name || payload.projectName);
     const dateValidationCheck = !!(payload.date || payload.publishedAt || payload.createdAt);
@@ -59,14 +59,14 @@ export const validationRouter = createRouter({
 
   review: publicQuery.input(z.object({
     id: z.number(), status: z.enum(["passed","failed"]), reviewerNotes: z.string().optional(), reviewedBy: z.number(),
-  })).mutation(async ({ input }) => {
-    const db = getDb();
+  })).mutation(async ({ ctx, input }) => {
+    const db = getDbFromContext(ctx.env);
     await db.update(dataValidationQueue).set({ validationStatus: input.status, reviewerNotes: input.reviewerNotes, reviewedBy: input.reviewedBy, reviewedAt: new Date() }).where(eq(dataValidationQueue.id, input.id));
     return { success: true };
   }),
 
-  stats: publicQuery.query(async () => {
-    const db = getDb();
+  stats: publicQuery.query(async ({ ctx }) => {
+    const db = getDbFromContext(ctx.env);
     const all = await db.select().from(dataValidationQueue);
     const pending = all.filter((r:any)=>r.validationStatus==="pending").length;
     const passed = all.filter((r:any)=>r.validationStatus==="passed").length;
@@ -79,8 +79,8 @@ export const validationRouter = createRouter({
     return { totalRecords:all.length, pending, passed, failed, inReview, passRate, avgConfidence, todayProcessed: all.filter((r:any)=>{ const d=new Date(r.createdAt); return d.toDateString()===new Date().toDateString(); }).length, errorsByType: Object.entries(errorCounts).map(([type,count])=>({type,count})) };
   }),
 
-  bulkValidate: publicQuery.input(z.object({ recordIds: z.array(z.number()), status: z.enum(["passed","failed"]) })).mutation(async ({ input }) => {
-    const db = getDb();
+  bulkValidate: publicQuery.input(z.object({ recordIds: z.array(z.number()), status: z.enum(["passed","failed"]) })).mutation(async ({ ctx, input }) => {
+    const db = getDbFromContext(ctx.env);
     let processed = 0;
     for (const id of input.recordIds) { await db.update(dataValidationQueue).set({ validationStatus: input.status, reviewedAt: new Date() }).where(eq(dataValidationQueue.id, id)); processed++; }
     return { success: true, processed };

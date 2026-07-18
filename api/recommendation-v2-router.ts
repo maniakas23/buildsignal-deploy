@@ -1,12 +1,12 @@
 import { z } from "zod";
 import { createRouter, publicQuery } from "./middleware";
 import { confidenceScores, recommendationOutcomes, patternLibrary } from "@db/schema-sqlite";
-import { eq, desc, and, sql } from "drizzle-orm"
-import { getDb } from "./queries/connection";
+import { eq, desc, and, sql } from "drizzle-orm";
+import { getDbFromContext } from "./queries/connection";
 
 export const recommendationV2Router = createRouter({
-  confidence: publicQuery.input(z.object({ entityType: z.string(), entityId: z.number() })).query(async ({ input }) => {
-    const db = getDb();
+  confidence: publicQuery.input(z.object({ entityType: z.string(), entityId: z.number() })).query(async ({ ctx, input }) => {
+    const db = getDbFromContext(ctx.env);
     const rows = await db.select().from(confidenceScores).where(and(eq(confidenceScores.entityType,input.entityType),eq(confidenceScores.entityId,input.entityId))).orderBy(desc(confidenceScores.calculatedAt)).limit(1);
     return rows[0] || null;
   }),
@@ -18,8 +18,8 @@ export const recommendationV2Router = createRouter({
     patternMatch: z.number().min(0).max(100).optional(), geographicContext: z.number().min(0).max(100).optional(),
     eventCorrelation: z.number().min(0).max(100).optional(), historicalOutcomes: z.number().min(0).max(100).optional(),
     explanation: z.string().optional(),
-  })).mutation(async ({ input }) => {
-    const db = getDb();
+  })).mutation(async ({ ctx, input }) => {
+    const db = getDbFromContext(ctx.env);
     const weights = { providerReliability:0.15, historicalAccuracy:0.20, crossSourceAgreement:0.15, dataFreshness:0.10, patternMatch:0.15, geographicContext:0.10, eventCorrelation:0.10, historicalOutcomes:0.05 };
     let overallScore = 0, totalWeight = 0;
     const factors: Record<string,number> = {};
@@ -39,8 +39,8 @@ export const recommendationV2Router = createRouter({
   outcomes: publicQuery.input(z.object({
     status: z.enum(["pending","confirmed","partially_confirmed","incorrect","expired","all"]).optional().default("all"),
     limit: z.number().min(1).max(200).optional().default(50),
-  }).optional()).query(async ({ input }) => {
-    const db = getDb();
+  }).optional()).query(async ({ ctx, input }) => {
+    const db = getDbFromContext(ctx.env);
     const conditions = [];
     if (input?.status && input.status !== "all") conditions.push(eq(recommendationOutcomes.outcomeStatus, input.status));
     const where = conditions.length > 0 ? and(...conditions) : undefined;
@@ -56,14 +56,14 @@ export const recommendationV2Router = createRouter({
     outcomeStatus: z.enum(["pending","confirmed","partially_confirmed","incorrect","expired"]),
     accuracyScore: z.number().min(0).max(100).optional(), timeToDevelopmentDays: z.number().optional(),
     confidenceAtPrediction: z.number().optional(), lessonsLearned: z.string().optional(),
-  })).mutation(async ({ input }) => {
-    const db = getDb();
+  })).mutation(async ({ ctx, input }) => {
+    const db = getDbFromContext(ctx.env);
     const result = await db.insert(recommendationOutcomes).values({ ...input, validatedAt: input.outcomeStatus !== "pending" ? new Date() : undefined }).returning();
     return { success: true, outcome: result[0] };
   }),
 
-  patterns: publicQuery.input(z.object({ patternType: z.string().optional(), isActive: z.boolean().optional() }).optional()).query(async ({ input }) => {
-    const db = getDb();
+  patterns: publicQuery.input(z.object({ patternType: z.string().optional(), isActive: z.boolean().optional() }).optional()).query(async ({ ctx, input }) => {
+    const db = getDbFromContext(ctx.env);
     const conditions = [];
     if (input?.patternType) conditions.push(eq(patternLibrary.patternType, input.patternType));
     if (input?.isActive !== undefined) conditions.push(eq(patternLibrary.isActive, input.isActive));
@@ -72,8 +72,8 @@ export const recommendationV2Router = createRouter({
     return { patterns: rows };
   }),
 
-  stats: publicQuery.query(async () => {
-    const db = getDb();
+  stats: publicQuery.query(async ({ ctx }) => {
+    const db = getDbFromContext(ctx.env);
     const [outcomes, patterns] = await Promise.all([
       db.select().from(recommendationOutcomes),
       db.select().from(patternLibrary).where(eq(patternLibrary.isActive, true)),

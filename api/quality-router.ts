@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { createRouter, publicQuery } from "./middleware";
 import { qualityMetrics } from "@db/schema-sqlite";
-import { eq, desc, and, sql } from "drizzle-orm"
-import { getDb } from "./queries/connection";
+import { eq, desc, and, sql } from "drizzle-orm";
+import { getDbFromContext } from "./queries/connection";
 
 export const qualityRouter = createRouter({
   record: publicQuery.input(z.object({
@@ -20,8 +20,8 @@ export const qualityRouter = createRouter({
     rejectedRecommendations: z.number().optional(),
     correctedRecommendations: z.number().optional(),
     trendDirection: z.enum(["improving","stable","declining"]).optional(),
-  })).mutation(async ({ input }) => {
-    const db = getDb();
+  })).mutation(async ({ ctx, input }) => {
+    const db = getDbFromContext(ctx.env);
     const result = await db.insert(qualityMetrics).values(input).returning();
     return { success: true, metric: result[0] };
   }),
@@ -29,8 +29,8 @@ export const qualityRouter = createRouter({
   history: publicQuery.input(z.object({
     days: z.number().min(1).max(365).optional().default(30),
     metricDateFrom: z.string().optional(), metricDateTo: z.string().optional(),
-  }).optional()).query(async ({ input }) => {
-    const db = getDb();
+  }).optional()).query(async ({ ctx, input }) => {
+    const db = getDbFromContext(ctx.env);
     const limit = input?.days || 30;
     const rows = await db.select().from(qualityMetrics).orderBy(desc(qualityMetrics.metricDate)).limit(limit);
     const sorted = [...rows].sort((a: any, b: any) => a.metricDate.localeCompare(b.metricDate));
@@ -40,14 +40,14 @@ export const qualityRouter = createRouter({
     return { metrics: rows, trend };
   }),
 
-  latest: publicQuery.query(async () => {
-    const db = getDb();
+  latest: publicQuery.query(async ({ ctx }) => {
+    const db = getDbFromContext(ctx.env);
     const rows = await db.select().from(qualityMetrics).orderBy(desc(qualityMetrics.metricDate)).limit(1);
     return rows[0] || null;
   }),
 
-  dashboard: publicQuery.query(async () => {
-    const db = getDb();
+  dashboard: publicQuery.query(async ({ ctx }) => {
+    const db = getDbFromContext(ctx.env);
     const last30 = await db.select().from(qualityMetrics).orderBy(desc(qualityMetrics.metricDate)).limit(30);
     if (last30.length === 0) return { latest: null, avgPrecision: 0, avgRecall: 0, avgAcceptance: 0, avgFalsePositive: 0, avgFalseNegative: 0, trend: "stable", dailyTrends: [] };
     const avg = (field: string) => { const vals = last30.filter((r: any) => r[field] !== null).map((r: any) => r[field] as number); return vals.length > 0 ? Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 1000) / 1000 : 0; };

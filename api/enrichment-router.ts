@@ -1,14 +1,14 @@
 import { z } from "zod";
 import { createRouter, publicQuery } from "./middleware";
 import { enrichmentLog } from "@db/schema-sqlite";
-import { eq, desc, and } from "drizzle-orm"
-import { getDb } from "./queries/connection";
+import { eq, desc, and } from "drizzle-orm";
+import { getDbFromContext } from "./queries/connection";
 
 export const enrichmentRouter = createRouter({
   list: publicQuery.input(z.object({
     eventId: z.number().optional(), enrichmentType: z.string().optional(), limit: z.number().min(1).max(500).optional().default(100),
-  }).optional()).query(async ({ input }) => {
-    const db = getDb();
+  }).optional()).query(async ({ ctx, input }) => {
+    const db = getDbFromContext(ctx.env);
     const conditions = [];
     if (input?.eventId) conditions.push(eq(enrichmentLog.eventId, input.eventId));
     if (input?.enrichmentType) conditions.push(eq(enrichmentLog.enrichmentType, input.enrichmentType));
@@ -21,22 +21,22 @@ export const enrichmentRouter = createRouter({
     eventId: z.number(),
     enrichmentType: z.enum(["geographic_context","nearby_infrastructure","related_projects","utility_availability","transportation_access","population_trends","historical_activity","economic_indicators","comparable_events"]),
     enrichmentData: z.string(), source: z.string(), confidence: z.number().min(0).max(100).optional().default(80),
-  })).mutation(async ({ input }) => {
-    const db = getDb();
+  })).mutation(async ({ ctx, input }) => {
+    const db = getDbFromContext(ctx.env);
     const result = await db.insert(enrichmentLog).values(input).returning();
     return { success: true, enrichment: result[0] };
   }),
 
-  summary: publicQuery.input(z.object({ eventId: z.number() })).query(async ({ input }) => {
-    const db = getDb();
+  summary: publicQuery.input(z.object({ eventId: z.number() })).query(async ({ ctx, input }) => {
+    const db = getDbFromContext(ctx.env);
     const rows = await db.select().from(enrichmentLog).where(eq(enrichmentLog.eventId, input.eventId)).orderBy(desc(enrichmentLog.processedAt));
     const types = [...new Set(rows.map((r:any)=>r.enrichmentType))];
     const avgConfidence = rows.length>0 ? Math.round(rows.reduce((sum:number,r:any)=>sum+(r.confidence||0),0)/rows.length) : 0;
     return { eventId: input.eventId, enrichments: rows, types, avgConfidence };
   }),
 
-  stats: publicQuery.query(async () => {
-    const db = getDb();
+  stats: publicQuery.query(async ({ ctx }) => {
+    const db = getDbFromContext(ctx.env);
     const all = await db.select().from(enrichmentLog);
     const typeMap=new Map(), sourceMap=new Map();
     for (const e of all) { typeMap.set(e.enrichmentType,(typeMap.get(e.enrichmentType)||0)+1); sourceMap.set(e.source,(sourceMap.get(e.source)||0)+1); }

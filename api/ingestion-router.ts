@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { createRouter, publicQuery } from "./middleware";
 import { ingestionSources } from "@db/schema-sqlite";
-import { eq, desc, sql, and } from "drizzle-orm"
-import { getDb } from "./queries/connection";
+import { eq, desc, and } from "drizzle-orm";
+import { getDbFromContext } from "./queries/connection";
 
 export const ingestionRouter = createRouter({
   list: publicQuery.input(z.object({
@@ -10,8 +10,8 @@ export const ingestionRouter = createRouter({
     jurisdictionLevel: z.string().optional(),
     isActive: z.boolean().optional(),
     status: z.enum(["healthy","degraded","error","all"]).optional().default("all"),
-  }).optional()).query(async ({ input }) => {
-    const db = getDb();
+  }).optional()).query(async ({ ctx, input }) => {
+    const db = getDbFromContext(ctx.env);
     const conditions = [];
     if (input?.sourceType) conditions.push(eq(ingestionSources.sourceType, input.sourceType));
     if (input?.jurisdictionLevel) conditions.push(eq(ingestionSources.jurisdictionLevel, input.jurisdictionLevel));
@@ -30,8 +30,8 @@ export const ingestionRouter = createRouter({
     return { sources: filtered, total: filtered.length };
   }),
 
-  getById: publicQuery.input(z.object({ id: z.number() })).query(async ({ input }) => {
-    const db = getDb();
+  getById: publicQuery.input(z.object({ id: z.number() })).query(async ({ ctx, input }) => {
+    const db = getDbFromContext(ctx.env);
     const rows = await db.select().from(ingestionSources).where(eq(ingestionSources.id, input.id));
     return rows[0] || null;
   }),
@@ -45,8 +45,8 @@ export const ingestionRouter = createRouter({
     importMethod: z.enum(["api","webhook","scraper","manual","ftp","sftp","email"]).default("api"),
     authType: z.enum(["none","api_key","oauth2","basic_auth","custom"]).default("none"),
     schedule: z.enum(["realtime","hourly","daily","weekly","monthly"]).default("daily"),
-  })).mutation(async ({ input }) => {
-    const db = getDb();
+  })).mutation(async ({ ctx, input }) => {
+    const db = getDbFromContext(ctx.env);
     const result = await db.insert(ingestionSources).values({ ...input, healthScore: 100, isActive: true }).returning();
     return { success: true, source: result[0] };
   }),
@@ -55,21 +55,21 @@ export const ingestionRouter = createRouter({
     id: z.number(), healthScore: z.number().min(0).max(100),
     recordsLast30Days: z.number().optional(), avgLatencyMs: z.number().optional(),
     errorCount30d: z.number().optional(), lastSyncAt: z.string().optional(), nextSyncAt: z.string().optional(),
-  })).mutation(async ({ input }) => {
-    const db = getDb();
+  })).mutation(async ({ ctx, input }) => {
+    const db = getDbFromContext(ctx.env);
     const { id, ...data } = input;
     await db.update(ingestionSources).set({ ...data, lastSyncAt: data.lastSyncAt?new Date(data.lastSyncAt):undefined, nextSyncAt: data.nextSyncAt?new Date(data.nextSyncAt):undefined, updatedAt: new Date() }).where(eq(ingestionSources.id, id));
     return { success: true };
   }),
 
-  toggleActive: publicQuery.input(z.object({ id: z.number(), isActive: z.boolean() })).mutation(async ({ input }) => {
-    const db = getDb();
+  toggleActive: publicQuery.input(z.object({ id: z.number(), isActive: z.boolean() })).mutation(async ({ ctx, input }) => {
+    const db = getDbFromContext(ctx.env);
     await db.update(ingestionSources).set({ isActive: input.isActive, updatedAt: new Date() }).where(eq(ingestionSources.id, input.id));
     return { success: true };
   }),
 
-  stats: publicQuery.query(async () => {
-    const db = getDb();
+  stats: publicQuery.query(async ({ ctx }) => {
+    const db = getDbFromContext(ctx.env);
     const all = await db.select().from(ingestionSources);
     const active = all.filter((s:any)=>s.isActive);
     const healthy = active.filter((s:any)=>(s.healthScore||0)>=80);
