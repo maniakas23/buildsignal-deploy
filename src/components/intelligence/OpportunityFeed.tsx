@@ -1,0 +1,1 @@
+export default function OpportunityFeed() { return <div className="bg-surface rounded-2xl p-5 shadow-card"><h2 className="text-sm font-semibold text-ink-primary mb-2">Opportunity Feed</h2><p className="text-xs text-ink-secondary">Latest ranked opportunities.</p></div>; }
