@@ -261,15 +261,158 @@ export const betaFeedbackEvents = sqliteTable("beta_feedback_events", {
   createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
-// ─── Watchlists ───
-export const watchlists = sqliteTable("watchlists", {
+// ============================================================
+// GATE 19 — PROPRIETARY INTELLIGENCE SCHEMA
+// ============================================================
+
+export const providerRegistry = sqliteTable("provider_registry", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  userId: integer("userId").notNull(),
-  name: text("name").notNull(),
+  providerName: text("providerName").notNull(),
+  providerType: text("providerType").notNull(),
+  jurisdictionLevel: text("jurisdictionLevel").notNull().default("county"),
+  coverageArea: text("coverageArea").notNull(),
+  dataCategories: text("dataCategories").notNull(),
+  apiAvailable: integer("apiAvailable", { mode: "boolean" }).default(false),
+  apiEndpoint: text("apiEndpoint"),
+  apiAuthType: text("apiAuthType"),
+  importMethod: text("importMethod").notNull().default("api"),
+  refreshSchedule: text("refreshSchedule").notNull().default("daily"),
+  healthScore: integer("healthScore").default(100),
+  historicalReliability: integer("historicalReliability").default(100),
+  validationStatus: text("validationStatus").notNull().default("pending"),
+  recordsTotal: integer("recordsTotal").default(0),
+  recordsLast30Days: integer("recordsLast30Days").default(0),
+  avgLatencyMs: integer("avgLatencyMs").default(0),
+  lastSyncAt: integer("lastSyncAt", { mode: "timestamp" }),
+  nextSyncAt: integer("nextSyncAt", { mode: "timestamp" }),
+  errorCount30d: integer("errorCount30d").default(0),
+  onboardedAt: integer("onboardedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  updatedAt: integer("updatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+export const historicalEvents = sqliteTable("historical_events", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  externalId: text("externalId"),
+  providerId: integer("providerId").notNull(),
+  eventType: text("eventType").notNull(),
+  eventCategory: text("eventCategory").notNull(),
+  title: text("title").notNull(),
   description: text("description"),
-  counties: text("counties").notNull(), // JSON array of {county, state}
-  alertEnabled: integer("alertEnabled", { mode: "boolean" }).default(true),
-  alertFrequency: text("alertFrequency").default("daily"), // daily, weekly, instant
+  county: text("county"),
+  state: text("state").notNull(),
+  city: text("city"),
+  zipCode: text("zipCode"),
+  address: text("address"),
+  lat: text("lat"),
+  lng: text("lng"),
+  value: integer("value"),
+  confidence: integer("confidence").default(50),
+  status: text("status").notNull().default("recorded"),
+  rawData: text("rawData"),
+  normalizedData: text("normalizedData"),
+  publishedAt: integer("publishedAt", { mode: "timestamp" }),
+  ingestedAt: integer("ingestedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+export const kgRelationships = sqliteTable("kg_relationships", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  sourceNodeId: integer("sourceNodeId").notNull(),
+  targetNodeId: integer("targetNodeId").notNull(),
+  relationType: text("relationType").notNull(),
+  strength: integer("strength").default(50),
+  evidenceCount: integer("evidenceCount").default(1),
+  firstObservedAt: integer("firstObservedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  lastObservedAt: integer("lastObservedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+export const confidenceScores = sqliteTable("confidence_scores", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  entityType: text("entityType").notNull(),
+  entityId: integer("entityId").notNull(),
+  overallScore: integer("overallScore").notNull(),
+  providerReliability: integer("providerReliability").default(0),
+  historicalAccuracy: integer("historicalAccuracy").default(0),
+  crossSourceAgreement: integer("crossSourceAgreement").default(0),
+  dataFreshness: integer("dataFreshness").default(0),
+  patternMatch: integer("patternMatch").default(0),
+  geographicContext: integer("geographicContext").default(0),
+  eventCorrelation: integer("eventCorrelation").default(0),
+  historicalOutcomes: integer("historicalOutcomes").default(0),
+  explanation: text("explanation"),
+  calculatedAt: integer("calculatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+export const patternLibrary = sqliteTable("pattern_library", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  patternName: text("patternName").notNull(),
+  patternType: text("patternType").notNull(),
+  description: text("description"),
+  signalIndicators: text("signalIndicators"),
+  requiredEventTypes: text("requiredEventTypes"),
+  minConfidenceThreshold: integer("minConfidenceThreshold").default(70),
+  historicalSuccessRate: integer("historicalSuccessRate").default(0),
+  totalApplications: integer("totalApplications").default(0),
+  successfulPredictions: integer("successfulPredictions").default(0),
+  avgTimeToDevelopment: integer("avgTimeToDevelopment").default(0),
+  avgReturnScore: integer("avgReturnScore").default(0),
+  applicableStates: text("applicableStates"),
+  isActive: integer("isActive", { mode: "boolean" }).default(true),
   createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
   updatedAt: integer("updatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+export const recommendationOutcomes = sqliteTable("recommendation_outcomes", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  recommendationId: integer("recommendationId").notNull(),
+  patternId: integer("patternId"),
+  county: text("county"),
+  state: text("state"),
+  predictedEventTypes: text("predictedEventTypes"),
+  actualEventTypes: text("actualEventTypes"),
+  outcomeStatus: text("outcomeStatus").notNull().default("pending"),
+  accuracyScore: integer("accuracyScore"),
+  timeToDevelopmentDays: integer("timeToDevelopmentDays"),
+  infrastructureCompleted: integer("infrastructureCompleted", { mode: "boolean" }).default(false),
+  confidenceAtPrediction: integer("confidenceAtPrediction"),
+  confidenceActualized: integer("confidenceActualized"),
+  returnScore: integer("returnScore"),
+  patternSuccessRate: integer("patternSuccessRate"),
+  lessonsLearned: text("lessonsLearned"),
+  validatedAt: integer("validatedAt", { mode: "timestamp" }),
+  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+export const learningEvents = sqliteTable("learning_events", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  eventType: text("eventType").notNull(),
+  recommendationId: integer("recommendationId"),
+  patternId: integer("patternId"),
+  previousValue: text("previousValue"),
+  newValue: text("newValue"),
+  userId: integer("userId"),
+  feedback: text("feedback"),
+  adjustmentReason: text("adjustmentReason"),
+  impactScore: integer("impactScore").default(0),
+  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+export const dailySummaries = sqliteTable("daily_summaries", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  summaryType: text("summaryType").notNull(),
+  scopeId: text("scopeId"),
+  summaryDate: text("summaryDate").notNull(),
+  totalEvents: integer("totalEvents").default(0),
+  newPermits: integer("newPermits").default(0),
+  newRezonings: integer("newRezonings").default(0),
+  newPlanningMeetings: integer("newPlanningMeetings").default(0),
+  newUtilityProjects: integer("newUtilityProjects").default(0),
+  newRoadProjects: integer("newRoadProjects").default(0),
+  priorityOpportunities: text("priorityOpportunities"),
+  providerHealthChanges: text("providerHealthChanges"),
+  watchlistMatches: integer("watchlistMatches").default(0),
+  recommendationChanges: integer("recommendationChanges").default(0),
+  topPatterns: text("topPatterns"),
+  confidenceTrend: text("confidenceTrend").default("stable"),
+  insights: text("insights"),
+  generatedAt: integer("generatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
