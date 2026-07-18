@@ -8,6 +8,7 @@ compatibility_flags = ["nodejs_compat"]
 binding = "DB"
 database_name = "buildsignal-db"
 database_id = "a8ecb143-6aa6-4741-b4e8-fe3e16695452"
+preview_database_id = "a8ecb143-6aa6-4741-b4e8-fe3e16695452"
 
 [site]
 bucket = "./dist"
