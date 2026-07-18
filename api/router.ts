@@ -29,6 +29,12 @@ import { confidenceRouter } from "./confidence-router";
 import { patternRouter } from "./pattern-router";
 import { learningLoopRouter } from "./learning-loop-router";
 import { dailyOpsRouter } from "./daily-ops-router";
+// Gate 20
+import { governanceRouter } from "./governance-router";
+import { aiGovernanceRouter } from "./ai-governance-router";
+import { dataGovernanceRouter } from "./data-governance-router";
+import { securityRouter } from "./security-router";
+import { ipRegisterRouter } from "./ip-register-router";
 
 export const appRouter = createRouter({
   health: publicQuery.query(() => ({ status: "ok", service: "buildsignal", version: "1.0.0" })),
@@ -57,12 +63,16 @@ export const appRouter = createRouter({
   geographic: geographicRouter,
   knowledgeGraph: knowledgeGraphRouter,
   historicalValidation: historicalValidationRouter,
-  // Gate 19
   historical: historicalRouter,
   confidence: confidenceRouter,
   pattern: patternRouter,
   learningLoop: learningLoopRouter,
   dailyOps: dailyOpsRouter,
+  governance: governanceRouter,
+  aiGovernance: aiGovernanceRouter,
+  dataGovernance: dataGovernanceRouter,
+  security: securityRouter,
+  ipRegister: ipRegisterRouter,
 });
 
 export type AppRouter = typeof appRouter;
