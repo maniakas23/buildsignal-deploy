@@ -23,13 +23,11 @@ import { pipelineMetricsRouter } from "./pipeline-metrics-router";
 import { geographicRouter } from "./geographic-router";
 import { knowledgeGraphRouter } from "./knowledge-graph-router";
 import { historicalValidationRouter } from "./historical-validation-router";
-// Gate 19
 import { historicalRouter } from "./historical-router";
 import { confidenceRouter } from "./confidence-router";
 import { patternRouter } from "./pattern-router";
 import { learningLoopRouter } from "./learning-loop-router";
 import { dailyOpsRouter } from "./daily-ops-router";
-// Gate 20
 import { governanceRouter } from "./governance-router";
 import { aiGovernanceRouter } from "./ai-governance-router";
 import { dataGovernanceRouter } from "./data-governance-router";
@@ -38,7 +36,6 @@ import { ipRegisterRouter } from "./ip-register-router";
 import { liveIntelligenceRouter } from "./live-intelligence-router";
 import { executiveOpsRouter } from "./executive-ops-router";
 import { completionRouter } from "./completion-router";
-// Gate 21
 import { ingestionRouter } from "./ingestion-router";
 import { validationRouter } from "./validation-router";
 import { enrichmentRouter } from "./enrichment-router";
@@ -47,6 +44,7 @@ import { warehouseRouter } from "./warehouse-router";
 import { expansionRouter } from "./expansion-router";
 import { qualityRouter } from "./quality-router";
 import { briefingRouter } from "./briefing-router";
+import { debugRouter } from "./debug-router";
 
 export const appRouter = createRouter({
   health: publicQuery.query(() => ({ status: "ok", service: "buildsignal", version: "1.0.0" })),
@@ -96,6 +94,7 @@ export const appRouter = createRouter({
   expansion: expansionRouter,
   quality: qualityRouter,
   briefing: briefingRouter,
+  debug: debugRouter,
 });
 
 export type AppRouter = typeof appRouter;
