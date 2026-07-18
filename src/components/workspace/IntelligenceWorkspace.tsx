@@ -1,1 +1,3 @@
-export default function IntelligenceWorkspace() { return <div>Workspace</div>; }
+export function IntelligenceWorkspace() {
+  return <div>Workspace</div>;
+}
