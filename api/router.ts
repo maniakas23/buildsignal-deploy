@@ -29,16 +29,24 @@ import { confidenceRouter } from "./confidence-router";
 import { patternRouter } from "./pattern-router";
 import { learningLoopRouter } from "./learning-loop-router";
 import { dailyOpsRouter } from "./daily-ops-router";
-// Gate 20 (Governance & IP)
+// Gate 20
 import { governanceRouter } from "./governance-router";
 import { aiGovernanceRouter } from "./ai-governance-router";
 import { dataGovernanceRouter } from "./data-governance-router";
 import { securityRouter } from "./security-router";
 import { ipRegisterRouter } from "./ip-register-router";
-// Gate 20 (Live Intelligence)
 import { liveIntelligenceRouter } from "./live-intelligence-router";
 import { executiveOpsRouter } from "./executive-ops-router";
 import { completionRouter } from "./completion-router";
+// Gate 21
+import { ingestionRouter } from "./ingestion-router";
+import { validationRouter } from "./validation-router";
+import { enrichmentRouter } from "./enrichment-router";
+import { recommendationV2Router } from "./recommendation-v2-router";
+import { warehouseRouter } from "./warehouse-router";
+import { expansionRouter } from "./expansion-router";
+import { qualityRouter } from "./quality-router";
+import { briefingRouter } from "./briefing-router";
 
 export const appRouter = createRouter({
   health: publicQuery.query(() => ({ status: "ok", service: "buildsignal", version: "1.0.0" })),
@@ -80,6 +88,14 @@ export const appRouter = createRouter({
   live: liveIntelligenceRouter,
   executive: executiveOpsRouter,
   completion: completionRouter,
+  ingestion: ingestionRouter,
+  validation: validationRouter,
+  enrichment: enrichmentRouter,
+  recommendationV2: recommendationV2Router,
+  warehouse: warehouseRouter,
+  expansion: expansionRouter,
+  quality: qualityRouter,
+  briefing: briefingRouter,
 });
 
 export type AppRouter = typeof appRouter;
