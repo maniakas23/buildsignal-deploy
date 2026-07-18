@@ -53,24 +53,17 @@ import { briefingRouter } from "./briefing-router";
 export const appRouter = createRouter({
   health: publicQuery.query(() => ({ status: "ok", service: "buildsignal", version: "1.0.0" })),
   debug: publicQuery.query(async ({ ctx }) => {
-    const env = ctx.env || {};
-    const hasD1 = !!env.DB;
-    const globalD1 = !!(globalThis as any).__D1_BINDING__;
-    let queryResult = "not attempted";
-    if (hasD1) {
-      try {
-        const db = getDbFromContext(env);
-        await db.select({ one: sql`1` });
-        queryResult = "success";
-      } catch (e: any) {
-        queryResult = `error: ${e.message}`;
-      }
+    // Minimal diagnostic — test D1 connectivity without exposing env keys
+    let d1Status = "unknown";
+    try {
+      const db = getDbFromContext(ctx.env);
+      const result = await db.select({ one: sql`1` });
+      d1Status = result.length > 0 ? "connected" : "no_result";
+    } catch (e: any) {
+      d1Status = `error: ${e.message}`;
     }
     return {
-      hasD1Binding: hasD1,
-      globalD1Binding: globalD1,
-      envKeys: Object.keys(env).filter(k => !k.includes('SECRET') && !k.includes('KEY')),
-      queryResult,
+      d1: d1Status,
       timestamp: new Date().toISOString(),
     };
   }),
