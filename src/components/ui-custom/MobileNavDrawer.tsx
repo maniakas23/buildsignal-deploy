@@ -70,6 +70,7 @@ const NAV_GROUPS: NavGroup[] = [
       { id: 'intelligence-excellence', label: 'v1.0 Launch', icon: <Rocket className="w-4.5 h-4.5" /> },
       { id: 'rc-platform', label: 'RC Platform', icon: <Shield className="w-4.5 h-4.5" /> },
       { id: 'autonomous-platform', label: 'Autonomous AI', icon: <Brain className="w-4.5 h-4.5" /> },
+      { id: 'aios', label: 'AI Operating System', icon: <Cpu className="w-4.5 h-4.5" /> },
       { id: 'system-validation', label: 'QA Validation', icon: <CheckCircle2 className="w-4.5 h-4.5" /> },
       { id: 'release-checklist', label: 'Release Checklist', icon: <ClipboardList className="w-4.5 h-4.5" /> },
       { id: 'validation', label: 'Scorecard', icon: <FileCheck className="w-4.5 h-4.5" /> },
