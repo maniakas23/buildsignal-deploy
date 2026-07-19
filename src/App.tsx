@@ -39,6 +39,8 @@ const EnterpriseOpsPage = lazy(() => import('@/pages/EnterpriseOpsPage'));
 const PatternLibraryPage = lazy(() => import('@/pages/PatternLibraryPage'));
 const LearningEnginePage = lazy(() => import('@/pages/LearningEnginePage'));
 const NationalIntelligencePage = lazy(() => import('@/pages/NationalIntelligencePage'));
+// ─── PI-2: Onboarding ───
+const OnboardingPage = lazy(() => import('@/pages/OnboardingPage'));
 
 // ─── Customer page router ───
 function PageRouter() {
@@ -79,6 +81,8 @@ function PageRouter() {
     case 'patterns': return <PatternLibraryPage />;
     case 'learning': return <LearningEnginePage />;
     case 'national': return <NationalIntelligencePage />;
+    // PI-2: Onboarding
+    case 'onboarding': return <OnboardingPage />;
     default: return <OpportunityDashboard />;
   }
 }
