@@ -55,6 +55,8 @@ const ReleaseChecklistPage = lazy(() => import('@/pages/ReleaseChecklistPage'));
 const SystemValidationPage = lazy(() => import('@/pages/SystemValidationPage'));
 // ─── PI-12: RC Validation page ───
 const RCValidationPage = lazy(() => import('@/pages/RCValidationPage'));
+// ─── PI-13: Launch Readiness page ───
+const LaunchReadinessPage = lazy(() => import('@/pages/LaunchReadinessPage'));
 
 // ─── Customer page router ───
 function PageRouter() {
@@ -106,6 +108,8 @@ function PageRouter() {
     case 'system-validation': return <SystemValidationPage />;
     // PI-12 route
     case 'rc-validation': return <RCValidationPage />;
+    // PI-13 route
+    case 'launch-readiness': return <LaunchReadinessPage />;
     default: return <OpportunityDashboard />;
   }
 }

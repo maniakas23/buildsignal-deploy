@@ -180,7 +180,7 @@ export default function Navbar() {
             }`}
           >
             <Rocket className="w-3.5 h-3.5" />
-            Launch
+            Go/NoGo
           </button>
           <button
             onClick={() => handleNavClick('validation')}
@@ -263,6 +263,16 @@ export default function Navbar() {
           >
             <PackageCheck className="w-3.5 h-3.5" />
             RC2
+          </button>
+          {/* PI-13: Launch Readiness */}
+          <button
+            onClick={() => handleNavClick('launch-readiness')}
+            className={`hidden lg:flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors ${
+              currentPage === 'launch-readiness' ? 'text-accent-indigo bg-accent-indigo/10' : 'text-ink-tertiary hover:text-ink-primary hover:bg-surface'
+            }`}
+          >
+            <Rocket className="w-3.5 h-3.5" />
+            Launch
           </button>
           <button
             onClick={() => handleNavClick('contact')}
