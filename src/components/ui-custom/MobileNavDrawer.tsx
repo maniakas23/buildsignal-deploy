@@ -6,14 +6,14 @@ import {
   Shield, Radio, Globe, Cpu, Activity, Award, Rocket,
   ClipboardList, FileCheck, CheckCircle2, PackageCheck,
   Sparkles, Globe2, CreditCard, HelpCircle, UserCircle,
-  Settings, LogIn, LogOut, Menu, Briefcase
+  Settings, LogIn, LogOut, Menu, Briefcase, Building2
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 // ═══════════════════════════════════════════════════════════════
 // Mobile Navigation Drawer
 // Full-featured slide-out menu giving mobile users access to
-// all 49 pages organized by category.
+// all 50 pages organized by category.
 // ═══════════════════════════════════════════════════════════════
 
 interface NavGroup {
@@ -64,6 +64,7 @@ const NAV_GROUPS: NavGroup[] = [
       { id: 'production-excellence', label: 'Production RC', icon: <Shield className="w-4.5 h-4.5" /> },
       { id: 'production-readiness', label: 'Production Readiness', icon: <Award className="w-4.5 h-4.5" /> },
       { id: 'pricing-revenue', label: 'Pricing & Revenue', icon: <CreditCard className="w-4.5 h-4.5" /> },
+      { id: 'enterprise-launch', label: 'Enterprise Launch', icon: <Building2 className="w-4.5 h-4.5" /> },
       { id: 'system-validation', label: 'QA Validation', icon: <CheckCircle2 className="w-4.5 h-4.5" /> },
       { id: 'release-checklist', label: 'Release Checklist', icon: <ClipboardList className="w-4.5 h-4.5" /> },
       { id: 'validation', label: 'Scorecard', icon: <FileCheck className="w-4.5 h-4.5" /> },

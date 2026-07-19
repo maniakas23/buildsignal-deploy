@@ -6,7 +6,7 @@ import {
   Briefcase, Search, Bookmark, UserCircle, FileText, Radio, Cpu,
   Globe, Shield, Award, Rocket, ClipboardList, FileCheck, Activity,
   Globe2, CheckCircle2, PackageCheck, Sparkles, Menu, ChevronDown,
-  XCircle, TrendingUp as TrendIcon
+  XCircle, TrendingUp as TrendIcon, Building2
 } from 'lucide-react';
 import { DemoModeBanner } from './EngineStates';
 import { track } from '@/hooks/useAnalytics';
@@ -51,6 +51,7 @@ const qualityLinks = [
   { id: 'production-excellence', label: 'RC', icon: <Shield className="w-3.5 h-3.5" /> },
   { id: 'production-readiness', label: 'Prod', icon: <Award className="w-3.5 h-3.5" /> },
   { id: 'pricing-revenue', label: 'Revenue', icon: <CreditCard className="w-3.5 h-3.5" /> },
+  { id: 'enterprise-launch', label: 'Ent', icon: <Building2 className="w-3.5 h-3.5" /> },
   { id: 'system-validation', label: 'QA', icon: <CheckCircle2 className="w-3.5 h-3.5" /> },
 ];
 
