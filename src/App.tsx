@@ -1,8 +1,13 @@
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useState, useCallback } from 'react';
 import Layout from '@/components/ui-custom/Layout';
 import { LoadingState } from '@/components/ui-custom/EngineStates';
 import { useStore } from '@/store/useStore';
 import { useReducedMotionClass } from '@/hooks/useReducedMotion';
+
+// ─── PI-7: Private Beta Gate ───
+const BetaAccessGate = lazy(() => import('@/components/beta/BetaAccessGate'));
+// ─── PI-7: Sample Intelligence Walkthrough ───
+const SampleIntelligenceWalkthrough = lazy(() => import('@/components/beta/SampleIntelligenceWalkthrough'));
 
 // ─── Customer pages — lazy loaded for performance ───
 const OpportunityDashboard = lazy(() => import('@/pages/OpportunityDashboard'));
@@ -91,25 +96,76 @@ function PageRouter() {
   }
 }
 
+// ─── Beta access check ───
+function hasBetaAccess(): boolean {
+  try {
+    return localStorage.getItem('buildsignal-beta-access') === 'granted';
+  } catch {
+    return false;
+  }
+}
+
 // ─── Auth-aware app shell ───
 export default function App() {
   useReducedMotionClass();
   const { currentPage } = useStore();
+  const [betaGranted, setBetaGranted] = useState(hasBetaAccess);
+  const [walkthroughDone, setWalkthroughDone] = useState(() => {
+    try {
+      return localStorage.getItem('buildsignal-walkthrough-completed') === 'true';
+    } catch {
+      return false;
+    }
+  });
 
-  // Auth pages render without the Layout shell
-  if (currentPage === 'login' || currentPage === 'signup' || currentPage === 'password-reset') {
+  const handleBetaAccess = useCallback(() => {
+    setBetaGranted(true);
+  }, []);
+
+  const handleWalkthroughComplete = useCallback(() => {
+    setWalkthroughDone(true);
+  }, []);
+
+  // Show beta gate if access not granted
+  if (!betaGranted) {
     return (
       <Suspense fallback={<LoadingState message="Loading..." />}>
-        <PageRouter />
+        <BetaAccessGate onAccessGranted={handleBetaAccess} />
       </Suspense>
     );
   }
 
+  // Show sample intelligence walkthrough for first-time users after beta access
+  const showWalkthrough = betaGranted && !walkthroughDone;
+
+  // Auth pages render without the Layout shell
+  if (currentPage === 'login' || currentPage === 'signup' || currentPage === 'password-reset') {
+    return (
+      <>
+        <Suspense fallback={<LoadingState message="Loading..." />}>
+          <PageRouter />
+        </Suspense>
+        {showWalkthrough && (
+          <Suspense fallback={null}>
+            <SampleIntelligenceWalkthrough onComplete={handleWalkthroughComplete} />
+          </Suspense>
+        )}
+      </>
+    );
+  }
+
   return (
-    <Layout>
-      <Suspense fallback={<LoadingState message="Loading..." />}>
-        <PageRouter />
-      </Suspense>
-    </Layout>
+    <>
+      <Layout>
+        <Suspense fallback={<LoadingState message="Loading..." />}>
+          <PageRouter />
+        </Suspense>
+      </Layout>
+      {showWalkthrough && (
+        <Suspense fallback={null}>
+          <SampleIntelligenceWalkthrough onComplete={handleWalkthroughComplete} />
+        </Suspense>
+      )}
+    </>
   );
 }
