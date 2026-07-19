@@ -71,6 +71,8 @@ const EnterpriseLaunchPage = lazy(() => import('@/pages/EnterpriseLaunchPage'));
 const DecisionPlatformPage = lazy(() => import('@/pages/DecisionPlatformPage'));
 // ─── PI-20: AI Launch page ───
 const AILaunchPage = lazy(() => import('@/pages/AILaunchPage'));
+// ─── PI-21: Intelligence Excellence page ───
+const IntelligenceExcellencePage = lazy(() => import('@/pages/IntelligenceExcellencePage'));
 
 // ─── Customer page router ───
 function PageRouter() {
@@ -138,6 +140,8 @@ function PageRouter() {
     case 'decision-platform': return <DecisionPlatformPage />;
     // PI-20 route
     case 'ai-launch': return <AILaunchPage />;
+    // PI-21 route
+    case 'intelligence-excellence': return <IntelligenceExcellencePage />;
     default: return <OpportunityDashboard />;
   }
 }
