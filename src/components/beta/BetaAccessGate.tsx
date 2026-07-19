@@ -1,233 +1,195 @@
 import { useState } from 'react';
-import { useStore } from '@/store/useStore';
-import { trackEvent } from '@/hooks/useTelemetry';
-import {
-  Lock, ArrowRight, Check, Sparkles, Mail,
-  Shield, Users, Clock, Zap, X
-} from 'lucide-react';
+import { Shield, ArrowRight, CheckCircle, Loader2 } from 'lucide-react';
 
-const VALID_BETA_CODES = ['BETA2026', 'SIGNALVIP', 'BUILDALPHA', 'EARLYACCESS'];
+const VALID_CODES = ['BETA2026', 'SIGNALVIP', 'BUILDALPHA', 'EARLYACCESS'];
 
-interface BetaAccessGateProps {
+interface Props {
   onAccessGranted: () => void;
 }
 
-export default function BetaAccessGate({ onAccessGranted }: BetaAccessGateProps) {
-  const { addToast } = useStore();
+export default function BetaAccessGate({ onAccessGranted }: Props) {
   const [code, setCode] = useState('');
-  const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [waitlistMode, setWaitlistMode] = useState(false);
   const [waitlistEmail, setWaitlistEmail] = useState('');
-  const [mode, setMode] = useState<'code' | 'waitlist'>('code');
-  const [submitted, setSubmitted] = useState(false);
+  const [waitlistRole, setWaitlistRole] = useState('');
+  const [waitlistSubmitted, setWaitlistSubmitted] = useState(false);
 
-  const handleCodeSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const normalized = code.trim().toUpperCase();
+    setError('');
+    setLoading(true);
 
-    if (VALID_BETA_CODES.includes(normalized)) {
-      trackEvent('signup_complete', { source: 'beta_gate', code: normalized });
-      localStorage.setItem('buildsignal-beta-access', 'granted');
-      localStorage.setItem('buildsignal-beta-code', normalized);
-      addToast('Welcome to the BuildSignal Private Beta!', 'success');
+    // Simulate validation delay
+    await new Promise((r) => setTimeout(r, 800));
+
+    if (VALID_CODES.includes(code.trim().toUpperCase())) {
+      localStorage.setItem('buildsignal_beta_access', 'granted');
+      localStorage.setItem('buildsignal_beta_date', new Date().toISOString());
       onAccessGranted();
     } else {
-      addToast('Invalid access code. Please check and try again.', 'error');
-      trackEvent('error', { type: 'invalid_beta_code', code: normalized });
+      setError('Invalid access code. Please try again or join the waitlist.');
     }
+
+    setLoading(false);
   };
 
-  const handleWaitlistSubmit = (e: React.FormEvent) => {
+  const handleWaitlist = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!waitlistEmail.trim() || !waitlistEmail.includes('@')) {
-      addToast('Please enter a valid email address.', 'error');
-      return;
-    }
-    trackEvent('signup_start', { source: 'beta_waitlist', email: waitlistEmail });
-    setSubmitted(true);
-    addToast('You are on the waitlist! We will be in touch soon.', 'success');
+    // Store waitlist signup
+    const waitlist = JSON.parse(localStorage.getItem('buildsignal_waitlist') || '[]');
+    waitlist.push({
+      email: waitlistEmail,
+      role: waitlistRole,
+      date: new Date().toISOString(),
+    });
+    localStorage.setItem('buildsignal_waitlist', JSON.stringify(waitlist));
+    setWaitlistSubmitted(true);
   };
-
-  // Check if already granted
-  const alreadyGranted = localStorage.getItem('buildsignal-beta-access') === 'granted';
-  if (alreadyGranted) {
-    onAccessGranted();
-    return null;
-  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-6 py-12 bg-canvas">
-      <div className="w-full max-w-[440px]">
+    <div className="min-h-screen bg-canvas flex items-center justify-center px-4">
+      <div className="max-w-md w-full">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-accent-indigo/10 flex items-center justify-center mx-auto mb-4">
-            <Sparkles className="w-8 h-8 text-accent-indigo" />
+          <div className="w-16 h-16 rounded-2xl bg-accent-indigo flex items-center justify-center mx-auto mb-4 shadow-lg shadow-accent-indigo/20">
+            <Shield className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-2xl font-semibold text-ink-primary tracking-tight mb-2">
-            BuildSignal Private Beta
-          </h1>
-          <p className="text-sm text-ink-secondary">
-            Early access to construction intelligence for select professionals.
-          </p>
+          <h1 className="text-2xl font-bold text-ink-primary mb-2">BuildSignal</h1>
+          <p className="text-sm text-ink-secondary">Private Beta Access</p>
         </div>
 
-        {/* Stats bar */}
-        <div className="grid grid-cols-3 gap-3 mb-6">
-          <div className="bg-surface border border-ink-wash rounded-xl p-3 text-center">
-            <Shield className="w-4 h-4 text-accent-teal mx-auto mb-1" />
-            <p className="text-lg font-semibold text-ink-primary font-mono">2,400+</p>
-            <p className="text-[10px] text-ink-tertiary">Data Sources</p>
-          </div>
-          <div className="bg-surface border border-ink-wash rounded-xl p-3 text-center">
-            <Users className="w-4 h-4 text-accent-indigo mx-auto mb-1" />
-            <p className="text-lg font-semibold text-ink-primary font-mono">3,100+</p>
-            <p className="text-[10px] text-ink-tertiary">Counties</p>
-          </div>
-          <div className="bg-surface border border-ink-wash rounded-xl p-3 text-center">
-            <Clock className="w-4 h-4 text-accent-amber mx-auto mb-1" />
-            <p className="text-lg font-semibold text-ink-primary font-mono">60-90</p>
-            <p className="text-[10px] text-ink-tertiary">Day Lead</p>
-          </div>
-        </div>
+        {!waitlistMode ? (
+          <div className="bg-surface rounded-2xl p-6 shadow-card border border-ink-wash">
+            <h2 className="text-lg font-semibold text-ink-primary mb-2">Enter Access Code</h2>
+            <p className="text-sm text-ink-secondary mb-5">
+              BuildSignal is currently in private beta. Enter your invite code to access the platform.
+            </p>
 
-        {/* Mode toggle */}
-        <div className="flex mb-4 bg-canvas rounded-xl p-1 border border-ink-wash">
-          <button
-            onClick={() => setMode('code')}
-            className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all ${
-              mode === 'code'
-                ? 'bg-surface text-ink-primary shadow-sm'
-                : 'text-ink-tertiary hover:text-ink-secondary'
-            }`}
-          >
-            <Lock className="w-3 h-3 inline mr-1" />
-            Have an Invite Code
-          </button>
-          <button
-            onClick={() => setMode('waitlist')}
-            className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all ${
-              mode === 'waitlist'
-                ? 'bg-surface text-ink-primary shadow-sm'
-                : 'text-ink-tertiary hover:text-ink-secondary'
-            }`}
-          >
-            <Mail className="w-3 h-3 inline mr-1" />
-            Join Waitlist
-          </button>
-        </div>
-
-        {/* Code entry */}
-        {mode === 'code' && (
-          <div className="bg-surface border border-ink-wash rounded-2xl p-5">
-            <form onSubmit={handleCodeSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-ink-primary mb-1.5">
-                  Beta Access Code
-                </label>
                 <input
                   type="text"
                   value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  placeholder="Enter your invite code"
-                  className="w-full px-4 py-3 rounded-xl bg-canvas border border-ink-wash text-sm text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus:border-accent-indigo/50 uppercase tracking-wider font-mono"
+                  onChange={(e) => setCode(e.target.value.toUpperCase())}
+                  placeholder="e.g. BETA2026"
+                  className="w-full px-4 py-3 rounded-xl bg-canvas border border-ink-wash text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus:ring-2 focus:ring-accent-indigo/30 focus:border-accent-indigo text-center text-lg font-mono tracking-wider"
                   autoFocus
                 />
-                <p className="text-[10px] text-ink-tertiary mt-1.5">
-                  Codes are case-insensitive. Contact your account manager if you need one.
-                </p>
+                {error && (
+                  <p className="text-xs text-accent-crimson mt-2 text-center">{error}</p>
+                )}
               </div>
 
               <button
                 type="submit"
-                disabled={!code.trim()}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-accent-indigo text-white text-sm font-semibold hover:bg-accent-indigo-dim transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!code.trim() || loading}
+                className="w-full py-3 rounded-xl bg-accent-indigo text-white font-medium flex items-center justify-center gap-2 hover:bg-accent-indigo/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Zap className="w-4 h-4" />
-                Enter Private Beta
+                {loading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <>
+                    Access Platform <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
               </button>
             </form>
-          </div>
-        )}
 
-        {/* Waitlist */}
-        {mode === 'waitlist' && (
-          <div className="bg-surface border border-ink-wash rounded-2xl p-5">
-            {submitted ? (
-              <div className="text-center py-4">
-                <div className="w-12 h-12 rounded-full bg-accent-teal/10 flex items-center justify-center mx-auto mb-3">
-                  <Check className="w-6 h-6 text-accent-teal" />
-                </div>
-                <h3 className="text-sm font-semibold text-ink-primary mb-1">
-                  You Are on the List
-                </h3>
-                <p className="text-xs text-ink-secondary">
-                  We will email you when a spot opens up. Thank you for your interest!
-                </p>
-              </div>
-            ) : (
-              <form onSubmit={handleWaitlistSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-medium text-ink-primary mb-1.5">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    value={waitlistEmail}
-                    onChange={(e) => setWaitlistEmail(e.target.value)}
-                    placeholder="you@company.com"
-                    className="w-full px-4 py-3 rounded-xl bg-canvas border border-ink-wash text-sm text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus:border-accent-indigo/50"
-                    autoFocus
-                  />
-                  <p className="text-[10px] text-ink-tertiary mt-1.5">
-                    Limited spots available. We are adding users weekly.
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-ink-primary mb-1.5">
-                    What best describes you?
-                  </label>
-                  <select
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-canvas border border-ink-wash text-sm text-ink-primary focus:outline-none focus:border-accent-indigo/50"
-                  >
-                    <option value="">Select your role...</option>
-                    <option value="contractor">General Contractor</option>
-                    <option value="developer">Real Estate Developer</option>
-                    <option value="supplier">Material Supplier</option>
-                    <option value="consultant">Construction Consultant</option>
-                    <option value="investor">Infrastructure Investor</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-
+            <div className="mt-5 pt-4 border-t border-ink-wash text-center">
+              <p className="text-sm text-ink-secondary">
+                Don&apos;t have a code?{' '}
                 <button
-                  type="submit"
-                  disabled={!waitlistEmail.trim()}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-accent-indigo text-white text-sm font-semibold hover:bg-accent-indigo-dim transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={() => { setWaitlistMode(true); setError(''); }}
+                  className="text-accent-indigo font-medium hover:underline"
                 >
-                  <Mail className="w-4 h-4" />
-                  Join the Waitlist
+                  Join the waitlist
                 </button>
-              </form>
-            )}
+              </p>
+            </div>
+          </div>
+        ) : waitlistSubmitted ? (
+          <div className="bg-surface rounded-2xl p-6 shadow-card border border-ink-wash text-center">
+            <CheckCircle className="w-12 h-12 text-accent-teal mx-auto mb-4" />
+            <h2 className="text-lg font-semibold text-ink-primary mb-2">You&apos;re on the list!</h2>
+            <p className="text-sm text-ink-secondary mb-4">
+              We&apos;ll email you at <strong>{waitlistEmail}</strong> when access is available.
+            </p>
+            <button
+              onClick={() => { setWaitlistMode(false); setWaitlistSubmitted(false); }}
+              className="text-accent-indigo text-sm font-medium hover:underline"
+            >
+              Back to access code
+            </button>
+          </div>
+        ) : (
+          <div className="bg-surface rounded-2xl p-6 shadow-card border border-ink-wash">
+            <h2 className="text-lg font-semibold text-ink-primary mb-2">Join the Waitlist</h2>
+            <p className="text-sm text-ink-secondary mb-5">
+              Get early access to BuildSignal. We&apos;re onboarding new users weekly.
+            </p>
+
+            <form onSubmit={handleWaitlist} className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-ink-secondary mb-1.5">Email</label>
+                <input
+                  type="email"
+                  value={waitlistEmail}
+                  onChange={(e) => setWaitlistEmail(e.target.value)}
+                  placeholder="you@company.com"
+                  required
+                  className="w-full px-4 py-3 rounded-xl bg-canvas border border-ink-wash text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus:ring-2 focus:ring-accent-indigo/30 focus:border-accent-indigo"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-ink-secondary mb-1.5">Role</label>
+                <select
+                  value={waitlistRole}
+                  onChange={(e) => setWaitlistRole(e.target.value)}
+                  required
+                  className="w-full px-4 py-3 rounded-xl bg-canvas border border-ink-wash text-ink-primary focus:outline-none focus:ring-2 focus:ring-accent-indigo/30 focus:border-accent-indigo"
+                >
+                  <option value="">Select your role</option>
+                  <option value="general_contractor">General Contractor</option>
+                  <option value="subcontractor">Subcontractor</option>
+                  <option value="supplier">Supplier/Material Provider</option>
+                  <option value="developer">Developer</option>
+                  <option value="architect">Architect/Designer</option>
+                  <option value="consultant">Consultant</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3 rounded-xl bg-accent-indigo text-white font-medium hover:bg-accent-indigo/90 transition-colors"
+              >
+                Join Waitlist
+              </button>
+            </form>
+
+            <div className="mt-5 pt-4 border-t border-ink-wash text-center">
+              <button
+                onClick={() => setWaitlistMode(false)}
+                className="text-accent-indigo text-sm font-medium hover:underline"
+              >
+                I have an access code
+              </button>
+            </div>
           </div>
         )}
 
         {/* Trust footer */}
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[11px] text-ink-tertiary">
+        <div className="mt-6 flex items-center justify-center gap-4 text-[11px] text-ink-tertiary">
           <span className="flex items-center gap-1">
-            <Shield className="w-3 h-3 text-accent-teal" />
-            SOC 2 Compliant
+            <Shield className="w-3 h-3" /> SOC 2 Compliant
           </span>
-          <span className="flex items-center gap-1">
-            <Lock className="w-3 h-3 text-accent-teal" />
-            Encrypted
-          </span>
-          <span className="flex items-center gap-1">
-            <Users className="w-3 h-3 text-accent-teal" />
-            Private Beta
-          </span>
+          <span className="w-1 h-1 rounded-full bg-ink-wash" />
+          <span>GDPR Ready</span>
+          <span className="w-1 h-1 rounded-full bg-ink-wash" />
+          <span>Encrypted</span>
         </div>
       </div>
     </div>

@@ -1,15 +1,15 @@
-import { Suspense, lazy, useState, useCallback } from 'react';
+import { Suspense, lazy, useState, useEffect } from 'react';
 import Layout from '@/components/ui-custom/Layout';
 import { LoadingState } from '@/components/ui-custom/EngineStates';
 import { useStore } from '@/store/useStore';
 import { useReducedMotionClass } from '@/hooks/useReducedMotion';
 
-// ─── PI-7: Private Beta Gate ───
+// ─── PI-7: Beta access gate ───
 const BetaAccessGate = lazy(() => import('@/components/beta/BetaAccessGate'));
-// ─── PI-7: Sample Intelligence Walkthrough ───
 const SampleIntelligenceWalkthrough = lazy(() => import('@/components/beta/SampleIntelligenceWalkthrough'));
 
 // ─── Customer pages — lazy loaded for performance ───
+const Home = lazy(() => import('@/pages/Home'));
 const OpportunityDashboard = lazy(() => import('@/pages/OpportunityDashboard'));
 const OpportunityPortfolio = lazy(() => import('@/pages/OpportunityPortfolio'));
 const ProjectFeed = lazy(() => import('@/pages/ProjectFeed'));
@@ -44,11 +44,7 @@ const EnterpriseOpsPage = lazy(() => import('@/pages/EnterpriseOpsPage'));
 const PatternLibraryPage = lazy(() => import('@/pages/PatternLibraryPage'));
 const LearningEnginePage = lazy(() => import('@/pages/LearningEnginePage'));
 const NationalIntelligencePage = lazy(() => import('@/pages/NationalIntelligencePage'));
-// ─── PI-2: Onboarding ───
-const OnboardingPage = lazy(() => import('@/pages/OnboardingPage'));
-// ─── PI-4: Operations Center ───
-const OperationsCenterPage = lazy(() => import('@/pages/OperationsCenterPage'));
-// ─── PI-9: Customer trust & onboarding ───
+// ─── PI-9: New pages ───
 const SecurityPage = lazy(() => import('@/pages/SecurityPage'));
 const DataCoveragePage = lazy(() => import('@/pages/DataCoveragePage'));
 const CustomerOnboardingPage = lazy(() => import('@/pages/CustomerOnboardingPage'));
@@ -58,6 +54,7 @@ function PageRouter() {
   const { currentPage } = useStore();
 
   switch (currentPage) {
+    case 'home': return <Home />;
     case 'dashboard': return <OpportunityDashboard />;
     case 'portfolio': return <OpportunityPortfolio />;
     case 'projects': return <ProjectFeed />;
@@ -92,11 +89,7 @@ function PageRouter() {
     case 'patterns': return <PatternLibraryPage />;
     case 'learning': return <LearningEnginePage />;
     case 'national': return <NationalIntelligencePage />;
-    // PI-2: Onboarding
-    case 'onboarding': return <OnboardingPage />;
-    // PI-4: Operations Center
-    case 'ops-center': return <OperationsCenterPage />;
-    // PI-9: Customer trust & onboarding
+    // PI-9 routes
     case 'security': return <SecurityPage />;
     case 'data-coverage': return <DataCoveragePage />;
     case 'getting-started': return <CustomerOnboardingPage />;
@@ -104,37 +97,28 @@ function PageRouter() {
   }
 }
 
-// ─── Beta access check ───
-function hasBetaAccess(): boolean {
-  try {
-    return localStorage.getItem('buildsignal-beta-access') === 'granted';
-  } catch {
-    return false;
-  }
-}
-
 // ─── Auth-aware app shell ───
 export default function App() {
   useReducedMotionClass();
   const { currentPage } = useStore();
-  const [betaGranted, setBetaGranted] = useState(hasBetaAccess);
+
+  // ─── PI-7: Beta access gate ───
+  const [betaGranted, setBetaGranted] = useState(() => {
+    return localStorage.getItem('buildsignal_beta_access') === 'granted';
+  });
   const [walkthroughDone, setWalkthroughDone] = useState(() => {
-    try {
-      return localStorage.getItem('buildsignal-walkthrough-completed') === 'true';
-    } catch {
-      return false;
-    }
+    return localStorage.getItem('buildsignal_walkthrough_done') === 'true';
   });
 
-  const handleBetaAccess = useCallback(() => {
+  const handleBetaAccess = () => {
     setBetaGranted(true);
-  }, []);
+  };
 
-  const handleWalkthroughComplete = useCallback(() => {
+  const handleWalkthroughComplete = () => {
     setWalkthroughDone(true);
-  }, []);
+  };
 
-  // Show beta gate if access not granted
+  // Show beta gate if not granted
   if (!betaGranted) {
     return (
       <Suspense fallback={<LoadingState message="Loading..." />}>
@@ -143,22 +127,20 @@ export default function App() {
     );
   }
 
-  // Show sample intelligence walkthrough for first-time users after beta access
   const showWalkthrough = betaGranted && !walkthroughDone;
 
   // Auth pages render without the Layout shell
   if (currentPage === 'login' || currentPage === 'signup' || currentPage === 'password-reset') {
     return (
-      <>
-        <Suspense fallback={<LoadingState message="Loading..." />}>
-          <PageRouter />
-        </Suspense>
+      <Suspense fallback={<LoadingState message="Loading..." />}>
+        <PageRouter />
         {showWalkthrough && (
-          <Suspense fallback={null}>
-            <SampleIntelligenceWalkthrough onComplete={handleWalkthroughComplete} />
-          </Suspense>
+          <SampleIntelligenceWalkthrough
+            onComplete={handleWalkthroughComplete}
+            onSkip={handleWalkthroughComplete}
+          />
         )}
-      </>
+      </Suspense>
     );
   }
 
@@ -171,7 +153,10 @@ export default function App() {
       </Layout>
       {showWalkthrough && (
         <Suspense fallback={null}>
-          <SampleIntelligenceWalkthrough onComplete={handleWalkthroughComplete} />
+          <SampleIntelligenceWalkthrough
+            onComplete={handleWalkthroughComplete}
+            onSkip={handleWalkthroughComplete}
+          />
         </Suspense>
       )}
     </>

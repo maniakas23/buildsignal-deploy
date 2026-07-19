@@ -6,18 +6,14 @@ import SurgeAlertModal from './SurgeAlertModal';
 import BetaFeedback from './BetaFeedback';
 import OnboardingModal from './Onboarding';
 import DemoBadge from './DemoBadge';
+import { SkipNavLink, MainContent } from './SkipNav';
 
-// PI-3: Customer-facing improvements
-const DashboardTour = lazy(() => import('@/components/dashboard/DashboardTour'));
-// PI-4: Customer feedback loop
-const CustomerFeedback = lazy(() => import('@/components/feedback/CustomerFeedback'));
-// PI-5: Product education
-const ContextualHelp = lazy(() => import('@/components/education/ContextualHelp'));
-// PI-6: First-time user welcome + success milestones
+// ─── PI Global Components (lazy loaded) ───
 const WelcomeBanner = lazy(() => import('@/components/dashboard/WelcomeBanner'));
-const SuccessMilestones = lazy(() => import('@/components/dashboard/SuccessMilestones'));
-// PI-7: Release highlights / changelog
+const CustomerFeedback = lazy(() => import('@/components/feedback/CustomerFeedback'));
+const ContextualHelp = lazy(() => import('@/components/education/ContextualHelp'));
 const ReleaseHighlights = lazy(() => import('@/components/beta/ReleaseHighlights'));
+const InAppNotifications = lazy(() => import('@/components/dashboard/InAppNotifications'));
 
 interface LayoutProps {
   children: ReactNode;
@@ -26,42 +22,40 @@ interface LayoutProps {
 export default function Layout({ children }: LayoutProps) {
   return (
     <div className="min-h-screen bg-canvas pb-16 md:pb-0">
+      <SkipNavLink />
       <Navbar />
       <div className="flex justify-center pt-2">
         <DemoBadge />
       </div>
-      <main id="main-content" className="flex-1 min-w-0" role="main">
+
+      {/* PI-6: Welcome banner for first-time users */}
+      <Suspense fallback={null}>
+        <WelcomeBanner />
+      </Suspense>
+
+      <MainContent>
         <div className="relative">
-          {/* PI-6: Welcome banner for first-time users */}
-          <Suspense fallback={null}>
-            <WelcomeBanner />
-          </Suspense>
           {children}
         </div>
-      </main>
+      </MainContent>
+
       <ToastContainer />
       <SurgeAlertModal />
       <BetaFeedback />
       <OnboardingModal />
-      {/* PI-3: Guided dashboard tour for first-time users */}
-      <Suspense fallback={null}>
-        <DashboardTour />
-      </Suspense>
-      {/* PI-4: Floating customer feedback widget on every page */}
+
+      {/* ─── PI Global floating components ─── */}
       <Suspense fallback={null}>
         <CustomerFeedback />
       </Suspense>
-      {/* PI-5: Contextual product education tooltips */}
       <Suspense fallback={null}>
         <ContextualHelp />
       </Suspense>
-      {/* PI-6: Success milestone celebrations */}
-      <Suspense fallback={null}>
-        <SuccessMilestones />
-      </Suspense>
-      {/* PI-7: Release highlights / changelog */}
       <Suspense fallback={null}>
         <ReleaseHighlights />
+      </Suspense>
+      <Suspense fallback={null}>
+        <InAppNotifications />
       </Suspense>
     </div>
   );
