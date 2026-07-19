@@ -79,6 +79,8 @@ const RCPlatformPage = lazy(() => import('@/pages/RCPlatformPage'));
 const AutonomousPlatformPage = lazy(() => import('@/pages/AutonomousPlatformPage'));
 // ─── PI-24: AI Operating System page ───
 const AIOSPage = lazy(() => import('@/pages/AIOSPage'));
+// ─── PI-25: Data Moat page ───
+const DataMoatPage = lazy(() => import('@/pages/DataMoatPage'));
 
 // ─── Customer page router ───
 function PageRouter() {
@@ -139,6 +141,7 @@ function PageRouter() {
     case 'rc-platform': return <RCPlatformPage />;
     case 'autonomous-platform': return <AutonomousPlatformPage />;
     case 'aios': return <AIOSPage />;
+    case 'data-moat': return <DataMoatPage />;
     default: return <OpportunityDashboard />;
   }
 }
