@@ -63,6 +63,8 @@ const CommercialLaunchCandidatePage = lazy(() => import('@/pages/CommercialLaunc
 const ProductionExcellencePage = lazy(() => import('@/pages/ProductionExcellencePage'));
 // ─── PI-16: Production Readiness page ───
 const ProductionReadinessPage = lazy(() => import('@/pages/ProductionReadinessPage'));
+// ─── PI-17: Pricing & Revenue page ───
+const PricingRevenuePage = lazy(() => import('@/pages/PricingRevenuePage'));
 
 // ─── Customer page router ───
 function PageRouter() {
@@ -122,6 +124,8 @@ function PageRouter() {
     case 'production-excellence': return <ProductionExcellencePage />;
     // PI-16 route
     case 'production-readiness': return <ProductionReadinessPage />;
+    // PI-17 route
+    case 'pricing-revenue': return <PricingRevenuePage />;
     default: return <OpportunityDashboard />;
   }
 }
