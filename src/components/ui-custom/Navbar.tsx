@@ -284,6 +284,16 @@ export default function Navbar() {
             <Sparkles className="w-3.5 h-3.5" />
             CLC
           </button>
+          {/* PI-15: Production Excellence */}
+          <button
+            onClick={() => handleNavClick('production-excellence')}
+            className={`hidden lg:flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors ${
+              currentPage === 'production-excellence' ? 'text-accent-indigo bg-accent-indigo/10' : 'text-ink-tertiary hover:text-ink-primary hover:bg-surface'
+            }`}
+          >
+            <Shield className="w-3.5 h-3.5" />
+            RC
+          </button>
           <button
             onClick={() => handleNavClick('contact')}
             className={`hidden lg:flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors ${
