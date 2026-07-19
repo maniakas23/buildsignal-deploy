@@ -6,7 +6,7 @@ import {
   Shield, Radio, Globe, Cpu, Activity, Award, Rocket, Brain, Building2,
   ClipboardList, FileCheck, CheckCircle2, PackageCheck,
   Sparkles, Globe2, CreditCard, HelpCircle, UserCircle, Zap,
-  Settings, LogIn, LogOut, Menu, Briefcase
+  Settings, LogIn, LogOut, Menu, Briefcase, Database
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -71,6 +71,7 @@ const NAV_GROUPS: NavGroup[] = [
       { id: 'rc-platform', label: 'RC Platform', icon: <Shield className="w-4.5 h-4.5" /> },
       { id: 'autonomous-platform', label: 'Autonomous AI', icon: <Brain className="w-4.5 h-4.5" /> },
       { id: 'aios', label: 'AI Operating System', icon: <Cpu className="w-4.5 h-4.5" /> },
+      { id: 'data-moat', label: 'Data Moat & Network', icon: <Database className="w-4.5 h-4.5" /> },
       { id: 'system-validation', label: 'QA Validation', icon: <CheckCircle2 className="w-4.5 h-4.5" /> },
       { id: 'release-checklist', label: 'Release Checklist', icon: <ClipboardList className="w-4.5 h-4.5" /> },
       { id: 'validation', label: 'Scorecard', icon: <FileCheck className="w-4.5 h-4.5" /> },
