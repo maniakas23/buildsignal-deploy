@@ -1,5 +1,5 @@
 import { useStore } from '@/store/useStore';
-import { Signal, Bell, BookOpen, BarChart3, FolderOpen, Layers, TrendingUp, Lightbulb, HelpCircle, CreditCard, Mail, MapPin, LogIn, LogOut, Briefcase, Search, Bookmark, UserCircle, FileText, Radio, Cpu, Globe, Shield, Award, TrendingUp as TrendIcon, Rocket, ClipboardList, FileCheck, Activity, Globe2, CheckCircle2, PackageCheck } from 'lucide-react';
+import { Signal, Bell, BookOpen, BarChart3, FolderOpen, Layers, TrendingUp, Lightbulb, HelpCircle, CreditCard, Mail, MapPin, LogIn, LogOut, Briefcase, Search, Bookmark, UserCircle, FileText, Radio, Cpu, Globe, Shield, Award, TrendingUp as TrendIcon, Rocket, ClipboardList, FileCheck, Activity, Globe2, CheckCircle2, PackageCheck, Sparkles } from 'lucide-react';
 import { DemoModeBanner } from './EngineStates';
 import { track } from '@/hooks/useAnalytics';
 import { useAuth } from '@/hooks/useAuth';
@@ -273,6 +273,16 @@ export default function Navbar() {
           >
             <Rocket className="w-3.5 h-3.5" />
             Launch
+          </button>
+          {/* PI-14: Commercial Launch Candidate */}
+          <button
+            onClick={() => handleNavClick('commercial-launch')}
+            className={`hidden lg:flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors ${
+              currentPage === 'commercial-launch' ? 'text-accent-indigo bg-accent-indigo/10' : 'text-ink-tertiary hover:text-ink-primary hover:bg-surface'
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            CLC
           </button>
           <button
             onClick={() => handleNavClick('contact')}
