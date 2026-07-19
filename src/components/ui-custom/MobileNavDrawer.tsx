@@ -68,6 +68,7 @@ const NAV_GROUPS: NavGroup[] = [
       { id: 'decision-platform', label: 'Decision Platform', icon: <Brain className="w-4.5 h-4.5" /> },
       { id: 'ai-launch', label: 'AI Launch', icon: <Zap className="w-4.5 h-4.5" /> },
       { id: 'intelligence-excellence', label: 'v1.0 Launch', icon: <Rocket className="w-4.5 h-4.5" /> },
+      { id: 'rc-platform', label: 'RC Platform', icon: <Shield className="w-4.5 h-4.5" /> },
       { id: 'system-validation', label: 'QA Validation', icon: <CheckCircle2 className="w-4.5 h-4.5" /> },
       { id: 'release-checklist', label: 'Release Checklist', icon: <ClipboardList className="w-4.5 h-4.5" /> },
       { id: 'validation', label: 'Scorecard', icon: <FileCheck className="w-4.5 h-4.5" /> },
