@@ -1,184 +1,131 @@
-/**
- * Product Telemetry — tracks customer journey events for the Operations Center.
- * All events are stored locally and can be synced to the backend.
- *
- * Tracked events:
- * - homepage_cta_click    → CTA clicked on homepage
- * - signup_start          → User begins signup
- * - onboarding_step       → User completes onboarding step N
- * - onboarding_complete   → User finishes onboarding
- * - dashboard_view        → User views dashboard
- * - first_search          → User performs first search
- * - watchlist_create      → User creates a watchlist
- * - alert_create          → User creates an alert
- * - report_generate       → User generates a report
- * - map_interact          → User interacts with map
- * - opportunity_click     → User clicks an opportunity card
- * - feature_use           → Generic feature adoption tracking
- */
+import { useCallback } from 'react';
 
-// ─── Event Types ───
 export type TelemetryEventType =
-  | 'homepage_cta_click'
-  | 'signup_start'
-  | 'signup_complete'
-  | 'onboarding_step'
-  | 'onboarding_complete'
-  | 'onboarding_skip'
-  | 'dashboard_view'
-  | 'first_search'
-  | 'watchlist_create'
-  | 'watchlist_save_item'
-  | 'alert_create'
-  | 'alert_toggle'
-  | 'report_generate'
-  | 'report_download'
-  | 'map_interact'
-  | 'map_filter'
-  | 'opportunity_click'
-  | 'opportunity_expand'
-  | 'opportunity_action'
-  | 'feedback_submit'
-  | 'feature_use'
   | 'page_view'
-  | 'error';
+  | 'search_performed'
+  | 'opportunity_viewed'
+  | 'opportunity_saved'
+  | 'report_generated'
+  | 'alert_created'
+  | 'alert_triggered'
+  | 'map_explored'
+  | 'filter_applied'
+  | 'export_downloaded'
+  | 'subscription_changed'
+  | 'feedback_submitted'
+  | 'tutorial_completed'
+  | 'feature_used'
+  | 'error_occurred'
+  | 'api_latency'
+  | 'session_start'
+  | 'session_end'
+  | 'onboarding_step'
+  | 'conversion_event';
 
-interface TelemetryEvent {
-  id: string;
+export interface TelemetryEvent {
   type: TelemetryEventType;
-  timestamp: string;
-  sessionId: string;
-  userId?: string;
+  timestamp: number;
+  page?: string;
   metadata?: Record<string, unknown>;
 }
 
-// ─── Constants ───
-const STORAGE_KEY = 'buildsignal-telemetry';
-const SESSION_KEY = 'buildsignal-session';
+const STORAGE_KEY = 'buildsignal_telemetry';
 const MAX_EVENTS = 500;
 
-// ─── Helpers ───
-function generateId(): string {
-  return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-}
-
-function getSessionId(): string {
-  let sid = sessionStorage.getItem(SESSION_KEY);
-  if (!sid) {
-    sid = generateId();
-    sessionStorage.setItem(SESSION_KEY, sid);
-  }
-  return sid;
-}
-
-function getStoredEvents(): TelemetryEvent[] {
+function getEvents(): TelemetryEvent[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored ? JSON.parse(stored) : [];
   } catch {
     return [];
   }
 }
 
-function storeEvents(events: TelemetryEvent[]) {
+function saveEvents(events: TelemetryEvent[]) {
   try {
-    const trimmed = events.slice(-MAX_EVENTS);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
   } catch {
-    // Storage full — clear oldest 50%
-    const half = events.slice(Math.floor(events.length / 2));
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(half));
+    // If quota exceeded, clear old events
+    const trimmed = events.slice(-100);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed));
   }
 }
 
-// ─── Core Track Function ───
-export function trackEvent(
-  type: TelemetryEventType,
-  metadata?: Record<string, unknown>
-) {
-  const event: TelemetryEvent = {
-    id: generateId(),
-    type,
-    timestamp: new Date().toISOString(),
-    sessionId: getSessionId(),
-    metadata,
+export function track(event: Omit<TelemetryEvent, 'timestamp'>) {
+  const events = getEvents();
+  events.push({
+    ...event,
+    timestamp: Date.now(),
+  });
+
+  // Trim to max
+  if (events.length > MAX_EVENTS) {
+    events.splice(0, events.length - MAX_EVENTS);
+  }
+
+  saveEvents(events);
+}
+
+export function trackPageView(page: string) {
+  track({ type: 'page_view', page });
+}
+
+export function trackSearch(query: string, filters?: Record<string, unknown>) {
+  track({ type: 'search_performed', metadata: { query, filters } });
+}
+
+export function trackOpportunityViewed(id: string, title: string) {
+  track({ type: 'opportunity_viewed', metadata: { id, title } });
+}
+
+export function trackError(error: Error, context?: Record<string, unknown>) {
+  track({
+    type: 'error_occurred',
+    metadata: {
+      message: error.message,
+      stack: error.stack,
+      ...context,
+    },
+  });
+}
+
+export function getTelemetrySummary() {
+  const events = getEvents();
+  const now = Date.now();
+  const dayAgo = now - 86400000;
+  const weekAgo = now - 604800000;
+
+  return {
+    totalEvents: events.length,
+    today: events.filter((e) => e.timestamp > dayAgo).length,
+    thisWeek: events.filter((e) => e.timestamp > weekAgo).length,
+    byType: events.reduce((acc, e) => {
+      acc[e.type] = (acc[e.type] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>),
+    byPage: events.reduce((acc, e) => {
+      if (e.page) {
+        acc[e.page] = (acc[e.page] || 0) + 1;
+      }
+      return acc;
+    }, {} as Record<string, number>),
+    events,
   };
-
-  const events = getStoredEvents();
-  events.push(event);
-  storeEvents(events);
-
-  // Also log to console in development
-  if (import.meta.env.DEV) {
-    // eslint-disable-next-line no-console
-    console.log('[Telemetry]', type, metadata);
-  }
-
-  return event;
 }
 
-// ─── React Hook ───
+export function clearTelemetry() {
+  localStorage.removeItem(STORAGE_KEY);
+}
+
+// React hook for tracking page views
 export function useTelemetry() {
-  const track = (type: TelemetryEventType, metadata?: Record<string, unknown>) => {
-    trackEvent(type, metadata);
-  };
+  const trackEvent = useCallback((event: Omit<TelemetryEvent, 'timestamp'>) => {
+    track(event);
+  }, []);
 
-  const getEvents = (type?: TelemetryEventType): TelemetryEvent[] => {
-    const events = getStoredEvents();
-    return type ? events.filter((e) => e.type === type) : events;
-  };
+  const trackView = useCallback((page: string) => {
+    trackPageView(page);
+  }, []);
 
-  const getFunnelMetrics = () => {
-    const events = getStoredEvents();
-    const counts: Partial<Record<TelemetryEventType, number>> = {};
-    for (const e of events) {
-      counts[e.type] = (counts[e.type] || 0) + 1;
-    }
-
-    // Funnel stages
-    const homepageViews = events.filter((e) => e.type === 'page_view' && e.metadata?.page === 'home').length;
-    const ctaClicks = counts.homepage_cta_click || 0;
-    const signupStarts = counts.signup_start || 0;
-    const onboardingCompletes = counts.onboarding_complete || 0;
-    const dashboardViews = counts.dashboard_view || 0;
-    const firstSearches = counts.first_search || 0;
-    const watchlistCreates = counts.watchlist_create || 0;
-    const alertCreates = counts.alert_create || 0;
-    const reportGenerates = counts.report_generate || 0;
-
-    return {
-      totalEvents: events.length,
-      counts,
-      funnel: {
-        homepageViews,
-        ctaClicks,
-        signupStarts,
-        onboardingCompletes,
-        dashboardViews,
-        firstSearches,
-        watchlistCreates,
-        alertCreates,
-        reportGenerates,
-      },
-      conversionRates: {
-        ctaToSignup: homepageViews > 0 ? Math.round((ctaClicks / homepageViews) * 100) : 0,
-        signupToOnboarding: signupStarts > 0 ? Math.round((onboardingCompletes / signupStarts) * 100) : 0,
-        onboardingToDashboard: onboardingCompletes > 0 ? Math.round((dashboardViews / onboardingCompletes) * 100) : 0,
-        dashboardToSearch: dashboardViews > 0 ? Math.round((firstSearches / dashboardViews) * 100) : 0,
-      },
-      recentEvents: events.slice(-20).reverse(),
-      sessionCount: new Set(events.map((e) => e.sessionId)).size,
-    };
-  };
-
-  const clearEvents = () => {
-    localStorage.removeItem(STORAGE_KEY);
-  };
-
-  return { track, getEvents, getFunnelMetrics, clearEvents };
-}
-
-// ─── Convenience Hook for Page Views ───
-export function usePageTelemetry(pageName: string) {
-  useTelemetry().track('page_view', { page: pageName });
+  return { track: trackEvent, trackPageView: trackView, getSummary: getTelemetrySummary };
 }

@@ -1,260 +1,159 @@
-import { useState, useRef, useEffect } from 'react';
-import { useStore } from '@/store/useStore';
-import { trackEvent } from '@/hooks/useTelemetry';
-import {
-  MessageSquare, X, Send, Bug, Lightbulb, Star,
-  ThumbsUp, ThumbsDown, Check, ChevronRight
-} from 'lucide-react';
-
-type FeedbackMode = 'menu' | 'feature' | 'bug' | 'rating' | 'general' | 'submitted';
-
-const RATING_LABELS = ['Poor', 'Fair', 'Good', 'Great', 'Excellent'];
+import { useState } from 'react';
+import { MessageSquare, X, Send, CheckCircle2, ThumbsUp, ThumbsDown } from 'lucide-react';
 
 export default function CustomerFeedback() {
-  const { addToast } = useStore();
-  const [isOpen, setIsOpen] = useState(false);
-  const [mode, setMode] = useState<FeedbackMode>('menu');
-  const [rating, setRating] = useState(0);
-  const [hoverRating, setHoverRating] = useState(0);
-  const [message, setMessage] = useState('');
-  const [category, setCategory] = useState('');
-  const ref = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
+  const [rating, setRating] = useState<'up' | 'down' | null>(null);
+  const [comment, setComment] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+  const [category, setCategory] = useState('general');
 
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setIsOpen(false);
-      }
-    }
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [isOpen]);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
 
-  const handleSubmit = () => {
-    if (!message.trim() && mode !== 'rating') {
-      addToast('Please enter your feedback.', 'error');
-      return;
-    }
-
-    trackEvent('feedback_submit', {
-      mode,
-      rating: rating > 0 ? rating : undefined,
+    // Store feedback
+    const feedback = JSON.parse(localStorage.getItem('buildsignal_feedback') || '[]');
+    feedback.push({
+      rating,
+      comment,
       category,
-      messageLength: message.length,
+      timestamp: Date.now(),
+      page: window.location.pathname,
     });
+    localStorage.setItem('buildsignal_feedback', JSON.stringify(feedback));
 
-    setMode('submitted');
-    addToast('Thank you for your feedback!', 'success');
+    // Also track as telemetry event
+    const events = JSON.parse(localStorage.getItem('buildsignal_telemetry') || '[]');
+    events.push({
+      type: 'feedback_submitted',
+      rating,
+      category,
+      timestamp: Date.now(),
+    });
+    if (events.length > 500) events.shift();
+    localStorage.setItem('buildsignal_telemetry', JSON.stringify(events));
 
-    // Reset after 3 seconds
+    setSubmitted(true);
     setTimeout(() => {
-      setMode('menu');
-      setMessage('');
-      setRating(0);
-      setCategory('');
-    }, 3000);
+      setSubmitted(false);
+      setOpen(false);
+      setRating(null);
+      setComment('');
+    }, 2000);
   };
-
-  const handleQuickRate = (value: number) => {
-    setRating(value);
-    trackEvent('feedback_submit', { mode: 'rating', rating: value });
-    setMode('submitted');
-  };
-
-  if (!isOpen) {
-    return (
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-5 right-5 z-40 w-12 h-12 rounded-full bg-accent-indigo text-white shadow-lg shadow-accent-indigo/30 hover:bg-accent-indigo-dim transition-all flex items-center justify-center"
-        title="Send feedback"
-      >
-        <MessageSquare className="w-5 h-5" />
-      </button>
-    );
-  }
 
   return (
-    <div ref={ref} className="fixed bottom-5 right-5 z-50 w-[340px] bg-surface border border-ink-wash rounded-2xl shadow-2xl overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-ink-wash/50 bg-canvas/30">
-        <div className="flex items-center gap-2">
-          <MessageSquare className="w-4 h-4 text-accent-indigo" />
-          <span className="text-sm font-semibold text-ink-primary">Feedback</span>
-        </div>
+    <>
+      {/* Floating trigger */}
+      {!open && (
         <button
-          onClick={() => setIsOpen(false)}
-          className="w-7 h-7 rounded-lg hover:bg-canvas flex items-center justify-center transition-colors"
+          onClick={() => setOpen(true)}
+          className="fixed bottom-6 left-6 z-50 w-12 h-12 rounded-full bg-surface border border-ink-wash shadow-lg flex items-center justify-center hover:bg-canvas transition-colors group"
+          aria-label="Send feedback"
         >
-          <X className="w-3.5 h-3.5 text-ink-tertiary" />
+          <MessageSquare className="w-5 h-5 text-ink-secondary group-hover:text-accent-indigo transition-colors" />
         </button>
-      </div>
+      )}
 
-      {/* Content */}
-      <div className="p-4">
-        {mode === 'menu' && (
-          <div className="space-y-2">
-            <p className="text-xs text-ink-secondary mb-3">
-              Help us improve BuildSignal. What would you like to share?
-            </p>
+      {/* Feedback panel */}
+      {open && (
+        <div className="fixed bottom-6 left-6 z-50 w-80 bg-surface rounded-2xl shadow-xl border border-ink-wash animate-fade-in-up">
+          {/* Header */}
+          <div className="flex items-center justify-between p-4 border-b border-ink-wash">
+            <h3 className="text-sm font-semibold text-ink-primary">Feedback</h3>
+            <button
+              onClick={() => setOpen(false)}
+              className="p-1.5 rounded-lg hover:bg-canvas transition-colors"
+            >
+              <X className="w-3.5 h-3.5 text-ink-tertiary" />
+            </button>
+          </div>
 
-            {/* Quick rating */}
-            <div className="flex items-center justify-center gap-1 mb-3">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <button
-                  key={star}
-                  onMouseEnter={() => setHoverRating(star)}
-                  onMouseLeave={() => setHoverRating(0)}
-                  onClick={() => handleQuickRate(star)}
-                  className="p-1 transition-transform hover:scale-110"
-                >
-                  <Star
-                    className={`w-5 h-5 ${
-                      star <= (hoverRating || rating)
-                        ? 'text-accent-amber fill-accent-amber'
-                        : 'text-ink-wash'
+          {submitted ? (
+            <div className="p-6 text-center">
+              <CheckCircle2 className="w-10 h-10 text-accent-teal mx-auto mb-3" />
+              <p className="text-sm font-medium text-ink-primary">Thank you!</p>
+              <p className="text-xs text-ink-secondary mt-1">Your feedback helps us improve.</p>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="p-4 space-y-4">
+              {/* Rating */}
+              <div>
+                <label className="block text-xs font-medium text-ink-secondary mb-2">
+                  How is your experience?
+                </label>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setRating('up')}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg border transition-colors ${
+                      rating === 'up'
+                        ? 'bg-accent-teal/10 border-accent-teal text-accent-teal'
+                        : 'bg-canvas border-ink-wash text-ink-secondary hover:bg-canvas'
                     }`}
-                  />
-                </button>
-              ))}
-            </div>
-            {(hoverRating || rating) > 0 && (
-              <p className="text-[11px] text-center text-ink-tertiary mb-2">
-                {RATING_LABELS[(hoverRating || rating) - 1]}
-              </p>
-            )}
-
-            {/* Options */}
-            <button
-              onClick={() => setMode('feature')}
-              className="w-full flex items-center gap-3 p-3 rounded-xl bg-canvas border border-ink-wash hover:border-accent-indigo/30 hover:bg-surface-hover transition-all text-left"
-            >
-              <div className="w-8 h-8 rounded-lg bg-accent-indigo/10 flex items-center justify-center shrink-0">
-                <Lightbulb className="w-4 h-4 text-accent-indigo" />
+                  >
+                    <ThumbsUp className="w-4 h-4" />
+                    <span className="text-xs">Good</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRating('down')}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg border transition-colors ${
+                      rating === 'down'
+                        ? 'bg-accent-crimson/10 border-accent-crimson text-accent-crimson'
+                        : 'bg-canvas border-ink-wash text-ink-secondary hover:bg-canvas'
+                    }`}
+                  >
+                    <ThumbsDown className="w-4 h-4" />
+                    <span className="text-xs">Needs work</span>
+                  </button>
+                </div>
               </div>
+
+              {/* Category */}
               <div>
-                <p className="text-xs font-medium text-ink-primary">Feature Request</p>
-                <p className="text-[10px] text-ink-tertiary">Suggest a new feature</p>
+                <label className="block text-xs font-medium text-ink-secondary mb-2">
+                  Category
+                </label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg bg-canvas border border-ink-wash text-sm text-ink-primary focus:outline-none focus:ring-2 focus:ring-accent-indigo/30"
+                >
+                  <option value="general">General</option>
+                  <option value="bug">Bug Report</option>
+                  <option value="feature">Feature Request</option>
+                  <option value="data">Data Quality</option>
+                  <option value="ui">Design/UI</option>
+                </select>
               </div>
-              <ChevronRight className="w-3.5 h-3.5 text-ink-tertiary ml-auto" />
-            </button>
 
-            <button
-              onClick={() => setMode('bug')}
-              className="w-full flex items-center gap-3 p-3 rounded-xl bg-canvas border border-ink-wash hover:border-accent-crimson/30 hover:bg-accent-crimson/5 transition-all text-left"
-            >
-              <div className="w-8 h-8 rounded-lg bg-accent-crimson/10 flex items-center justify-center shrink-0">
-                <Bug className="w-4 h-4 text-accent-crimson" />
-              </div>
+              {/* Comment */}
               <div>
-                <p className="text-xs font-medium text-ink-primary">Report a Bug</p>
-                <p className="text-[10px] text-ink-tertiary">Something not working?</p>
+                <label className="block text-xs font-medium text-ink-secondary mb-2">
+                  Comments (optional)
+                </label>
+                <textarea
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder="Tell us more..."
+                  rows={3}
+                  className="w-full px-3 py-2 rounded-lg bg-canvas border border-ink-wash text-sm text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus:ring-2 focus:ring-accent-indigo/30 resize-none"
+                />
               </div>
-              <ChevronRight className="w-3.5 h-3.5 text-ink-tertiary ml-auto" />
-            </button>
 
-            <button
-              onClick={() => setMode('general')}
-              className="w-full flex items-center gap-3 p-3 rounded-xl bg-canvas border border-ink-wash hover:border-ink-secondary/30 hover:bg-surface-hover transition-all text-left"
-            >
-              <div className="w-8 h-8 rounded-lg bg-accent-teal/10 flex items-center justify-center shrink-0">
-                <ThumbsUp className="w-4 h-4 text-accent-teal" />
-              </div>
-              <div>
-                <p className="text-xs font-medium text-ink-primary">General Feedback</p>
-                <p className="text-[10px] text-ink-tertiary">Share your experience</p>
-              </div>
-              <ChevronRight className="w-3.5 h-3.5 text-ink-tertiary ml-auto" />
-            </button>
-          </div>
-        )}
-
-        {(mode === 'feature' || mode === 'bug' || mode === 'general') && (
-          <div className="space-y-3">
-            <button
-              onClick={() => setMode('menu')}
-              className="text-[11px] text-accent-indigo hover:underline mb-1"
-            >
-              ← Back
-            </button>
-
-            <h4 className="text-sm font-medium text-ink-primary">
-              {mode === 'feature' && 'Feature Request'}
-              {mode === 'bug' && 'Report a Bug'}
-              {mode === 'general' && 'General Feedback'}
-            </h4>
-
-            {mode === 'bug' && (
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-canvas border border-ink-wash text-xs text-ink-primary focus:outline-none focus:border-accent-indigo/50"
+              {/* Submit */}
+              <button
+                type="submit"
+                disabled={!rating}
+                className="w-full py-2.5 rounded-lg bg-accent-indigo text-white text-sm font-medium flex items-center justify-center gap-2 hover:bg-accent-indigo/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <option value="">Select issue type...</option>
-                <option value="crash">App crashed</option>
-                <option value="slow">Slow performance</option>
-                <option value="data">Incorrect data</option>
-                <option value="ui">UI/layout issue</option>
-                <option value="other">Something else</option>
-              </select>
-            )}
-
-            {mode === 'feature' && (
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-canvas border border-ink-wash text-xs text-ink-primary focus:outline-none focus:border-accent-indigo/50"
-              >
-                <option value="">Select category...</option>
-                <option value="search">Search & Discovery</option>
-                <option value="alerts">Alerts & Notifications</option>
-                <option value="reports">Reports & Export</option>
-                <option value="map">Map & Geography</option>
-                <option value="integration">Integration</option>
-                <option value="other">Other</option>
-              </select>
-            )}
-
-            <textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder={
-                mode === 'feature'
-                  ? 'Describe the feature you would like to see...'
-                  : mode === 'bug'
-                  ? 'Describe what happened and what you expected...'
-                  : 'Share your thoughts about BuildSignal...'
-              }
-              rows={4}
-              className="w-full px-3 py-2 rounded-lg bg-canvas border border-ink-wash text-xs text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus:border-accent-indigo/50 resize-none"
-            />
-
-            <button
-              onClick={handleSubmit}
-              disabled={!message.trim()}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-accent-indigo text-white text-xs font-semibold hover:bg-accent-indigo-dim transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Send className="w-3.5 h-3.5" />
-              Submit Feedback
-            </button>
-          </div>
-        )}
-
-        {mode === 'submitted' && (
-          <div className="text-center py-4">
-            <div className="w-12 h-12 rounded-full bg-accent-teal/10 flex items-center justify-center mx-auto mb-3">
-              <Check className="w-6 h-6 text-accent-teal" />
-            </div>
-            <p className="text-sm font-medium text-ink-primary mb-1">
-              Thank You!
-            </p>
-            <p className="text-xs text-ink-secondary">
-              Your feedback helps us improve BuildSignal.
-            </p>
-          </div>
-        )}
-      </div>
-    </div>
+                <Send className="w-3.5 h-3.5" /> Send Feedback
+              </button>
+            </form>
+          )}
+        </div>
+      )}
+    </>
   );
 }
