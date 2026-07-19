@@ -6,7 +6,7 @@ import {
   Briefcase, Search, Bookmark, UserCircle, FileText, Radio, Cpu,
   Globe, Shield, Award, Rocket, ClipboardList, FileCheck, Activity,
   Globe2, CheckCircle2, PackageCheck, Sparkles, Menu, ChevronDown,
-  XCircle, TrendingUp as TrendIcon, Brain, Building2, Zap
+  XCircle, TrendingUp as TrendIcon, Brain, Building2, Zap, Database
 } from 'lucide-react';
 import { DemoModeBanner } from './EngineStates';
 import { track } from '@/hooks/useAnalytics';
@@ -58,6 +58,7 @@ const qualityLinks = [
   { id: 'rc-platform', label: 'RC', icon: <Shield className="w-3.5 h-3.5" /> },
   { id: 'autonomous-platform', label: 'AI', icon: <Brain className="w-3.5 h-3.5" /> },
   { id: 'aios', label: 'AI OS', icon: <Cpu className="w-3.5 h-3.5" /> },
+  { id: 'data-moat', label: 'Data Moat', icon: <Database className="w-3.5 h-3.5" /> },
   { id: 'system-validation', label: 'QA', icon: <CheckCircle2 className="w-3.5 h-3.5" /> },
 ];
 
