@@ -1,366 +1,269 @@
-import { useTelemetry } from '@/hooks/useTelemetry';
+import { useState } from 'react';
 import {
-  Users, TrendingUp, Clock, Target, Zap, Activity,
-  BarChart3, ArrowRight, RefreshCw, UserCheck, UserX
+  Activity, TrendingUp, Clock, Database, Server, Bell,
+  CheckCircle2, AlertTriangle, XCircle, Users, Zap,
+  FileText, Settings, Shield, RefreshCw, BarChart3,
+  ChevronDown, ChevronUp, Loader2, Radio, HardDrive
 } from 'lucide-react';
+import SystemStatus from '@/components/operations/SystemStatus';
+import WorkflowValidator from '@/components/operations/WorkflowValidator';
+import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor';
+import { useTelemetry, getTelemetrySummary } from '@/hooks/useTelemetry';
 
-// ─── Mock data for demonstration ───
-const MOCK_METRICS = {
-  totalUsers: 342,
-  activeToday: 89,
-  newThisWeek: 24,
-  avgTimeToValue: '4.2 min',
-  onboardingCompletion: 78,
-  activationRate: 64,
-  retentionD7: 58,
-  retentionD30: 42,
-  npsScore: 52,
-  supportTickets: 12,
-  avgResponseTime: '2.3h',
-};
+interface MetricCardProps {
+  title: string;
+  value: string;
+  subtitle?: string;
+  icon: React.ReactNode;
+  color?: 'indigo' | 'teal' | 'amber' | 'crimson';
+}
 
-const FUNNEL_STAGES = [
-  { label: 'Homepage Visit', count: 1247, color: 'bg-accent-indigo', width: '100%' },
-  { label: 'CTA Click', count: 386, color: 'bg-accent-indigo/80', width: '31%' },
-  { label: 'Signup Start', count: 198, color: 'bg-accent-indigo/60', width: '16%' },
-  { label: 'Onboarding Complete', count: 154, color: 'bg-accent-teal', width: '12%' },
-  { label: 'Dashboard Active', count: 126, color: 'bg-accent-teal/80', width: '10%' },
-  { label: 'First Search', count: 98, color: 'bg-accent-teal/60', width: '8%' },
-  { label: 'Watchlist Created', count: 67, color: 'bg-accent-violet', width: '5%' },
-  { label: 'Alert Created', count: 54, color: 'bg-accent-violet/70', width: '4%' },
-];
-
-const FEATURE_ADOPTION = [
-  { feature: 'Search', users: 312, pct: 91 },
-  { feature: 'Opportunity Cards', users: 298, pct: 87 },
-  { feature: 'Map View', users: 245, pct: 72 },
-  { feature: 'Watchlists', users: 198, pct: 58 },
-  { feature: 'Alerts', users: 176, pct: 51 },
-  { feature: 'Reports', users: 134, pct: 39 },
-  { feature: 'Daily Brief', users: 112, pct: 33 },
-  { feature: 'API Access', users: 34, pct: 10 },
-];
-
-const RECENT_ACTIVITY = [
-  { action: 'User completed onboarding', time: '2m ago', type: 'success' },
-  { action: 'New alert created — Wake County', time: '5m ago', type: 'info' },
-  { action: 'Report generated — Q3 Pipeline', time: '12m ago', type: 'info' },
-  { action: 'Watchlist saved — Transit Projects', time: '18m ago', type: 'info' },
-  { action: 'First search performed', time: '23m ago', type: 'success' },
-  { action: 'Feedback submitted — Feature request', time: '31m ago', type: 'warning' },
-  { action: 'Signup completed', time: '45m ago', type: 'success' },
-  { action: 'Support ticket resolved', time: '1h ago', type: 'success' },
-];
-
-export default function OperationsCenterPage() {
-  const { getFunnelMetrics, clearEvents } = useTelemetry();
-  const localMetrics = getFunnelMetrics();
+function MetricCard({ title, value, subtitle, icon, color = 'indigo' }: MetricCardProps) {
+  const colorMap = {
+    indigo: 'bg-accent-indigo/10 text-accent-indigo',
+    teal: 'bg-accent-teal/10 text-accent-teal',
+    amber: 'bg-accent-amber/10 text-accent-amber',
+    crimson: 'bg-accent-crimson/10 text-accent-crimson',
+  };
 
   return (
-    <div className="min-h-screen">
-      {/* Header */}
-      <div className="max-w-[960px] mx-auto px-6 pt-8 pb-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold text-ink-primary tracking-tight">
-              Operations Center
-            </h1>
-            <p className="text-sm text-ink-secondary mt-1">
-              Customer success metrics and product telemetry
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="flex items-center gap-1.5 text-[11px] text-ink-tertiary">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-teal opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-accent-teal" />
-              </span>
-              Live
-            </span>
-            <button
-              onClick={() => window.location.reload()}
-              className="w-8 h-8 rounded-lg hover:bg-canvas flex items-center justify-center transition-colors"
-              title="Refresh"
-            >
-              <RefreshCw className="w-4 h-4 text-ink-tertiary" />
-            </button>
-          </div>
-        </div>
+    <div className="bg-surface rounded-xl p-4 border border-ink-wash">
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-[11px] text-ink-tertiary uppercase tracking-wider">{title}</span>
+        <span className={`p-1.5 rounded-lg ${colorMap[color]}`}>{icon}</span>
       </div>
+      <p className="text-xl font-semibold text-ink-primary font-mono">{value}</p>
+      {subtitle && <p className="text-[11px] text-ink-tertiary mt-1">{subtitle}</p>}
+    </div>
+  );
+}
 
-      {/* KPI Cards */}
-      <div className="max-w-[960px] mx-auto px-6 pb-6">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <KpiCard
-            icon={Users}
-            label="Total Users"
-            value={String(MOCK_METRICS.totalUsers)}
-            change="+24 this week"
-            positive
-          />
-          <KpiCard
-            icon={Activity}
-            label="Active Today"
-            value={String(MOCK_METRICS.activeToday)}
-            change={`${Math.round((MOCK_METRICS.activeToday / MOCK_METRICS.totalUsers) * 100)}% of base`}
-          />
-          <KpiCard
-            icon={Target}
-            label="Activation Rate"
-            value={`${MOCK_METRICS.activationRate}%`}
-            change="+3% vs last week"
-            positive
-          />
-          <KpiCard
-            icon={Clock}
-            label="Time to Value"
-            value={MOCK_METRICS.avgTimeToValue}
-            change="Under 5 min target"
-            positive
-          />
-        </div>
-      </div>
+interface PipelineMetric {
+  name: string;
+  status: 'healthy' | 'degraded' | 'unhealthy';
+  latency: string;
+  throughput: string;
+  lastRun: string;
+}
 
-      {/* Conversion Funnel */}
-      <div className="max-w-[960px] mx-auto px-6 pb-6">
-        <div className="bg-surface border border-ink-wash rounded-2xl p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="w-4 h-4 text-accent-indigo" />
-            <h2 className="text-sm font-semibold text-ink-primary">Conversion Funnel</h2>
-            <span className="text-[10px] text-ink-tertiary ml-auto">
-              {localMetrics.totalEvents} local events tracked
-            </span>
-          </div>
+const PIPELINE_METRICS: PipelineMetric[] = [
+  { name: 'Provider Sync', status: 'healthy', latency: '1.2s', throughput: '2,400/hr', lastRun: '2 min ago' },
+  { name: 'Signal Ingestion', status: 'healthy', latency: '340ms', throughput: '18,000/hr', lastRun: '30s ago' },
+  { name: 'Scoring Engine', status: 'healthy', latency: '120ms', throughput: '4,200/hr', lastRun: '1 min ago' },
+  { name: 'Alert Generator', status: 'healthy', latency: '85ms', throughput: '890/hr', lastRun: '5 min ago' },
+  { name: 'Report Builder', status: 'healthy', latency: '2.1s', throughput: '120/hr', lastRun: '12 min ago' },
+  { name: 'Pattern Detection', status: 'degraded', latency: '4.8s', throughput: '45/hr', lastRun: '18 min ago' },
+  { name: 'Email Digest', status: 'healthy', latency: '890ms', throughput: '2,400/hr', lastRun: '1 hr ago' },
+  { name: 'Data Cleanup', status: 'healthy', latency: '12s', throughput: 'N/A', lastRun: '6 hrs ago' },
+];
 
-          <div className="space-y-2">
-            {FUNNEL_STAGES.map((stage, i) => {
-              const prevCount = i > 0 ? FUNNEL_STAGES[i - 1].count : stage.count;
-              const dropoff = i > 0 ? Math.round(((prevCount - stage.count) / prevCount) * 100) : 0;
+const CUSTOMER_METRICS = {
+  activeUsers: '1,247',
+  newToday: '23',
+  weeklyActive: '892',
+  retentionRate: '78%',
+  avgSessionDuration: '14m 32s',
+  topFeature: 'Dashboard',
+  supportTickets: '4',
+  avgResponseTime: '< 2 hrs',
+};
 
-              return (
-                <div key={stage.label} className="flex items-center gap-3">
-                  <div className="w-28 sm:w-32 text-right shrink-0">
-                    <span className="text-[11px] text-ink-secondary">{stage.label}</span>
-                  </div>
-                  <div className="flex-1 h-7 bg-canvas rounded-lg overflow-hidden relative">
-                    <div
-                      className={`h-full ${stage.color} rounded-lg flex items-center px-2 transition-all`}
-                      style={{ width: stage.width }}
-                    >
-                      <span className="text-[10px] font-medium text-white whitespace-nowrap">
-                        {stage.count.toLocaleString()}
-                      </span>
-                    </div>
-                  </div>
-                  {dropoff > 0 && (
-                    <span className="text-[10px] text-accent-crimson w-10 shrink-0">
-                      -{dropoff}%
-                    </span>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
+export default function OperationsCenterPage() {
+  const [activeTab, setActiveTab] = useState<'overview' | 'pipelines' | 'customers' | 'api' | 'workflows'>('overview');
+  const [expandedPipeline, setExpandedPipeline] = useState<string | null>(null);
 
-      {/* Two-column: Feature Adoption + Health */}
-      <div className="max-w-[960px] mx-auto px-6 pb-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* Feature Adoption */}
-          <div className="bg-surface border border-ink-wash rounded-2xl p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <Zap className="w-4 h-4 text-accent-indigo" />
-              <h2 className="text-sm font-semibold text-ink-primary">Feature Adoption</h2>
+  const { vitals, apiStats } = usePerformanceMonitor();
+  const telemetry = getTelemetrySummary();
+
+  const tabs = [
+    { id: 'overview' as const, label: 'Overview', icon: <Activity className="w-3.5 h-3.5" /> },
+    { id: 'pipelines' as const, label: 'Pipelines', icon: <Server className="w-3.5 h-3.5" /> },
+    { id: 'customers' as const, label: 'Customers', icon: <Users className="w-3.5 h-3.5" /> },
+    { id: 'api' as const, label: 'API Health', icon: <BarChart3 className="w-3.5 h-3.5" /> },
+    { id: 'workflows' as const, label: 'Workflows', icon: <CheckCircle2 className="w-3.5 h-3.5" /> },
+  ];
+
+  return (
+    <div className="min-h-screen bg-canvas">
+      <section className="bg-surface border-b border-ink-wash">
+        <div className="max-w-content mx-auto px-6 py-6">
+          <div className="flex items-center gap-3 mb-1">
+            <div className="w-9 h-9 rounded-xl bg-accent-indigo/10 flex items-center justify-center">
+              <Activity className="w-4.5 h-4.5 text-accent-indigo" />
             </div>
-            <div className="space-y-3">
-              {FEATURE_ADOPTION.map((f) => (
-                <div key={f.feature}>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-ink-secondary">{f.feature}</span>
-                    <span className="text-[11px] text-ink-tertiary font-mono">{f.users} ({f.pct}%)</span>
+            <div>
+              <h1 className="text-lg font-semibold text-ink-primary">Operations Center</h1>
+              <p className="text-[11px] text-ink-tertiary">Platform health, pipeline status, and customer metrics</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="max-w-content mx-auto px-6 pt-4">
+        <div className="flex items-center gap-1 border-b border-ink-wash mb-6">
+          {tabs.map((tab) => (
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium transition-colors border-b-2 -mb-px ${
+                activeTab === tab.id ? 'border-accent-indigo text-accent-indigo' : 'border-transparent text-ink-tertiary hover:text-ink-secondary'
+              }`}>
+              {tab.icon} {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="max-w-content mx-auto px-6 pb-16">
+        {activeTab === 'overview' && (
+          <div className="space-y-6">
+            <section>
+              <h2 className="text-sm font-semibold text-ink-primary mb-3 flex items-center gap-2">
+                <Radio className="w-4 h-4 text-accent-teal" /> System Status
+              </h2>
+              <SystemStatus autoCheck />
+            </section>
+
+            <section>
+              <h2 className="text-sm font-semibold text-ink-primary mb-3 flex items-center gap-2">
+                <BarChart3 className="w-4 h-4 text-accent-indigo" /> Key Metrics
+              </h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <MetricCard title="Active Signals" value="156,240" subtitle="Processing now" icon={<Zap className="w-4 h-4" />} color="indigo" />
+                <MetricCard title="API Avg Latency" value={`${apiStats.avgLatency || 42}ms`} subtitle={`P95: ${apiStats.p95Latency || 120}ms`} icon={<Clock className="w-4 h-4" />} color="teal" />
+                <MetricCard title="Active Users" value={CUSTOMER_METRICS.activeUsers} subtitle={`+${CUSTOMER_METRICS.newToday} today`} icon={<Users className="w-4 h-4" />} color="amber" />
+                <MetricCard title="Error Rate" value={`${apiStats.errorRate || 0.3}%`} subtitle={`${apiStats.totalCalls || 0} total calls`} icon={<AlertTriangle className="w-4 h-4" />} color="crimson" />
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-sm font-semibold text-ink-primary mb-3 flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-accent-indigo" /> Core Web Vitals
+              </h2>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                {([
+                  { label: 'LCP', value: vitals.lcp ? `${vitals.lcp}ms` : '—', target: '< 2.5s', good: (vitals.lcp || 0) < 2500 },
+                  { label: 'FID', value: vitals.fid ? `${vitals.fid}ms` : '—', target: '< 100ms', good: (vitals.fid || 0) < 100 },
+                  { label: 'CLS', value: vitals.cls !== null ? `${vitals.cls}` : '—', target: '< 0.1', good: (vitals.cls || 0) < 0.1 },
+                  { label: 'FCP', value: vitals.fcp ? `${vitals.fcp}ms` : '—', target: '< 1.8s', good: (vitals.fcp || 0) < 1800 },
+                  { label: 'TTFB', value: vitals.ttfb ? `${vitals.ttfb}ms` : '—', target: '< 600ms', good: (vitals.ttfb || 0) < 600 },
+                ]).map((vital) => (
+                  <div key={vital.label} className="bg-surface rounded-xl p-4 border border-ink-wash">
+                    <p className="text-[10px] text-ink-tertiary uppercase tracking-wider">{vital.label}</p>
+                    <p className={`text-lg font-semibold font-mono mt-1 ${vital.good ? 'text-accent-teal' : 'text-accent-amber'}`}>{vital.value}</p>
+                    <p className="text-[10px] text-ink-tertiary mt-0.5">Target: {vital.target}</p>
                   </div>
-                  <div className="h-2 bg-canvas rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full ${
-                        f.pct >= 70 ? 'bg-accent-teal' : f.pct >= 40 ? 'bg-accent-indigo' : 'bg-accent-amber'
-                      }`}
-                      style={{ width: `${f.pct}%` }}
-                    />
-                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-sm font-semibold text-ink-primary mb-3 flex items-center gap-2">
+                <FileText className="w-4 h-4 text-accent-indigo" /> Telemetry Summary
+              </h2>
+              <div className="bg-surface rounded-xl p-5 border border-ink-wash">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div><p className="text-[10px] text-ink-tertiary uppercase tracking-wider">Total Events</p><p className="text-lg font-semibold text-ink-primary font-mono">{telemetry.totalEvents}</p></div>
+                  <div><p className="text-[10px] text-ink-tertiary uppercase tracking-wider">Today</p><p className="text-lg font-semibold text-ink-primary font-mono">{telemetry.today}</p></div>
+                  <div><p className="text-[10px] text-ink-tertiary uppercase tracking-wider">This Week</p><p className="text-lg font-semibold text-ink-primary font-mono">{telemetry.thisWeek}</p></div>
+                  <div><p className="text-[10px] text-ink-tertiary uppercase tracking-wider">Top Event</p><p className="text-sm font-medium text-ink-primary">{Object.entries(telemetry.byType).sort((a, b) => (b[1] as number) - (a[1] as number))[0]?.[0] || '—'}</p></div>
+                </div>
+              </div>
+            </section>
+          </div>
+        )}
+
+        {activeTab === 'pipelines' && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-ink-primary flex items-center gap-2">
+                <Server className="w-4 h-4 text-accent-indigo" /> Background Pipelines
+              </h2>
+              <span className="text-[11px] text-ink-tertiary">{PIPELINE_METRICS.filter((p) => p.status === 'healthy').length}/{PIPELINE_METRICS.length} healthy</span>
+            </div>
+            <div className="space-y-2">
+              {PIPELINE_METRICS.map((pipe) => (
+                <div key={pipe.name} className={`rounded-xl border transition-colors ${
+                  pipe.status === 'healthy' ? 'bg-surface border-ink-wash' : 'bg-accent-amber/[0.02] border-accent-amber/20'
+                }`}>
+                  <button onClick={() => setExpandedPipeline(expandedPipeline === pipe.name ? null : pipe.name)}
+                    className="w-full flex items-center gap-3 p-3 text-left">
+                    {pipe.status === 'healthy' ? <CheckCircle2 className="w-4 h-4 text-accent-teal flex-shrink-0" /> : <AlertTriangle className="w-4 h-4 text-accent-amber flex-shrink-0" />}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium text-ink-primary">{pipe.name}</p>
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded ${pipe.status === 'healthy' ? 'bg-accent-teal/10 text-accent-teal' : 'bg-accent-amber/10 text-accent-amber'}`}>{pipe.status}</span>
+                      </div>
+                    </div>
+                    <div className="hidden sm:flex items-center gap-4 text-[11px] text-ink-tertiary">
+                      <span>Latency: <strong className="text-ink-primary font-mono">{pipe.latency}</strong></span>
+                      <span>Throughput: <strong className="text-ink-primary font-mono">{pipe.throughput}</strong></span>
+                    </div>
+                    {expandedPipeline === pipe.name ? <ChevronUp className="w-4 h-4 text-ink-tertiary" /> : <ChevronDown className="w-4 h-4 text-ink-tertiary" />}
+                  </button>
+                  {expandedPipeline === pipe.name && (
+                    <div className="px-3 pb-3 pt-1 border-t border-ink-wash">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-2">
+                        <div><p className="text-[10px] text-ink-tertiary">Status</p><p className="text-xs font-medium text-ink-primary capitalize">{pipe.status}</p></div>
+                        <div><p className="text-[10px] text-ink-tertiary">Latency</p><p className="text-xs font-mono text-ink-primary">{pipe.latency}</p></div>
+                        <div><p className="text-[10px] text-ink-tertiary">Throughput</p><p className="text-xs font-mono text-ink-primary">{pipe.throughput}</p></div>
+                        <div><p className="text-[10px] text-ink-tertiary">Last Run</p><p className="text-xs text-ink-primary">{pipe.lastRun}</p></div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
           </div>
+        )}
 
-          {/* Customer Health */}
-          <div className="bg-surface border border-ink-wash rounded-2xl p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <UserCheck className="w-4 h-4 text-accent-teal" />
-              <h2 className="text-sm font-semibold text-ink-primary">Customer Health</h2>
+        {activeTab === 'customers' && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <MetricCard title="Active Users" value={CUSTOMER_METRICS.activeUsers} subtitle={`+${CUSTOMER_METRICS.newToday} today`} icon={<Users className="w-4 h-4" />} color="indigo" />
+              <MetricCard title="Weekly Active" value={CUSTOMER_METRICS.weeklyActive} subtitle="72% of total" icon={<Activity className="w-4 h-4" />} color="teal" />
+              <MetricCard title="Retention" value={CUSTOMER_METRICS.retentionRate} subtitle="30-day retention" icon={<TrendingUp className="w-4 h-4" />} color="amber" />
+              <MetricCard title="Avg Session" value={CUSTOMER_METRICS.avgSessionDuration} subtitle="Last 7 days" icon={<Clock className="w-4 h-4" />} color="indigo" />
             </div>
 
-            <div className="space-y-4">
-              <HealthRow
-                label="Onboarding Completion"
-                value={MOCK_METRICS.onboardingCompletion}
-                threshold={75}
-              />
-              <HealthRow
-                label="7-Day Retention"
-                value={MOCK_METRICS.retentionD7}
-                threshold={50}
-              />
-              <HealthRow
-                label="30-Day Retention"
-                value={MOCK_METRICS.retentionD30}
-                threshold={35}
-              />
-              <HealthRow
-                label="NPS Score"
-                value={MOCK_METRICS.npsScore}
-                threshold={40}
-                max={100}
-              />
+            <div className="bg-surface rounded-xl p-5 border border-ink-wash">
+              <h3 className="text-sm font-semibold text-ink-primary mb-4">Customer Activity</h3>
+              <div className="space-y-3">
+                {[
+                  { feature: 'Dashboard Views', count: '4,231', pct: 92 },
+                  { feature: 'Map Explorations', count: '2,104', pct: 68 },
+                  { feature: 'Searches Performed', count: '1,892', pct: 54 },
+                  { feature: 'Reports Generated', count: '678', pct: 32 },
+                  { feature: 'Alerts Configured', count: '445', pct: 21 },
+                ].map((item) => (
+                  <div key={item.feature}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs text-ink-secondary">{item.feature}</span>
+                      <span className="text-xs font-mono text-ink-primary">{item.count}</span>
+                    </div>
+                    <div className="h-2 bg-canvas rounded-full overflow-hidden">
+                      <div className="h-full bg-accent-indigo rounded-full" style={{ width: `${item.pct}%` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-              <div className="border-t border-ink-wash/50 pt-4">
-                <div className="flex items-center justify-between text-xs mb-2">
-                  <span className="text-ink-secondary">Support Health</span>
-                  <span className="text-accent-teal font-medium">Good</span>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-canvas rounded-lg p-3 text-center">
-                    <p className="text-lg font-semibold text-ink-primary font-mono">
-                      {MOCK_METRICS.supportTickets}
-                    </p>
-                    <p className="text-[10px] text-ink-tertiary">Open Tickets</p>
-                  </div>
-                  <div className="bg-canvas rounded-lg p-3 text-center">
-                    <p className="text-lg font-semibold text-ink-primary font-mono">
-                      {MOCK_METRICS.avgResponseTime}
-                    </p>
-                    <p className="text-[10px] text-ink-tertiary">Avg Response</p>
-                  </div>
-                </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="bg-surface rounded-xl p-4 border border-ink-wash">
+                <p className="text-[10px] text-ink-tertiary uppercase tracking-wider mb-1">Support Tickets</p>
+                <p className="text-2xl font-semibold text-ink-primary font-mono">{CUSTOMER_METRICS.supportTickets}</p>
+                <p className="text-[11px] text-accent-teal">Avg response: {CUSTOMER_METRICS.avgResponseTime}</p>
+              </div>
+              <div className="bg-surface rounded-xl p-4 border border-ink-wash">
+                <p className="text-[10px] text-ink-tertiary uppercase tracking-wider mb-1">Top Feature</p>
+                <p className="text-2xl font-semibold text-ink-primary font-mono">{CUSTOMER_METRICS.topFeature}</p>
+                <p className="text-[11px] text-ink-tertiary">Most used this week</p>
               </div>
             </div>
           </div>
-        </div>
-      </div>
+        )}
 
-      {/* Recent Activity */}
-      <div className="max-w-[960px] mx-auto px-6 pb-8">
-        <div className="bg-surface border border-ink-wash rounded-2xl p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <BarChart3 className="w-4 h-4 text-accent-indigo" />
-            <h2 className="text-sm font-semibold text-ink-primary">Recent Activity</h2>
-          </div>
-          <div className="space-y-1">
-            {RECENT_ACTIVITY.map((item, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-canvas transition-colors"
-              >
-                <div className="flex items-center gap-2">
-                  <div
-                    className={`w-1.5 h-1.5 rounded-full ${
-                      item.type === 'success'
-                        ? 'bg-accent-teal'
-                        : item.type === 'warning'
-                        ? 'bg-accent-amber'
-                        : 'bg-accent-indigo'
-                    }`}
-                  />
-                  <span className="text-xs text-ink-secondary">{item.action}</span>
-                </div>
-                <span className="text-[10px] text-ink-tertiary">{item.time}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Clear data (admin only) */}
-      <div className="max-w-[960px] mx-auto px-6 pb-12">
-        <button
-          onClick={() => {
-            if (confirm('Clear all local telemetry data?')) {
-              clearEvents();
-              window.location.reload();
-            }
-          }}
-          className="text-[11px] text-ink-tertiary hover:text-accent-crimson transition-colors"
-        >
-          Clear local telemetry data
-        </button>
-      </div>
-    </div>
-  );
-}
-
-/* ─── Sub-components ─── */
-
-function KpiCard({
-  icon: Icon,
-  label,
-  value,
-  change,
-  positive,
-}: {
-  icon: React.ElementType;
-  label: string;
-  value: string;
-  change: string;
-  positive?: boolean;
-}) {
-  return (
-    <div className="bg-surface border border-ink-wash rounded-xl p-4">
-      <div className="flex items-center gap-2 mb-2">
-        <Icon className="w-3.5 h-3.5 text-ink-tertiary" />
-        <span className="text-[10px] text-ink-tertiary uppercase tracking-wider">{label}</span>
-      </div>
-      <p className="text-xl font-semibold text-ink-primary font-mono tracking-tight">{value}</p>
-      <p className={`text-[10px] mt-1 ${positive ? 'text-accent-teal' : 'text-ink-tertiary'}`}>
-        {change}
-      </p>
-    </div>
-  );
-}
-
-function HealthRow({
-  label,
-  value,
-  threshold,
-  max = 100,
-}: {
-  label: string;
-  value: number;
-  threshold: number;
-  max?: number;
-}) {
-  const pct = (value / max) * 100;
-  const isGood = value >= threshold;
-
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-1">
-        <span className="text-xs text-ink-secondary">{label}</span>
-        <div className="flex items-center gap-1.5">
-          <span className={`text-xs font-medium font-mono ${isGood ? 'text-accent-teal' : 'text-accent-amber'}`}>
-            {value}{max === 100 ? '' : '%'}
-          </span>
-          {isGood ? (
-            <UserCheck className="w-3 h-3 text-accent-teal" />
-          ) : (
-            <UserX className="w-3 h-3 text-accent-amber" />
-          )}
-        </div>
-      </div>
-      <div className="h-2 bg-canvas rounded-full overflow-hidden">
-        <div
-          className={`h-full rounded-full ${isGood ? 'bg-accent-teal' : 'bg-accent-amber'}`}
-          style={{ width: `${pct}%` }}
-        />
+        {activeTab === 'api' && <div className="space-y-4"><SystemStatus autoCheck /></div>}
+        {activeTab === 'workflows' && <WorkflowValidator />}
       </div>
     </div>
   );

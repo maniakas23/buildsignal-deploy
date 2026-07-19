@@ -1,4 +1,4 @@
-import { Suspense, lazy, useState, useEffect } from 'react';
+import { Suspense, lazy, useState } from 'react';
 import Layout from '@/components/ui-custom/Layout';
 import { LoadingState } from '@/components/ui-custom/EngineStates';
 import { useStore } from '@/store/useStore';
@@ -48,6 +48,9 @@ const NationalIntelligencePage = lazy(() => import('@/pages/NationalIntelligence
 const SecurityPage = lazy(() => import('@/pages/SecurityPage'));
 const DataCoveragePage = lazy(() => import('@/pages/DataCoveragePage'));
 const CustomerOnboardingPage = lazy(() => import('@/pages/CustomerOnboardingPage'));
+// ─── PI-10: Operations & RC pages ───
+const OperationsCenterPage = lazy(() => import('@/pages/OperationsCenterPage'));
+const ReleaseChecklistPage = lazy(() => import('@/pages/ReleaseChecklistPage'));
 
 // ─── Customer page router ───
 function PageRouter() {
@@ -89,10 +92,11 @@ function PageRouter() {
     case 'patterns': return <PatternLibraryPage />;
     case 'learning': return <LearningEnginePage />;
     case 'national': return <NationalIntelligencePage />;
-    // PI-9 routes
     case 'security': return <SecurityPage />;
     case 'data-coverage': return <DataCoveragePage />;
     case 'getting-started': return <CustomerOnboardingPage />;
+    case 'operations': return <OperationsCenterPage />;
+    case 'release-checklist': return <ReleaseChecklistPage />;
     default: return <OpportunityDashboard />;
   }
 }
@@ -102,7 +106,6 @@ export default function App() {
   useReducedMotionClass();
   const { currentPage } = useStore();
 
-  // ─── PI-7: Beta access gate ───
   const [betaGranted, setBetaGranted] = useState(() => {
     return localStorage.getItem('buildsignal_beta_access') === 'granted';
   });
@@ -110,15 +113,9 @@ export default function App() {
     return localStorage.getItem('buildsignal_walkthrough_done') === 'true';
   });
 
-  const handleBetaAccess = () => {
-    setBetaGranted(true);
-  };
+  const handleBetaAccess = () => setBetaGranted(true);
+  const handleWalkthroughComplete = () => setWalkthroughDone(true);
 
-  const handleWalkthroughComplete = () => {
-    setWalkthroughDone(true);
-  };
-
-  // Show beta gate if not granted
   if (!betaGranted) {
     return (
       <Suspense fallback={<LoadingState message="Loading..." />}>
@@ -129,17 +126,11 @@ export default function App() {
 
   const showWalkthrough = betaGranted && !walkthroughDone;
 
-  // Auth pages render without the Layout shell
   if (currentPage === 'login' || currentPage === 'signup' || currentPage === 'password-reset') {
     return (
       <Suspense fallback={<LoadingState message="Loading..." />}>
         <PageRouter />
-        {showWalkthrough && (
-          <SampleIntelligenceWalkthrough
-            onComplete={handleWalkthroughComplete}
-            onSkip={handleWalkthroughComplete}
-          />
-        )}
+        {showWalkthrough && <SampleIntelligenceWalkthrough onComplete={handleWalkthroughComplete} onSkip={handleWalkthroughComplete} />}
       </Suspense>
     );
   }
@@ -153,10 +144,7 @@ export default function App() {
       </Layout>
       {showWalkthrough && (
         <Suspense fallback={null}>
-          <SampleIntelligenceWalkthrough
-            onComplete={handleWalkthroughComplete}
-            onSkip={handleWalkthroughComplete}
-          />
+          <SampleIntelligenceWalkthrough onComplete={handleWalkthroughComplete} onSkip={handleWalkthroughComplete} />
         </Suspense>
       )}
     </>
