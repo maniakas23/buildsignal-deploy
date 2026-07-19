@@ -48,6 +48,10 @@ const NationalIntelligencePage = lazy(() => import('@/pages/NationalIntelligence
 const OnboardingPage = lazy(() => import('@/pages/OnboardingPage'));
 // ─── PI-4: Operations Center ───
 const OperationsCenterPage = lazy(() => import('@/pages/OperationsCenterPage'));
+// ─── PI-9: Customer trust & onboarding ───
+const SecurityPage = lazy(() => import('@/pages/SecurityPage'));
+const DataCoveragePage = lazy(() => import('@/pages/DataCoveragePage'));
+const CustomerOnboardingPage = lazy(() => import('@/pages/CustomerOnboardingPage'));
 
 // ─── Customer page router ───
 function PageRouter() {
@@ -92,6 +96,10 @@ function PageRouter() {
     case 'onboarding': return <OnboardingPage />;
     // PI-4: Operations Center
     case 'ops-center': return <OperationsCenterPage />;
+    // PI-9: Customer trust & onboarding
+    case 'security': return <SecurityPage />;
+    case 'data-coverage': return <DataCoveragePage />;
+    case 'getting-started': return <CustomerOnboardingPage />;
     default: return <OpportunityDashboard />;
   }
 }
