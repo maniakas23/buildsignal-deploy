@@ -77,6 +77,8 @@ const IntelligenceExcellencePage = lazy(() => import('@/pages/IntelligenceExcell
 const RCPlatformPage = lazy(() => import('@/pages/RCPlatformPage'));
 // ─── PI-23: Autonomous Platform page ───
 const AutonomousPlatformPage = lazy(() => import('@/pages/AutonomousPlatformPage'));
+// ─── PI-24: AI Operating System page ───
+const AIOSPage = lazy(() => import('@/pages/AIOSPage'));
 
 // ─── Customer page router ───
 function PageRouter() {
@@ -118,38 +120,25 @@ function PageRouter() {
     case 'patterns': return <PatternLibraryPage />;
     case 'learning': return <LearningEnginePage />;
     case 'national': return <NationalIntelligencePage />;
-    // PI-9 routes
     case 'security': return <SecurityPage />;
     case 'data-coverage': return <DataCoveragePage />;
     case 'getting-started': return <CustomerOnboardingPage />;
-    // PI-10 routes
     case 'operations': return <OperationsCenterPage />;
     case 'release-checklist': return <ReleaseChecklistPage />;
     case 'system-validation': return <SystemValidationPage />;
-    // PI-12 route
     case 'rc-validation': return <RCValidationPage />;
-    // PI-13 route
     case 'launch-readiness': return <LaunchReadinessPage />;
-    // PI-14 route
     case 'commercial-launch': return <CommercialLaunchCandidatePage />;
-    // PI-15 route
     case 'production-excellence': return <ProductionExcellencePage />;
-    // PI-16 route
     case 'production-readiness': return <ProductionReadinessPage />;
-    // PI-17 route
     case 'pricing-revenue': return <PricingRevenuePage />;
-    // PI-18 route
     case 'enterprise-launch': return <EnterpriseLaunchPage />;
-    // PI-19 route
     case 'decision-platform': return <DecisionPlatformPage />;
-    // PI-20 route
     case 'ai-launch': return <AILaunchPage />;
-    // PI-21 route
     case 'intelligence-excellence': return <IntelligenceExcellencePage />;
-    // PI-22 route
     case 'rc-platform': return <RCPlatformPage />;
-    // PI-23 route
     case 'autonomous-platform': return <AutonomousPlatformPage />;
+    case 'aios': return <AIOSPage />;
     default: return <OpportunityDashboard />;
   }
 }
