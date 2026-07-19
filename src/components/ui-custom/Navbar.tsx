@@ -55,6 +55,7 @@ const qualityLinks = [
   { id: 'decision-platform', label: 'Decision', icon: <Brain className="w-3.5 h-3.5" /> },
   { id: 'ai-launch', label: 'AI Launch', icon: <Zap className="w-3.5 h-3.5" /> },
   { id: 'intelligence-excellence', label: 'v1.0', icon: <Rocket className="w-3.5 h-3.5" /> },
+  { id: 'rc-platform', label: 'RC', icon: <Shield className="w-3.5 h-3.5" /> },
   { id: 'system-validation', label: 'QA', icon: <CheckCircle2 className="w-3.5 h-3.5" /> },
 ];
 
