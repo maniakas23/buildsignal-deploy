@@ -17,6 +17,8 @@ import { OpportunityFeed } from '@/components/intelligence/OpportunityFeed';
 import { IntelligenceWorkspace } from '@/components/workspace/IntelligenceWorkspace';
 import { ExecutiveSummary } from '@/components/dashboard/ExecutiveSummary';
 import { SilentErrorBoundary } from '@/components/ErrorBoundary';
+// PI-5: Retention & engagement widgets
+import DashboardWidgets from '@/components/dashboard/DashboardWidgets';
 
 const LIFECYCLE_STAGES: { id: string; label: string; color: string; bg: string }[] = [
   { id: 'new', label: 'New', color: 'text-ink-tertiary', bg: 'bg-ink-tertiary' },
@@ -365,7 +367,7 @@ export default function OpportunityDashboard() {
       <ExecutiveBrief dashboard={dashboard} dashState={dashState} onNavigate={setCurrentPage} />
       <TrustBar dashboard={dashboard} />
 
-      {/* Executive Summary — What changed today? */}
+      {/* Executive Summary */}
       <section className="max-w-content mx-auto px-6 pt-6" aria-label="Executive summary">
         <SilentErrorBoundary>
           <ExecutiveSummary onViewOpportunity={(id) => setSelectedOpp(id)} onViewAlerts={() => setCurrentPage('alerts')} />
@@ -453,6 +455,11 @@ export default function OpportunityDashboard() {
 
       {/* Recently Viewed */}
       <RecentlyViewed />
+
+      {/* PI-5: Retention & Engagement Widgets */}
+      <section className="max-w-content mx-auto px-6">
+        <DashboardWidgets />
+      </section>
 
       {/* Intelligence Feed */}
       <section className="max-w-content mx-auto px-6 py-10 border-t border-ink-wash">
