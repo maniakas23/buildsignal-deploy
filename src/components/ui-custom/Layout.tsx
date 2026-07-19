@@ -16,6 +16,8 @@ const ContextualHelp = lazy(() => import('@/components/education/ContextualHelp'
 // PI-6: First-time user welcome + success milestones
 const WelcomeBanner = lazy(() => import('@/components/dashboard/WelcomeBanner'));
 const SuccessMilestones = lazy(() => import('@/components/dashboard/SuccessMilestones'));
+// PI-7: Release highlights / changelog
+const ReleaseHighlights = lazy(() => import('@/components/beta/ReleaseHighlights'));
 
 interface LayoutProps {
   children: ReactNode;
@@ -56,6 +58,10 @@ export default function Layout({ children }: LayoutProps) {
       {/* PI-6: Success milestone celebrations */}
       <Suspense fallback={null}>
         <SuccessMilestones />
+      </Suspense>
+      {/* PI-7: Release highlights / changelog */}
+      <Suspense fallback={null}>
+        <ReleaseHighlights />
       </Suspense>
     </div>
   );
