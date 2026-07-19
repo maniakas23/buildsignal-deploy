@@ -51,6 +51,8 @@ const CustomerOnboardingPage = lazy(() => import('@/pages/CustomerOnboardingPage
 // ─── PI-10: Operations & RC pages ───
 const OperationsCenterPage = lazy(() => import('@/pages/OperationsCenterPage'));
 const ReleaseChecklistPage = lazy(() => import('@/pages/ReleaseChecklistPage'));
+// ─── PI-11: System Validation page ───
+const SystemValidationPage = lazy(() => import('@/pages/SystemValidationPage'));
 
 // ─── Customer page router ───
 function PageRouter() {
@@ -97,6 +99,7 @@ function PageRouter() {
     case 'getting-started': return <CustomerOnboardingPage />;
     case 'operations': return <OperationsCenterPage />;
     case 'release-checklist': return <ReleaseChecklistPage />;
+    case 'system-validation': return <SystemValidationPage />;
     default: return <OpportunityDashboard />;
   }
 }
