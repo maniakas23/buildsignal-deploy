@@ -1,10 +1,14 @@
 import type { ReactNode } from 'react';
+import { lazy, Suspense } from 'react';
 import Navbar from './Navbar';
 import ToastContainer from './ToastContainer';
 import SurgeAlertModal from './SurgeAlertModal';
 import BetaFeedback from './BetaFeedback';
 import OnboardingModal from './Onboarding';
 import DemoBadge from './DemoBadge';
+
+// PI-3: Customer-facing improvements
+const DashboardTour = lazy(() => import('@/components/dashboard/DashboardTour'));
 
 interface LayoutProps {
   children: ReactNode;
@@ -26,6 +30,10 @@ export default function Layout({ children }: LayoutProps) {
       <SurgeAlertModal />
       <BetaFeedback />
       <OnboardingModal />
+      {/* PI-3: Guided dashboard tour for first-time users */}
+      <Suspense fallback={null}>
+        <DashboardTour />
+      </Suspense>
     </div>
   );
 }
