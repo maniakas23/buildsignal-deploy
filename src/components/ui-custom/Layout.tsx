@@ -11,6 +11,8 @@ import DemoBadge from './DemoBadge';
 const DashboardTour = lazy(() => import('@/components/dashboard/DashboardTour'));
 // PI-4: Customer feedback loop
 const CustomerFeedback = lazy(() => import('@/components/feedback/CustomerFeedback'));
+// PI-5: Product education
+const ContextualHelp = lazy(() => import('@/components/education/ContextualHelp'));
 
 interface LayoutProps {
   children: ReactNode;
@@ -39,6 +41,10 @@ export default function Layout({ children }: LayoutProps) {
       {/* PI-4: Floating customer feedback widget on every page */}
       <Suspense fallback={null}>
         <CustomerFeedback />
+      </Suspense>
+      {/* PI-5: Contextual product education tooltips */}
+      <Suspense fallback={null}>
+        <ContextualHelp />
       </Suspense>
     </div>
   );
