@@ -57,6 +57,7 @@ const qualityLinks = [
   { id: 'intelligence-excellence', label: 'v1.0', icon: <Rocket className="w-3.5 h-3.5" /> },
   { id: 'rc-platform', label: 'RC', icon: <Shield className="w-3.5 h-3.5" /> },
   { id: 'autonomous-platform', label: 'AI', icon: <Brain className="w-3.5 h-3.5" /> },
+  { id: 'aios', label: 'AI OS', icon: <Cpu className="w-3.5 h-3.5" /> },
   { id: 'system-validation', label: 'QA', icon: <CheckCircle2 className="w-3.5 h-3.5" /> },
 ];
 
