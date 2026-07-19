@@ -1,0 +1,15 @@
+# BuildSignal Frontend — Cloudflare Pages
+# Customer-facing React application deployed to app.buildsignal.com
+# name = "buildsignal-app-production"
+compatibility_date = "2026-07-16"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "./dist"
+
+# No functions directory — this is a pure static SPA.
+# All API calls go to api.buildsignal.com (separate Cloudflare Worker).
+# Do NOT add functions/ here — that would recreate the old
+# bundled-backend problem this monorepo separation is designed to solve.
+
+[vars]
+VITE_APP_MODE = "production"
+VITE_USE_MOCK = "false"

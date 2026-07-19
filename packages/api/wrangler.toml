@@ -1,0 +1,89 @@
+# BuildSignal API — Cloudflare Worker
+# Authentication, tRPC, billing, reports and customer operations
+# Deployed to: api.buildsignal.com
+name = "buildsignal-api-production"
+main = "src/index.ts"
+compatibility_date = "2026-07-16"
+compatibility_flags = ["nodejs_compat"]
+
+# D1 Database
+[[d1_databases]]
+binding = "DB"
+database_name = "buildsignal-db-production"
+database_id = "a8ecb143-6aa6-4741-b4e8-fe3e16695452"
+
+# R2 Buckets
+[[r2_buckets]]
+binding = "DOCUMENTS"
+bucket_name = "buildsignal-documents-production"
+
+[[r2_buckets]]
+binding = "REPORTS"
+bucket_name = "buildsignal-reports-production"
+
+# Queues
+[[queues.producers]]
+binding = "INGESTION_QUEUE"
+queue = "buildsignal-ingestion-production"
+
+[[queues.consumers]]
+queue = "buildsignal-ingestion-production"
+max_batch_size = 10
+max_batch_timeout = 30
+
+[[queues.producers]]
+binding = "ALERTS_QUEUE"
+queue = "buildsignal-alerts-production"
+
+[[queues.consumers]]
+queue = "buildsignal-alerts-production"
+max_batch_size = 50
+max_batch_timeout = 10
+
+# Cron Triggers
+[[triggers]]
+crons = ["*/5 * * * *", "0 */6 * * *"]
+
+# Environment Variables (non-secret)
+[vars]
+APP_NAME = "buildsignal"
+NODE_ENV = "production"
+SIGNALCORE_API_URL = "https://api.signalcore.buildsignal.com"
+
+# Preview Environment
+[env.preview]
+name = "buildsignal-api-preview"
+
+[[env.preview.d1_databases]]
+binding = "DB"
+database_name = "buildsignal-db-preview"
+database_id = "PREVIEW_DATABASE_ID_PLACEHOLDER"
+
+[[env.preview.r2_buckets]]
+binding = "DOCUMENTS"
+bucket_name = "buildsignal-documents-preview"
+
+[[env.preview.r2_buckets]]
+binding = "REPORTS"
+bucket_name = "buildsignal-reports-preview"
+
+[env.preview.vars]
+NODE_ENV = "preview"
+SIGNALCORE_API_URL = "https://api.signalcore.buildsignal.com"
+
+# Service Bindings
+[[services]]
+binding = "SIGNALCORE"
+service = "signalcore-engine-production"
+
+[[env.preview.services]]
+binding = "SIGNALCORE"
+service = "signalcore-engine-preview"
+
+# Custom Domain
+routes = [
+  { pattern = "api.buildsignal.com/*", custom_domain = true }
+]
+
+[env.preview.routes]
+[{ pattern = "api-preview.buildsignal.com/*", custom_domain = true }]
