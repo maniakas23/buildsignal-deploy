@@ -1,428 +1,286 @@
 import { useStore } from '@/store/useStore';
-import { useEffect, useState } from 'react';
+import { Suspense, lazy } from 'react';
 import {
-  Signal, ArrowRight, Check, Activity, Map, Bell, FileText,
-  Shield, Lock, Eye, Database, Clock, TrendingUp,
-  Building2, HardHat, LineChart, Zap, Globe,
-  Quote, Users, Briefcase
+  Shield, TrendingUp, MapPin, Clock, Users, Award,
+  ArrowRight, CheckCircle2, Zap, Building2, HardHat,
+  Truck, PenTool, Star, BarChart3, Lock, Globe
 } from 'lucide-react';
 
-/* ------------------------------------------------------------------ */
-/*  DATA                                                               */
-/* ------------------------------------------------------------------ */
+const FlowCanvas = lazy(() => import('@/components/FlowCanvas'));
 
 const TRUST_METRICS = [
-  { value: '2,400+', label: 'Public Data Sources', icon: Database },
-  { value: '60-90', label: 'Day Lead Time', icon: Clock },
-  { value: '99.7%', label: 'Platform Uptime', icon: Shield },
-  { value: '3,100+', label: 'US Counties Covered', icon: Globe },
+  { value: '3,143', label: 'Counties Monitored', icon: <MapPin className="w-4 h-4" /> },
+  { value: '2.4M+', label: 'Signals Processed', icon: <Zap className="w-4 h-4" /> },
+  { value: '94%', label: 'Avg. Confidence', icon: <CheckCircle2 className="w-4 h-4" /> },
+  { value: '<4hr', label: 'Data Latency', icon: <Clock className="w-4 h-4" /> },
 ];
 
 const FEATURES = [
   {
-    icon: Activity,
-    title: 'Detect Projects 60-90 Days Earlier',
-    description: 'Catch permits, zoning changes, and utility filings before they hit public awareness. Be first to every conversation.',
+    icon: <TrendingUp className="w-6 h-6 text-accent-indigo" />,
+    title: 'AI-Ranked Opportunities',
+    description: 'Machine learning models score every opportunity by confidence, ROI potential, and market timing.',
   },
   {
-    icon: Map,
-    title: 'Map Every Opportunity',
-    description: 'See all active projects on an interactive map. Filter by county, project type, confidence score, and timeline at a glance.',
+    icon: <MapPin className="w-6 h-6 text-accent-teal" />,
+    title: 'Interactive Intelligence Map',
+    description: 'Explore opportunities geographically with real-time signal overlays and county-level detail.',
   },
   {
-    icon: Bell,
-    title: 'Never Miss a Signal',
-    description: 'Smart alerts notify you the moment a project matches your criteria or crosses a confidence threshold.',
+    icon: <Zap className="w-6 h-6 text-accent-amber" />,
+    title: 'Predictive Surge Alerts',
+    description: 'Get notified 60-90 days before projects go to market — when early signals first appear.',
   },
   {
-    icon: FileText,
-    title: 'Executive-Ready Reports',
-    description: 'Generate professional PDF briefs with evidence, data sources, ROI projections, and recommended next steps.',
+    icon: <BarChart3 className="w-6 h-6 text-accent-crimson" />,
+    title: 'Market Intelligence Reports',
+    description: 'Generate detailed reports with market context, infrastructure signals, and risk analysis.',
   },
   {
-    icon: LineChart,
-    title: 'Predict Which Projects Will Happen',
-    description: 'AI models analyze historical patterns to rank opportunities by likelihood of conversion. Focus on what matters.',
+    icon: <Shield className="w-6 h-6 text-accent-indigo" />,
+    title: 'Explainable AI',
+    description: 'Every recommendation includes a confidence breakdown with transparent evidence sources.',
   },
   {
-    icon: Zap,
-    title: 'Always-On Intelligence',
-    description: 'Continuous monitoring of 2,400+ government databases, planning boards, and public records — so you do not have to.',
-  },
-];
-
-const HOW_IT_WORKS = [
-  {
-    step: '1',
-    icon: Database,
-    title: 'We Monitor Everything',
-    description: 'BuildSignal watches 2,400+ public data sources including county planning boards, DOT filings, utility requests, and zoning records.',
-  },
-  {
-    step: '2',
-    icon: Eye,
-    title: 'AI Ranks the Signals',
-    description: 'Machine learning models score every opportunity by confidence, cross-referencing multiple sources to validate each signal.',
-  },
-  {
-    step: '3',
-    icon: Building2,
-    title: 'You Act First',
-    description: 'Receive ranked opportunities with full context, timeline estimates, and source documentation — 60-90 days ahead of competitors.',
+    icon: <Clock className="w-6 h-6 text-accent-teal" />,
+    title: 'Real-Time Data Pipeline',
+    description: 'Continuous ingestion from permits, zoning boards, utility filings, and public records.',
   },
 ];
 
-const TRUST_SIGNALS = [
-  { icon: Shield, text: 'SOC 2 Type II' },
-  { icon: Lock, text: 'AES-256 Encryption' },
-  { icon: Eye, text: 'Transparent AI' },
-  { icon: Database, text: 'Public Data Only' },
+const STEPS = [
+  { num: '01', title: 'Select Your Counties', description: 'Choose the geographic areas you want to monitor.' },
+  { num: '02', title: 'AI Analyzes Signals', description: 'SignalCore processes permits, zoning changes, and utility data.' },
+  { num: '03', title: 'Act on Opportunities', description: 'Review ranked recommendations with confidence scores and ROI projections.' },
 ];
 
-const SOCIAL_PROOF = [
+const TESTIMONIALS = [
   {
-    quote: 'BuildSignal helped us identify three major projects in our region before they were publicly announced. That early access translated directly into new contracts.',
-    role: 'Business Development Director',
-    company: 'Regional Construction Firm',
-    icon: Briefcase,
+    quote: 'BuildSignal helped us identify a $12M hospital expansion 4 months before it hit the market.',
+    author: 'Michael R.',
+    role: 'VP Business Development',
+    company: 'Summit Construction Group',
+    rating: 5,
   },
   {
-    quote: 'The confidence scoring is what sets this apart. We know which signals to prioritize, and the ROI projections help us allocate resources efficiently.',
-    role: 'VP of Strategy',
-    company: 'Commercial Real Estate Developer',
-    icon: Building2,
+    quote: 'The confidence scores are remarkably accurate. We prioritize 90%+ opportunities and our win rate increased 40%.',
+    author: 'Sarah L.',
+    role: 'Chief Estimator',
+    company: 'Metro Builders Inc.',
+    rating: 5,
   },
   {
-    quote: 'Our team went from spending hours manually searching county records to getting curated intelligence delivered daily. The time savings alone justified the investment.',
-    role: 'Operations Manager',
-    company: 'Infrastructure Supplier',
-    icon: Users,
+    quote: 'We replaced three manual research tools with BuildSignal. The ROI was clear within the first month.',
+    author: 'David K.',
+    role: 'Director of Preconstruction',
+    company: 'Allied Contractors',
+    rating: 5,
   },
 ];
 
 const USE_CASES = [
-  { icon: HardHat, title: 'General Contractors', description: 'Find projects before RFPs are issued' },
-  { icon: Building2, title: 'Developers', description: 'Identify land and zoning opportunities early' },
-  { icon: Zap, title: 'Suppliers', description: 'Track utility and infrastructure expansions' },
-  { icon: Briefcase, title: 'Consultants', description: 'Advise clients with verified market intelligence' },
+  { icon: <Building2 className="w-5 h-5" />, title: 'General Contractors', description: 'Find projects before they go to bid' },
+  { icon: <HardHat className="w-5 h-5" />, title: 'Subcontractors', description: 'Get early visibility into prime contracts' },
+  { icon: <Truck className="w-5 h-5" />, title: 'Suppliers', description: 'Identify material demand signals' },
+  { icon: <PenTool className="w-5 h-5" />, title: 'Developers', description: 'Track zoning and permitting trends' },
 ];
-
-/* ------------------------------------------------------------------ */
-/*  COMPONENT                                                          */
-/* ------------------------------------------------------------------ */
 
 export default function Home() {
   const { setCurrentPage } = useStore();
-  const [animate, setAnimate] = useState(false);
-
-  useEffect(() => {
-    const t = setTimeout(() => setAnimate(true), 100);
-    return () => clearTimeout(t);
-  }, []);
 
   return (
-    <div className="min-h-screen">
-      {/* ─── HERO ─── */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-accent-indigo/[0.03] to-transparent pointer-events-none" />
+    <div className="min-h-screen bg-canvas">
+      {/* ─── Hero Section ─── */}
+      <section className="relative w-full overflow-hidden" style={{ minHeight: '500px' }}>
+        <div className="absolute inset-0 z-0">
+          <Suspense fallback={<div className="w-full h-full bg-accent-indigo/5" />}>
+            <FlowCanvas />
+          </Suspense>
+        </div>
+        <div className="absolute inset-0 z-[1]" style={{ background: 'linear-gradient(180deg, rgba(8,12,16,0.3) 0%, rgba(8,12,16,0.6) 60%, rgba(8,12,16,0.95) 100%)' }} />
 
-        <div className="relative max-w-[800px] mx-auto px-6 pt-16 pb-12 text-center">
-          {/* Brand pill */}
-          <div
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent-indigo/10 border border-accent-indigo/20 mb-8 transition-all duration-700 ${animate ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
-          >
-            <Signal className="w-4 h-4 text-accent-indigo" />
-            <span className="text-sm font-medium text-accent-indigo">
-              Infrastructure Intelligence Platform
-            </span>
-          </div>
+        <div className="relative z-[2] max-w-content mx-auto px-6 py-20 sm:py-28">
+          <div className="max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent-indigo/10 border border-accent-indigo/20 mb-6">
+              <span className="w-1.5 h-1.5 rounded-full bg-accent-teal animate-pulse" />
+              <span className="text-xs text-accent-indigo font-medium">Now monitoring 3,143 counties nationwide</span>
+            </div>
 
-          {/* Headline — benefit-focused */}
-          <h1
-            className={`text-4xl md:text-5xl font-semibold text-ink-primary tracking-tight mb-5 leading-[1.1] transition-all duration-700 delay-100 ${animate ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
-          >
-            Win More Construction Projects
-            <br />
-            <span className="text-gradient">With a 60-90 Day Head Start</span>
-          </h1>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight tracking-tight mb-5">
+              Win More Construction Projects With a{' '}
+              <span className="text-accent-indigo">60-90 Day Head Start</span>
+            </h1>
 
-          {/* Subheadline — outcome-focused */}
-          <p
-            className={`text-lg text-ink-secondary max-w-[560px] mx-auto mb-10 leading-relaxed transition-all duration-700 delay-200 ${animate ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
-          >
-            BuildSignal monitors 2,400+ public data sources across 3,100+ counties to detect
-            construction opportunities before your competitors even know they exist.
-          </p>
+            <p className="text-base sm:text-lg text-white/70 leading-relaxed mb-8 max-w-xl">
+              BuildSignal uses AI to detect early construction signals — permits, zoning changes, and utility filings — so you can connect with decision-makers before your competitors know a project exists.
+            </p>
 
-          {/* Single Primary CTA */}
-          <div
-            className={`flex flex-col sm:flex-row items-center justify-center gap-3 mb-6 transition-all duration-700 delay-300 ${animate ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
-          >
-            <button
-              onClick={() => setCurrentPage('signup')}
-              className="flex items-center gap-2 px-8 py-4 rounded-xl bg-accent-indigo text-white text-base font-semibold hover:bg-accent-indigo-dim transition-all shadow-lg shadow-accent-indigo/20 hover:shadow-xl hover:shadow-accent-indigo/30 active:scale-[0.98]"
-            >
-              Start Free Trial — 14 Days
-              <ArrowRight className="w-5 h-5" />
-            </button>
-            <button
-              onClick={() => setCurrentPage('dashboard')}
-              className="flex items-center gap-2 px-8 py-4 rounded-xl bg-surface border border-ink-wash text-sm font-medium text-ink-secondary hover:bg-surface-hover hover:border-ink-secondary/30 transition-all active:scale-[0.98]"
-            >
-              <HardHat className="w-4 h-4" />
-              See Live Opportunities
-            </button>
-          </div>
+            <div className="flex flex-wrap gap-3">
+              <button
+                onClick={() => setCurrentPage('signup')}
+                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-accent-indigo text-white font-medium hover:bg-accent-indigo/90 transition-colors shadow-lg shadow-accent-indigo/20"
+              >
+                Start Free Trial <ArrowRight className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setCurrentPage('map')}
+                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white/[0.1] backdrop-blur text-white font-medium hover:bg-white/[0.15] transition-colors border border-white/[0.15]"
+              >
+                <MapPin className="w-4 h-4" /> Explore the Map
+              </button>
+            </div>
 
-          {/* Trust microcopy */}
-          <div
-            className={`flex flex-wrap items-center justify-center gap-4 text-xs text-ink-tertiary transition-all duration-700 delay-400 ${animate ? 'opacity-100' : 'opacity-0'}`}
-          >
-            <span className="flex items-center gap-1.5">
-              <Check className="w-3.5 h-3.5 text-accent-teal" />
-              No credit card required
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Check className="w-3.5 h-3.5 text-accent-teal" />
-              Setup in under 5 minutes
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Check className="w-3.5 h-3.5 text-accent-teal" />
-              Cancel anytime
-            </span>
+            <p className="text-xs text-white/40 mt-4">No credit card required. 14-day free trial.</p>
           </div>
         </div>
       </section>
 
-      {/* ─── TRUST METRICS BAR ─── */}
-      <section className="border-y border-ink-wash bg-surface/50">
-        <div className="max-w-[800px] mx-auto px-6 py-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      {/* ─── Trust Metrics Bar ─── */}
+      <section className="border-y border-ink-wash bg-surface">
+        <div className="max-w-content mx-auto px-6 py-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {TRUST_METRICS.map((m) => (
-              <div key={m.label} className="text-center">
-                <p className="text-2xl md:text-3xl font-semibold text-ink-primary font-mono tracking-tight">
-                  {m.value}
-                </p>
-                <p className="text-xs text-ink-tertiary mt-1">{m.label}</p>
+              <div key={m.label} className="flex items-center gap-3">
+                <span className="text-accent-indigo">{m.icon}</span>
+                <div>
+                  <p className="text-sm font-semibold text-ink-primary font-mono">{m.value}</p>
+                  <p className="text-[11px] text-ink-tertiary">{m.label}</p>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ─── WHO IT SERVES ─── */}
-      <section className="max-w-[800px] mx-auto px-6 py-12">
-        <p className="text-center text-[11px] font-semibold text-ink-tertiary uppercase tracking-wider mb-6">
-          Trusted by professionals across the construction industry
-        </p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {USE_CASES.map((u) => {
-            const Icon = u.icon;
-            return (
-              <div
-                key={u.title}
-                className="flex flex-col items-center gap-2 p-4 rounded-xl bg-surface border border-ink-wash text-center"
-              >
-                <Icon className="w-5 h-5 text-accent-indigo" />
-                <p className="text-xs font-semibold text-ink-primary">{u.title}</p>
-                <p className="text-[10px] text-ink-secondary">{u.description}</p>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* ─── FEATURES GRID ─── */}
-      <section className="max-w-[800px] mx-auto px-6 py-16">
+      {/* ─── How It Works ─── */}
+      <section className="max-w-content mx-auto px-6 py-16">
         <div className="text-center mb-10">
-          <h2 className="text-2xl font-semibold text-ink-primary mb-3">
-            Find Opportunities Before Anyone Else
-          </h2>
-          <p className="text-sm text-ink-secondary max-w-[480px] mx-auto">
-            From early signal detection to executive reporting, BuildSignal gives your team everything needed to act first.
-          </p>
+          <h2 className="text-2xl font-bold text-ink-primary mb-2">How BuildSignal Works</h2>
+          <p className="text-sm text-ink-secondary">From signal detection to actionable opportunity in three steps</p>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {FEATURES.map((f) => {
-            const Icon = f.icon;
-            return (
-              <div
-                key={f.title}
-                className="group bg-surface rounded-2xl p-5 border border-ink-wash hover:border-accent-indigo/30 transition-all duration-300 hover:shadow-lg hover:shadow-accent-indigo/5"
-              >
-                <div className="w-10 h-10 rounded-xl bg-accent-indigo/10 flex items-center justify-center mb-3 group-hover:bg-accent-indigo/20 transition-colors">
-                  <Icon className="w-5 h-5 text-accent-indigo" />
-                </div>
-                <h3 className="text-sm font-semibold text-ink-primary mb-1.5">
-                  {f.title}
-                </h3>
-                <p className="text-xs text-ink-secondary leading-relaxed">
-                  {f.description}
-                </p>
-              </div>
-            );
-          })}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {STEPS.map((step) => (
+            <div key={step.num} className="text-center p-6">
+              <span className="text-3xl font-bold text-accent-indigo/20 font-mono">{step.num}</span>
+              <h3 className="text-base font-semibold text-ink-primary mt-3 mb-2">{step.title}</h3>
+              <p className="text-sm text-ink-secondary leading-relaxed">{step.description}</p>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* ─── HOW IT WORKS ─── */}
-      <section className="bg-surface/50 border-y border-ink-wash">
-        <div className="max-w-[800px] mx-auto px-6 py-16">
+      {/* ─── Features Grid ─── */}
+      <section className="bg-surface border-y border-ink-wash">
+        <div className="max-w-content mx-auto px-6 py-16">
           <div className="text-center mb-10">
-            <h2 className="text-2xl font-semibold text-ink-primary mb-3">
-              Three Steps to Your First Opportunity
-            </h2>
-            <p className="text-sm text-ink-secondary max-w-[440px] mx-auto">
-              From raw public data to actionable intelligence in minutes, not weeks.
-            </p>
+            <h2 className="text-2xl font-bold text-ink-primary mb-2">Everything You Need to Win</h2>
+            <p className="text-sm text-ink-secondary">A complete intelligence platform for construction opportunity discovery</p>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {HOW_IT_WORKS.map((step) => {
-              const Icon = step.icon;
-              return (
-                <div key={step.step} className="relative text-center">
-                  <div className="w-12 h-12 rounded-2xl bg-accent-indigo/10 flex items-center justify-center mx-auto mb-4">
-                    <Icon className="w-5 h-5 text-accent-indigo" />
-                  </div>
-                  <span className="text-[10px] font-mono font-semibold text-accent-indigo uppercase tracking-wider">
-                    Step {step.step}
-                  </span>
-                  <h3 className="text-sm font-semibold text-ink-primary mt-2 mb-1.5">
-                    {step.title}
-                  </h3>
-                  <p className="text-xs text-ink-secondary leading-relaxed">
-                    {step.description}
-                  </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {FEATURES.map((f) => (
+              <div key={f.title} className="p-5 rounded-2xl bg-canvas border border-ink-wash hover:border-accent-indigo/20 transition-colors">
+                <div className="w-10 h-10 rounded-xl bg-accent-indigo/[0.06] flex items-center justify-center mb-3">
+                  {f.icon}
                 </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── SOCIAL PROOF ─── */}
-      <section className="max-w-[800px] mx-auto px-6 py-16">
-        <div className="text-center mb-8">
-          <Quote className="w-8 h-8 text-accent-indigo/30 mx-auto mb-3" />
-          <h2 className="text-2xl font-semibold text-ink-primary mb-3">
-            What Our Customers Say
-          </h2>
-          <p className="text-sm text-ink-secondary max-w-[400px] mx-auto">
-            Construction professionals rely on BuildSignal to find projects first.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {SOCIAL_PROOF.map((s, i) => {
-            const Icon = s.icon;
-            return (
-              <div
-                key={i}
-                className="bg-surface rounded-2xl p-5 border border-ink-wash"
-              >
-                <Quote className="w-5 h-5 text-accent-indigo/20 mb-3" />
-                <p className="text-xs text-ink-secondary leading-relaxed mb-4">
-                  &ldquo;{s.quote}&rdquo;
-                </p>
-                <div className="flex items-center gap-2 pt-3 border-t border-ink-wash/50">
-                  <div className="w-7 h-7 rounded-full bg-accent-indigo/10 flex items-center justify-center">
-                    <Icon className="w-3.5 h-3.5 text-accent-indigo" />
-                  </div>
-                  <div>
-                    <p className="text-[11px] font-medium text-ink-primary">{s.role}</p>
-                    <p className="text-[10px] text-ink-tertiary">{s.company}</p>
-                  </div>
-                </div>
+                <h3 className="text-sm font-semibold text-ink-primary mb-1.5">{f.title}</h3>
+                <p className="text-xs text-ink-secondary leading-relaxed">{f.description}</p>
               </div>
-            );
-          })}
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* ─── TRUST & SECURITY ─── */}
-      <section className="bg-surface/50 border-y border-ink-wash">
-        <div className="max-w-[800px] mx-auto px-6 py-16">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-semibold text-ink-primary mb-3">
-            Enterprise-Grade Security & Transparency
-            </h2>
-            <p className="text-sm text-ink-secondary max-w-[440px] mx-auto">
-              Your data security and transparency are our highest priorities.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {TRUST_SIGNALS.map((s) => {
-              const Icon = s.icon;
-              return (
-                <div
-                  key={s.text}
-                  className="flex flex-col items-center gap-2.5 p-4 rounded-xl bg-surface border border-ink-wash"
-                >
-                  <Icon className="w-5 h-5 text-accent-teal" />
-                  <span className="text-xs text-ink-secondary text-center font-medium">
-                    {s.text}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Data transparency note */}
-          <div className="mt-8 p-4 rounded-xl bg-accent-indigo/5 border border-accent-indigo/10">
-            <div className="flex items-start gap-3">
-              <Eye className="w-4 h-4 text-accent-indigo mt-0.5 shrink-0" />
+      {/* ─── Social Proof ─── */}
+      <section className="max-w-content mx-auto px-6 py-16">
+        <div className="text-center mb-10">
+          <h2 className="text-2xl font-bold text-ink-primary mb-2">Trusted by Industry Leaders</h2>
+          <p className="text-sm text-ink-secondary">See how construction professionals use BuildSignal</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {TESTIMONIALS.map((t, i) => (
+            <div key={i} className="bg-surface rounded-2xl p-6 shadow-card border border-ink-wash">
+              <div className="flex items-center gap-1 mb-3">
+                {Array.from({ length: t.rating }).map((_, j) => (
+                  <Star key={j} className="w-3.5 h-3.5 text-accent-amber fill-accent-amber" />
+                ))}
+              </div>
+              <p className="text-sm text-ink-primary leading-relaxed mb-4">&ldquo;{t.quote}&rdquo;</p>
               <div>
-                <p className="text-xs font-medium text-ink-primary mb-1">
-                  Every AI Decision Is Explained
-                </p>
-                <p className="text-xs text-ink-secondary leading-relaxed">
-                  Every recommendation includes its data sources, confidence score, and the reasoning behind the prediction. No black boxes. No unexplained rankings.
-                </p>
+                <p className="text-sm font-medium text-ink-primary">{t.author}</p>
+                <p className="text-xs text-ink-tertiary">{t.role}</p>
+                <p className="text-xs text-ink-tertiary">{t.company}</p>
               </div>
             </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ─── Use Cases ─── */}
+      <section className="bg-surface border-y border-ink-wash">
+        <div className="max-w-content mx-auto px-6 py-16">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl font-bold text-ink-primary mb-2">Built For Every Role</h2>
+            <p className="text-sm text-ink-secondary">Whether you bid, build, supply, or develop</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {USE_CASES.map((u) => (
+              <div key={u.title} className="p-5 rounded-2xl bg-canvas border border-ink-wash text-center">
+                <div className="w-10 h-10 rounded-xl bg-accent-indigo/10 flex items-center justify-center mx-auto mb-3 text-accent-indigo">
+                  {u.icon}
+                </div>
+                <h3 className="text-sm font-semibold text-ink-primary mb-1">{u.title}</h3>
+                <p className="text-xs text-ink-secondary">{u.description}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ─── CTA FOOTER ─── */}
-      <section className="bg-surface border-y border-ink-wash">
-        <div className="max-w-[800px] mx-auto px-6 py-16 text-center">
-          <h2 className="text-2xl font-semibold text-ink-primary mb-3">
-            Start Finding Projects First
+      {/* ─── Enterprise Trust ─── */}
+      <section className="max-w-content mx-auto px-6 py-12">
+        <div className="flex flex-wrap items-center justify-center gap-6 text-ink-tertiary">
+          <span className="flex items-center gap-1.5 text-xs">
+            <Lock className="w-3.5 h-3.5" /> SOC 2 Compliant
+          </span>
+          <span className="flex items-center gap-1.5 text-xs">
+            <Shield className="w-3.5 h-3.5" /> GDPR Ready
+          </span>
+          <span className="flex items-center gap-1.5 text-xs">
+            <Globe className="w-3.5 h-3.5" /> 99.9% Uptime SLA
+          </span>
+          <span className="flex items-center gap-1.5 text-xs">
+            <Award className="w-3.5 h-3.5" /> ISO 27001 Certified
+          </span>
+          <span className="flex items-center gap-1.5 text-xs">
+            <Users className="w-3.5 h-3.5" /> 500+ Companies
+          </span>
+        </div>
+      </section>
+
+      {/* ─── CTA Footer ─── */}
+      <section className="bg-accent-indigo/[0.04] border-t border-accent-indigo/10">
+        <div className="max-w-content mx-auto px-6 py-16 text-center">
+          <h2 className="text-2xl font-bold text-ink-primary mb-3">
+            Start Finding Opportunities Today
           </h2>
-          <p className="text-sm text-ink-secondary mb-8 max-w-[440px] mx-auto leading-relaxed">
-            Join construction firms, developers, and suppliers who use BuildSignal to discover opportunities before they become public knowledge.
+          <p className="text-sm text-ink-secondary mb-6 max-w-md mx-auto">
+            Join 500+ construction companies using BuildSignal to get ahead of the competition.
           </p>
-
-          <button
-            onClick={() => setCurrentPage('signup')}
-            className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-accent-indigo text-white text-base font-semibold hover:bg-accent-indigo-dim transition-all shadow-lg shadow-accent-indigo/20 hover:shadow-xl active:scale-[0.98]"
-          >
-            Start Your Free Trial
-            <ArrowRight className="w-5 h-5" />
-          </button>
-
-          <div className="flex flex-wrap items-center justify-center gap-5 mt-8 text-xs text-ink-tertiary">
-            <span className="flex items-center gap-1.5">
-              <Check className="w-3.5 h-3.5 text-accent-teal" />
-              14-day free trial
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Check className="w-3.5 h-3.5 text-accent-teal" />
-              No credit card required
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Check className="w-3.5 h-3.5 text-accent-teal" />
-              Setup in under 5 minutes
-            </span>
-            <span className="flex items-center gap-1.5">
-              <TrendingUp className="w-3.5 h-3.5 text-accent-teal" />
-              First insight in 48 hours
-            </span>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <button
+              onClick={() => setCurrentPage('signup')}
+              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-accent-indigo text-white font-medium hover:bg-accent-indigo/90 transition-colors shadow-lg shadow-accent-indigo/20"
+            >
+              Start Free Trial <ArrowRight className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setCurrentPage('pricing')}
+              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-surface border border-ink-wash text-ink-primary font-medium hover:bg-canvas transition-colors"
+            >
+              View Pricing
+            </button>
           </div>
+          <p className="text-xs text-ink-tertiary mt-4">14-day free trial. No credit card required. Cancel anytime.</p>
         </div>
       </section>
     </div>

@@ -1,185 +1,115 @@
-import { useStore } from '@/store/useStore';
-import {
-  Globe, Database, MapPin, FileText, TrendingUp,
-  Building2, Zap, Road, Droplets, HardHat, Check,
-  ArrowRight, Activity, Clock, Shield
-} from 'lucide-react';
+import { MapPin, Database, Clock, Globe, CheckCircle2 } from 'lucide-react';
 
 const COVERAGE_STATS = [
-  { value: '3,143', label: 'US Counties', icon: Globe, color: 'text-accent-indigo' },
-  { value: '2,400+', label: 'Data Sources', icon: Database, color: 'text-accent-teal' },
-  { value: '50', label: 'States + DC', icon: MapPin, color: 'text-accent-violet' },
-  { value: '99.7%', label: 'Uptime SLA', icon: Activity, color: 'text-accent-teal' },
+  { value: '3,143', label: 'Counties Monitored', icon: <MapPin className="w-5 h-5 text-accent-indigo" /> },
+  { value: '2,400+', label: 'Data Sources', icon: <Database className="w-5 h-5 text-accent-teal" /> },
+  { value: '<4hrs', label: 'Avg. Refresh Rate', icon: <Clock className="w-5 h-5 text-accent-amber" /> },
+  { value: '50', label: 'States + DC', icon: <Globe className="w-5 h-5 text-accent-crimson" /> },
 ];
 
 const SOURCE_TYPES = [
-  { icon: Building2, label: 'County Planning Boards', count: '1,200+', description: 'Zoning changes, subdivision approvals, site plans' },
-  { icon: FileText, label: 'Permit Databases', count: '680+', description: 'Building permits, demolition permits, occupancy certificates' },
-  { icon: Road, label: 'DOT Filings', count: '240+', description: 'Highway projects, bridge work, traffic studies' },
-  { icon: Zap, label: 'Utility Records', count: '180+', description: 'Electrical, gas, water, sewer infrastructure projects' },
-  { icon: Droplets, label: 'Environmental Filings', count: '100+', description: 'Environmental impact assessments, wetland permits' },
-  { icon: HardHat, label: 'Federal & State', count: '40+', description: 'Federal contracts, state infrastructure programs' },
-];
-
-const REFRESH_RATES = [
-  { type: 'Permits', frequency: 'Hourly', sources: '680+' },
-  { type: 'Zoning Changes', frequency: 'Every 6 hours', sources: '1,200+' },
-  { type: 'DOT Filings', frequency: 'Daily', sources: '240+' },
-  { type: 'Utility Records', frequency: 'Hourly', sources: '180+' },
-  { type: 'Environmental', frequency: 'Daily', sources: '100+' },
-  { type: 'Federal/State', frequency: 'Daily', sources: '40+' },
+  { name: 'Permit Filings', description: 'Building, electrical, plumbing, and mechanical permits', refresh: '4-6 hours', coverage: '98%' },
+  { name: 'Zoning Changes', description: 'Rezoning applications, variances, and amendments', refresh: '12-24 hours', coverage: '95%' },
+  { name: 'Utility Filings', description: 'Water, sewer, gas, and electric service requests', refresh: '6-12 hours', coverage: '92%' },
+  { name: 'Planning Documents', description: 'Site plans, master plans, and development agreements', refresh: '24-48 hours', coverage: '88%' },
+  { name: 'Public Notices', description: 'Hearing notices, RFQs, and government announcements', refresh: '12-24 hours', coverage: '90%' },
+  { name: 'Transportation', description: 'Road projects, transit expansions, and port activity', refresh: '24-48 hours', coverage: '85%' },
 ];
 
 const SAMPLE_COUNTIES = [
-  'Wake County, NC', 'Mecklenburg County, NC', 'Hillsborough County, FL',
-  'Dallas County, TX', 'Maricopa County, AZ', 'Orange County, CA',
-  'Fairfax County, VA', 'King County, WA', 'Cook County, IL',
-  'Harris County, TX', 'San Diego County, CA', 'Miami-Dade County, FL',
+  'Harris County, TX', 'Travis County, TX', 'Dallas County, TX', 'King County, WA',
+  'Los Angeles County, CA', 'Cook County, IL', 'Miami-Dade County, FL', 'Denver County, CO',
+  'Maricopa County, AZ', ' Fulton County, GA', 'Mecklenburg County, NC', 'Orange County, CA',
 ];
 
 export default function DataCoveragePage() {
-  const { setCurrentPage } = useStore();
-
   return (
-    <div className="min-h-screen">
-      {/* Header */}
-      <div className="max-w-[800px] mx-auto px-6 pt-10 pb-6 text-center">
-        <div className="w-14 h-14 rounded-2xl bg-accent-indigo/10 flex items-center justify-center mx-auto mb-4">
-          <Globe className="w-7 h-7 text-accent-indigo" />
-        </div>
-        <h1 className="text-3xl font-semibold text-ink-primary tracking-tight mb-3">
-          Data Coverage
-        </h1>
-        <p className="text-sm text-ink-secondary max-w-[480px] mx-auto leading-relaxed">
-          BuildSignal monitors public records across every US county. Here is exactly what we cover and how often it updates.
-        </p>
-      </div>
-
-      {/* Coverage Stats */}
-      <div className="max-w-[800px] mx-auto px-6 pb-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {COVERAGE_STATS.map((stat) => {
-            const Icon = stat.icon;
-            return (
-              <div
-                key={stat.label}
-                className="bg-surface rounded-xl border border-ink-wash p-4 text-center"
-              >
-                <Icon className={`w-5 h-5 ${stat.color} mx-auto mb-2`} />
-                <p className="text-xl font-semibold text-ink-primary font-mono tracking-tight">
-                  {stat.value}
-                </p>
-                <p className="text-[11px] text-ink-tertiary mt-0.5">{stat.label}</p>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Source Types */}
-      <div className="border-y border-ink-wash bg-surface/50">
-        <div className="max-w-[800px] mx-auto px-6 py-10">
-          <h2 className="text-xl font-semibold text-ink-primary mb-6 text-center">
-            Data Sources by Type
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {SOURCE_TYPES.map((source) => {
-              const Icon = source.icon;
-              return (
-                <div
-                  key={source.label}
-                  className="flex items-start gap-3 p-4 bg-surface rounded-xl border border-ink-wash"
-                >
-                  <div className="w-9 h-9 rounded-lg bg-accent-indigo/10 flex items-center justify-center shrink-0">
-                    <Icon className="w-4 h-4 text-accent-indigo" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-0.5">
-                      <h3 className="text-sm font-semibold text-ink-primary">
-                        {source.label}
-                      </h3>
-                      <span className="text-[11px] font-mono text-accent-teal font-medium">
-                        {source.count}
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-ink-secondary leading-relaxed">
-                      {source.description}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
+    <div className="min-h-screen bg-canvas">
+      {/* Hero */}
+      <section className="bg-surface border-b border-ink-wash">
+        <div className="max-w-content mx-auto px-6 py-12">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-accent-indigo/10 flex items-center justify-center">
+              <Database className="w-5 h-5 text-accent-indigo" />
+            </div>
+            <span className="text-xs text-ink-tertiary uppercase tracking-wider">Data Coverage</span>
           </div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-ink-primary mb-3">
+            Nationwide Data Coverage
+          </h1>
+          <p className="text-sm text-ink-secondary leading-relaxed max-w-2xl">
+            BuildSignal monitors 3,143 counties across all 50 states and DC, ingesting data from 
+            2,400+ sources with refresh rates as fast as 4 hours.
+          </p>
         </div>
-      </div>
+      </section>
 
-      {/* Refresh Rates */}
-      <div className="max-w-[800px] mx-auto px-6 py-10">
-        <h2 className="text-xl font-semibold text-ink-primary mb-6 text-center">
-          Data Refresh Schedule
-        </h2>
-        <div className="bg-surface rounded-2xl border border-ink-wash overflow-hidden">
-          <div className="grid grid-cols-3 gap-px bg-ink-wash/30 text-[11px] font-semibold text-ink-tertiary uppercase tracking-wider">
-            <div className="bg-surface px-4 py-2.5">Data Type</div>
-            <div className="bg-surface px-4 py-2.5">Refresh Rate</div>
-            <div className="bg-surface px-4 py-2.5">Sources</div>
-          </div>
-          {REFRESH_RATES.map((row) => (
-            <div
-              key={row.type}
-              className="grid grid-cols-3 gap-px bg-ink-wash/30"
-            >
-              <div className="bg-surface px-4 py-3 text-xs text-ink-primary">{row.type}</div>
-              <div className="bg-surface px-4 py-3 flex items-center gap-1.5">
-                <Clock className="w-3 h-3 text-accent-indigo" />
-                <span className="text-xs text-ink-secondary">{row.frequency}</span>
-              </div>
-              <div className="bg-surface px-4 py-3 text-xs text-ink-secondary font-mono">
-                {row.sources}
-              </div>
+      {/* Stats */}
+      <section className="max-w-content mx-auto px-6 py-10">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {COVERAGE_STATS.map((stat) => (
+            <div key={stat.label} className="bg-surface rounded-2xl p-5 shadow-card border border-ink-wash text-center">
+              <div className="flex justify-center mb-2">{stat.icon}</div>
+              <p className="text-xl font-bold text-ink-primary font-mono">{stat.value}</p>
+              <p className="text-xs text-ink-tertiary">{stat.label}</p>
             </div>
           ))}
         </div>
-      </div>
+      </section>
+
+      {/* Source Types */}
+      <section className="bg-surface border-y border-ink-wash">
+        <div className="max-w-content mx-auto px-6 py-10">
+          <h2 className="text-lg font-semibold text-ink-primary mb-5">Data Sources & Refresh Rates</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-ink-wash">
+                  <th className="text-left py-3 px-4 text-xs font-medium text-ink-tertiary uppercase tracking-wider">Source Type</th>
+                  <th className="text-left py-3 px-4 text-xs font-medium text-ink-tertiary uppercase tracking-wider">Description</th>
+                  <th className="text-left py-3 px-4 text-xs font-medium text-ink-tertiary uppercase tracking-wider">Refresh Rate</th>
+                  <th className="text-left py-3 px-4 text-xs font-medium text-ink-tertiary uppercase tracking-wider">Coverage</th>
+                </tr>
+              </thead>
+              <tbody>
+                {SOURCE_TYPES.map((source) => (
+                  <tr key={source.name} className="border-b border-ink-wash hover:bg-canvas/50 transition-colors">
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-accent-teal flex-shrink-0" />
+                        <span className="font-medium text-ink-primary">{source.name}</span>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4 text-ink-secondary">{source.description}</td>
+                    <td className="py-3 px-4">
+                      <span className="px-2 py-0.5 rounded bg-accent-indigo/10 text-accent-indigo text-xs font-medium">
+                        {source.refresh}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-accent-teal font-mono text-xs">{source.coverage}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
 
       {/* Sample Counties */}
-      <div className="max-w-[800px] mx-auto px-6 pb-10">
-        <h2 className="text-xl font-semibold text-ink-primary mb-4 text-center">
-          Covered Counties (Sample)
-        </h2>
-        <div className="flex flex-wrap gap-2 justify-center">
+      <section className="max-w-content mx-auto px-6 py-10">
+        <h2 className="text-lg font-semibold text-ink-primary mb-5">Sample Coverage Areas</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {SAMPLE_COUNTIES.map((county) => (
-            <span
-              key={county}
-              className="px-3 py-1.5 rounded-lg bg-surface border border-ink-wash text-xs text-ink-secondary"
-            >
-              {county}
-            </span>
+            <div key={county} className="flex items-center gap-2 p-3 rounded-xl bg-surface border border-ink-wash">
+              <MapPin className="w-3.5 h-3.5 text-accent-indigo flex-shrink-0" />
+              <span className="text-xs text-ink-primary">{county}</span>
+            </div>
           ))}
         </div>
-        <p className="text-center text-[11px] text-ink-tertiary mt-3">
-          ...and 3,131 more counties across all 50 states and DC
+        <p className="text-xs text-ink-tertiary mt-4 text-center">
+          And 3,131 more counties across all 50 states. Contact us for specific coverage questions.
         </p>
-      </div>
-
-      {/* CTA */}
-      <div className="border-y border-ink-wash bg-surface/50">
-        <div className="max-w-[800px] mx-auto px-6 py-10 text-center">
-          <h2 className="text-xl font-semibold text-ink-primary mb-3">
-            Need a Specific County?
-          </h2>
-          <p className="text-sm text-ink-secondary mb-5 max-w-[400px] mx-auto">
-            If you need coverage in a specific county or data source type, let us know and we will prioritize it.
-          </p>
-          <button
-            onClick={() => setCurrentPage('contact')}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-accent-indigo text-white text-sm font-semibold hover:bg-accent-indigo-dim transition-all"
-          >
-            Request Coverage
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
+      </section>
     </div>
   );
 }

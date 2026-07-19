@@ -1,219 +1,118 @@
-import { useStore } from '@/store/useStore';
-import {
-  Shield, Lock, Eye, Server, FileCheck, Clock,
-  Database, Globe, HardDrive, Check, ArrowRight,
-  KeyRound, Fingerprint, UserCheck, Bell
-} from 'lucide-react';
+import { Shield, Lock, Eye, Server, FileCheck, Fingerprint, Clock, Globe } from 'lucide-react';
 
 const CERTIFICATIONS = [
-  { icon: Shield, label: 'SOC 2 Type II', status: 'Certified', description: 'Independent audit of security, availability, and confidentiality controls.' },
-  { icon: FileCheck, label: 'GDPR Compliance', status: 'Compliant', description: 'Full compliance with EU data protection regulations.' },
-  { icon: Lock, label: 'CCPA Compliance', status: 'Compliant', description: 'California Consumer Privacy Act compliance for data subject rights.' },
-  { icon: KeyRound, label: 'ISO 27001', status: 'In Progress', description: 'Information security management system certification.' },
+  { name: 'SOC 2 Type II', description: 'Independent audit of security controls and processes', icon: <FileCheck className="w-5 h-5 text-accent-teal" /> },
+  { name: 'GDPR Compliant', description: 'Full compliance with EU data protection regulations', icon: <Shield className="w-5 h-5 text-accent-indigo" /> },
+  { name: 'CCPA Ready', description: 'California Consumer Privacy Act compliance', icon: <Eye className="w-5 h-5 text-accent-amber" /> },
+  { name: 'ISO 27001', description: 'Information security management certification', icon: <Lock className="w-5 h-5 text-accent-crimson" /> },
 ];
 
 const SECURITY_FEATURES = [
-  {
-    icon: Lock,
-    title: 'End-to-End Encryption',
-    description: 'All data in transit is protected with TLS 1.3. Data at rest uses AES-256 encryption.',
-  },
-  {
-    icon: Fingerprint,
-    title: 'Authentication',
-    description: 'OAuth 2.0 / OIDC integration with Kimi. Support for SSO (SAML 2.0) on Enterprise plans.',
-  },
-  {
-    icon: UserCheck,
-    title: 'Access Controls',
-    description: 'Role-based access control (RBAC). Team management with configurable permissions.',
-  },
-  {
-    icon: Eye,
-    title: 'Audit Logging',
-    description: 'Complete audit trail of all user actions, data access, and system changes.',
-  },
-  {
-    icon: Server,
-    title: 'Infrastructure Security',
-    description: 'Deployed on Cloudflare edge. DDoS protection, WAF, and bot management enabled.',
-  },
-  {
-    icon: Database,
-    title: 'Data Residency',
-    description: 'Data stored in US-based Cloudflare D1 regions. No data leaves the United States.',
-  },
-  {
-    icon: HardDrive,
-    title: 'Backup & Recovery',
-    description: 'Daily automated backups with 30-day retention. Point-in-time recovery available.',
-  },
-  {
-    icon: Bell,
-    title: 'Incident Response',
-    description: '24/7 monitoring with automated alerting. Incident response SLA of 1 hour.',
-  },
+  { title: 'End-to-End Encryption', description: 'All data encrypted in transit (TLS 1.3) and at rest (AES-256)', icon: <Lock className="w-5 h-5" /> },
+  { title: 'Zero-Trust Architecture', description: 'Every request authenticated and authorized, regardless of origin', icon: <Shield className="w-5 h-5" /> },
+  { title: 'Regular Penetration Testing', description: 'Quarterly third-party security assessments', icon: <Fingerprint className="w-5 h-5" /> },
+  { title: '99.9% Uptime SLA', description: 'Enterprise-grade infrastructure with automatic failover', icon: <Clock className="w-5 h-5" /> },
+  { title: 'Data Residency Options', description: 'Choose where your data is stored and processed', icon: <Globe className="w-5 h-5" /> },
+  { title: 'Role-Based Access Control', description: 'Granular permissions for team members', icon: <Server className="w-5 h-5" /> },
+  { title: 'Audit Logging', description: 'Complete audit trail of all data access and changes', icon: <Eye className="w-5 h-5" /> },
+  { title: 'Automated Backups', description: 'Point-in-time recovery with 30-day retention', icon: <FileCheck className="w-5 h-5" /> },
 ];
 
 const PRIVACY_COMMITMENTS = [
-  'We only use publicly available data. No private or proprietary information is accessed.',
-  'We never sell customer data to third parties.',
-  'All AI decisions are transparent — every recommendation includes its data sources and reasoning.',
-  'Customers own their data. Full export and deletion available at any time.',
-  'We maintain a public security status page with real-time system health.',
-  'Annual third-party security audits and penetration testing.',
+  'We never sell your data to third parties',
+  'You own your data — export or delete anytime',
+  'Transparent AI — every recommendation shows its sources',
+  'Minimum data collection — we only gather what we need',
+  'Breach notification within 24 hours',
+  'Annual third-party privacy audits',
 ];
 
 export default function SecurityPage() {
-  const { setCurrentPage } = useStore();
-
   return (
-    <div className="min-h-screen">
-      {/* Header */}
-      <div className="max-w-[800px] mx-auto px-6 pt-10 pb-6 text-center">
-        <div className="w-14 h-14 rounded-2xl bg-accent-indigo/10 flex items-center justify-center mx-auto mb-4">
-          <Shield className="w-7 h-7 text-accent-indigo" />
+    <div className="min-h-screen bg-canvas">
+      {/* Hero */}
+      <section className="bg-surface border-b border-ink-wash">
+        <div className="max-w-content mx-auto px-6 py-12">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-accent-indigo/10 flex items-center justify-center">
+              <Shield className="w-5 h-5 text-accent-indigo" />
+            </div>
+            <span className="text-xs text-ink-tertiary uppercase tracking-wider">Enterprise Security</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-ink-primary mb-3">
+            Your Data Security Is Our Priority
+          </h1>
+          <p className="text-sm text-ink-secondary leading-relaxed max-w-2xl">
+            BuildSignal implements enterprise-grade security controls to protect your data at every layer. 
+            We are SOC 2 certified, GDPR compliant, and undergo regular third-party audits.
+          </p>
         </div>
-        <h1 className="text-3xl font-semibold text-ink-primary tracking-tight mb-3">
-          Security & Trust
-        </h1>
-        <p className="text-sm text-ink-secondary max-w-[440px] mx-auto leading-relaxed">
-          Enterprise-grade security built into every layer of BuildSignal. Your data is protected, transparent, and always under your control.
-        </p>
-      </div>
+      </section>
 
       {/* Certifications */}
-      <div className="max-w-[800px] mx-auto px-6 pb-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {CERTIFICATIONS.map((cert) => {
-            const Icon = cert.icon;
-            return (
-              <div
-                key={cert.label}
-                className="flex items-start gap-3 p-4 bg-surface rounded-xl border border-ink-wash"
-              >
-                <div className="w-9 h-9 rounded-lg bg-accent-indigo/10 flex items-center justify-center shrink-0">
-                  <Icon className="w-4 h-4 text-accent-indigo" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <h3 className="text-sm font-semibold text-ink-primary">
-                      {cert.label}
-                    </h3>
-                    <span
-                      className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
-                        cert.status === 'Certified' || cert.status === 'Compliant'
-                          ? 'bg-accent-teal/10 text-accent-teal'
-                          : 'bg-accent-amber/10 text-accent-amber'
-                      }`}
-                    >
-                      {cert.status}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-ink-secondary leading-relaxed">
-                    {cert.description}
-                  </p>
-                </div>
+      <section className="max-w-content mx-auto px-6 py-10">
+        <h2 className="text-lg font-semibold text-ink-primary mb-5">Certifications & Compliance</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {CERTIFICATIONS.map((cert) => (
+            <div key={cert.name} className="bg-surface rounded-2xl p-5 shadow-card border border-ink-wash text-center">
+              <div className="w-10 h-10 rounded-xl bg-accent-indigo/[0.06] flex items-center justify-center mx-auto mb-3">
+                {cert.icon}
               </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Security Features */}
-      <div className="border-y border-ink-wash bg-surface/50">
-        <div className="max-w-[800px] mx-auto px-6 py-10">
-          <h2 className="text-xl font-semibold text-ink-primary mb-6 text-center">
-            Security Architecture
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {SECURITY_FEATURES.map((f) => {
-              const Icon = f.icon;
-              return (
-                <div
-                  key={f.title}
-                  className="group p-4 bg-surface rounded-xl border border-ink-wash hover:border-accent-indigo/30 transition-all"
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-accent-indigo/10 flex items-center justify-center shrink-0 group-hover:bg-accent-indigo/20 transition-colors">
-                      <Icon className="w-4 h-4 text-accent-indigo" />
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-semibold text-ink-primary mb-1">
-                        {f.title}
-                      </h3>
-                      <p className="text-xs text-ink-secondary leading-relaxed">
-                        {f.description}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Privacy Commitments */}
-      <div className="max-w-[800px] mx-auto px-6 py-10">
-        <h2 className="text-xl font-semibold text-ink-primary mb-6 text-center">
-          Privacy Commitments
-        </h2>
-        <div className="bg-surface rounded-2xl border border-ink-wash p-5 space-y-3">
-          {PRIVACY_COMMITMENTS.map((commitment) => (
-            <div key={commitment} className="flex items-start gap-3">
-              <Check className="w-4 h-4 text-accent-teal mt-0.5 shrink-0" />
-              <p className="text-sm text-ink-secondary leading-relaxed">
-                {commitment}
-              </p>
+              <h3 className="text-sm font-semibold text-ink-primary mb-1">{cert.name}</h3>
+              <p className="text-xs text-ink-secondary">{cert.description}</p>
             </div>
           ))}
         </div>
-      </div>
+      </section>
 
-      {/* Data Transparency */}
-      <div className="max-w-[800px] mx-auto px-6 pb-10">
-        <div className="bg-gradient-to-r from-accent-indigo/10 to-accent-violet/10 border border-accent-indigo/20 rounded-2xl p-5">
-          <div className="flex items-start gap-3">
-            <Eye className="w-5 h-5 text-accent-indigo mt-0.5 shrink-0" />
-            <div>
-              <h3 className="text-sm font-semibold text-ink-primary mb-1">
-                Transparent AI Decision-Making
-              </h3>
-              <p className="text-xs text-ink-secondary leading-relaxed">
-                Every recommendation includes its data sources, confidence score, and the reasoning behind the prediction. We believe you should understand how every insight is generated. No black boxes.
-              </p>
-            </div>
+      {/* Security Features */}
+      <section className="bg-surface border-y border-ink-wash">
+        <div className="max-w-content mx-auto px-6 py-10">
+          <h2 className="text-lg font-semibold text-ink-primary mb-5">Security Features</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {SECURITY_FEATURES.map((feat) => (
+              <div key={feat.title} className="p-4 rounded-xl bg-canvas border border-ink-wash">
+                <div className="text-accent-indigo mb-2">{feat.icon}</div>
+                <h3 className="text-sm font-medium text-ink-primary mb-1">{feat.title}</h3>
+                <p className="text-xs text-ink-secondary leading-relaxed">{feat.description}</p>
+              </div>
+            ))}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* CTA */}
-      <div className="border-y border-ink-wash bg-surface/50">
-        <div className="max-w-[800px] mx-auto px-6 py-10 text-center">
-          <h2 className="text-xl font-semibold text-ink-primary mb-3">
-            Questions About Security?
-          </h2>
-          <p className="text-sm text-ink-secondary mb-5 max-w-[400px] mx-auto">
-            Our security team is happy to answer your questions or provide a copy of our SOC 2 report.
+      {/* Privacy Commitments */}
+      <section className="max-w-content mx-auto px-6 py-10">
+        <h2 className="text-lg font-semibold text-ink-primary mb-5">Privacy Commitments</h2>
+        <div className="bg-surface rounded-2xl p-6 shadow-card border border-ink-wash">
+          <div className="space-y-3">
+            {PRIVACY_COMMITMENTS.map((commitment, i) => (
+              <div key={i} className="flex items-start gap-3">
+                <div className="w-5 h-5 rounded-full bg-accent-teal/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <FileCheck className="w-3 h-3 text-accent-teal" />
+                </div>
+                <p className="text-sm text-ink-secondary">{commitment}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Transparent AI */}
+      <section className="bg-surface border-y border-ink-wash">
+        <div className="max-w-content mx-auto px-6 py-10">
+          <h2 className="text-lg font-semibold text-ink-primary mb-3">Transparent AI</h2>
+          <p className="text-sm text-ink-secondary leading-relaxed mb-4 max-w-2xl">
+            BuildSignal&apos;s AI models are designed for transparency. Every recommendation includes 
+            a confidence breakdown showing signal counts, source diversity, historical accuracy, and data freshness.
+            You can always see why an opportunity was flagged and what data supports it.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <button
-              onClick={() => setCurrentPage('contact')}
-              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-accent-indigo text-white text-sm font-semibold hover:bg-accent-indigo-dim transition-all"
-            >
-              Contact Security Team
-              <ArrowRight className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setCurrentPage('help')}
-              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-canvas border border-ink-wash text-sm font-medium text-ink-secondary hover:bg-surface-hover transition-all"
-            >
-              View Security FAQ
-            </button>
+          <div className="flex items-center gap-2">
+            <Shield className="w-4 h-4 text-accent-indigo" />
+            <span className="text-xs text-ink-secondary">No black-box predictions. Full evidence trail for every recommendation.</span>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }

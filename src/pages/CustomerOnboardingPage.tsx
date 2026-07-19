@@ -1,228 +1,234 @@
+import { useState } from 'react';
+import { CheckCircle2, Circle, ArrowRight, MapPin, Search, Bell, FileText, Users, Settings, Rocket, BookOpen } from 'lucide-react';
 import { useStore } from '@/store/useStore';
-import {
-  Check, Clock, ArrowRight, BookOpen, Search, MapPin,
-  Bell, Star, FileText, Users, HelpCircle, Zap,
-  Target, TrendingUp, Shield, Sparkles
-} from 'lucide-react';
 
 interface OnboardingStep {
   id: string;
   title: string;
   description: string;
-  icon: React.ElementType;
-  time: string;
+  icon: React.ReactNode;
+  estimatedTime: string;
   action: string;
   page: string;
 }
 
 const STEPS: OnboardingStep[] = [
   {
-    id: 'account',
-    title: 'Create Your Account',
-    description: 'Sign up with your work email. No credit card required for the 14-day trial.',
-    icon: Shield,
-    time: '1 min',
-    action: 'Sign Up',
-    page: 'signup',
+    id: 'profile',
+    title: 'Complete Your Profile',
+    description: 'Add your company info, role, and project preferences.',
+    icon: <Users className="w-5 h-5 text-accent-indigo" />,
+    estimatedTime: '2 min',
+    action: 'Go to Settings',
+    page: 'settings',
   },
   {
     id: 'counties',
-    title: 'Select Counties to Monitor',
-    description: 'Choose the geographic areas where you want to track construction activity. You can add or remove counties anytime.',
-    icon: MapPin,
-    time: '2 min',
-    action: 'Select Counties',
-    page: 'onboarding',
+    title: 'Select Your Counties',
+    description: 'Choose the geographic areas you want to monitor for opportunities.',
+    icon: <MapPin className="w-5 h-5 text-accent-teal" />,
+    estimatedTime: '3 min',
+    action: 'Explore Map',
+    page: 'map',
   },
   {
     id: 'search',
-    title: 'Try Your First Search',
-    description: 'Search for projects by county, type, or keyword. Try "Wake County mixed-use" to see how it works.',
-    icon: Search,
-    time: '1 min',
-    action: 'Try Search',
+    title: 'Try a Search',
+    description: 'Search for opportunities by keyword, county, or signal type.',
+    icon: <Search className="w-5 h-5 text-accent-amber" />,
+    estimatedTime: '2 min',
+    action: 'Start Searching',
     page: 'search',
   },
   {
     id: 'alerts',
-    title: 'Set Up Smart Alerts',
-    description: 'Configure alerts for your monitored counties. Get notified when new opportunities match your criteria.',
-    icon: Bell,
-    time: '2 min',
-    action: 'Set Up Alerts',
+    title: 'Set Up Alerts',
+    description: 'Configure notifications for new opportunities in your areas.',
+    icon: <Bell className="w-5 h-5 text-accent-crimson" />,
+    estimatedTime: '3 min',
+    action: 'Configure Alerts',
     page: 'alerts',
   },
   {
-    id: 'map',
-    title: 'Explore the Intelligence Map',
-    description: 'Visualize all active opportunities on an interactive map. Filter by type, confidence, and timeline.',
-    icon: Target,
-    time: '3 min',
-    action: 'View Map',
-    page: 'map',
-  },
-  {
-    id: 'watchlist',
-    title: 'Save Your First Watchlist',
-    description: 'Track projects you care about. Organize by type, region, or any criteria that matters to your business.',
-    icon: Star,
-    time: '1 min',
-    action: 'Create Watchlist',
-    page: 'watchlists',
-  },
-  {
     id: 'report',
-    title: 'Generate Your First Report',
-    description: 'Create an executive intelligence brief with evidence, data sources, and recommended actions.',
-    icon: FileText,
-    time: '1 min',
-    action: 'Generate Report',
-    page: 'daily-brief',
+    title: 'Generate a Report',
+    description: 'Create your first intelligence report with market context.',
+    icon: <FileText className="w-5 h-5 text-accent-indigo" />,
+    estimatedTime: '2 min',
+    action: 'Create Report',
+    page: 'summary',
   },
   {
     id: 'team',
     title: 'Invite Your Team',
-    description: 'Add team members to collaborate on opportunity tracking and share intelligence.',
-    icon: Users,
-    time: '2 min',
-    action: 'Invite Team',
+    description: 'Add team members to collaborate on opportunities.',
+    icon: <Users className="w-5 h-5 text-accent-teal" />,
+    estimatedTime: '2 min',
+    action: 'Manage Team',
+    page: 'organization',
+  },
+  {
+    id: 'customize',
+    title: 'Customize Dashboard',
+    description: 'Arrange widgets and set your preferred view.',
+    icon: <Settings className="w-5 h-5 text-accent-amber" />,
+    estimatedTime: '2 min',
+    action: 'Customize',
     page: 'settings',
   },
-];
-
-const RESOURCES = [
-  { icon: BookOpen, title: 'Getting Started Guide', description: 'Learn the basics of BuildSignal in 10 minutes.' },
-  { icon: HelpCircle, title: 'Help Center', description: 'Search our knowledge base for answers to common questions.' },
-  { icon: TrendingUp, title: 'Best Practices', description: 'Tips from our team on getting the most value from BuildSignal.' },
-  { icon: Zap, title: 'API Documentation', description: 'Integrate BuildSignal data into your own systems and workflows.' },
+  {
+    id: 'done',
+    title: 'You\'re All Set',
+    description: 'Start discovering and winning more opportunities.',
+    icon: <Rocket className="w-5 h-5 text-accent-teal" />,
+    estimatedTime: '0 min',
+    action: 'Go to Dashboard',
+    page: 'dashboard',
+  },
 ];
 
 export default function CustomerOnboardingPage() {
   const { setCurrentPage } = useStore();
+  const [completedSteps, setCompletedSteps] = useState<Set<string>>(
+    new Set(JSON.parse(localStorage.getItem('buildsignal_onboarding_steps') || '[]'))
+  );
+
+  const toggleStep = (id: string) => {
+    const updated = new Set(completedSteps);
+    if (updated.has(id)) {
+      updated.delete(id);
+    } else {
+      updated.add(id);
+    }
+    setCompletedSteps(updated);
+    localStorage.setItem('buildsignal_onboarding_steps', JSON.stringify([...updated]));
+  };
+
+  const progress = Math.round((completedSteps.size / (STEPS.length - 1)) * 100);
 
   return (
-    <div className="min-h-screen">
-      {/* Header */}
-      <div className="max-w-[720px] mx-auto px-6 pt-10 pb-6 text-center">
-        <div className="w-14 h-14 rounded-2xl bg-accent-indigo/10 flex items-center justify-center mx-auto mb-4">
-          <Sparkles className="w-7 h-7 text-accent-indigo" />
-        </div>
-        <h1 className="text-3xl font-semibold text-ink-primary tracking-tight mb-3">
-          Getting Started with BuildSignal
-        </h1>
-        <p className="text-sm text-ink-secondary max-w-[440px] mx-auto leading-relaxed">
-          Follow these steps to go from signup to your first construction opportunity in under 15 minutes.
-        </p>
-      </div>
+    <div className="min-h-screen bg-canvas">
+      {/* Hero */}
+      <section className="bg-surface border-b border-ink-wash">
+        <div className="max-w-content mx-auto px-6 py-10">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-accent-indigo/10 flex items-center justify-center">
+              <Rocket className="w-5 h-5 text-accent-indigo" />
+            </div>
+            <span className="text-xs text-ink-tertiary uppercase tracking-wider">Getting Started</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-ink-primary mb-3">
+            Welcome to BuildSignal
+          </h1>
+          <p className="text-sm text-ink-secondary leading-relaxed max-w-xl">
+            Complete these steps to get the most out of BuildSignal. Estimated total time: ~16 minutes.
+          </p>
 
-      {/* Timeline */}
-      <div className="max-w-[720px] mx-auto px-6 pb-10">
-        <div className="relative">
-          {/* Vertical line */}
-          <div className="absolute left-[19px] top-8 bottom-8 w-px bg-ink-wash hidden sm:block" />
-
-          <div className="space-y-4">
-            {STEPS.map((step, index) => {
-              const Icon = step.icon;
-              return (
-                <div
-                  key={step.id}
-                  className="relative flex items-start gap-4 bg-surface rounded-xl border border-ink-wash p-4"
-                >
-                  {/* Step number */}
-                  <div className="relative z-10 w-10 h-10 rounded-xl bg-accent-indigo/10 flex items-center justify-center shrink-0">
-                    <Icon className="w-4 h-4 text-accent-indigo" />
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <div className="flex items-center gap-2 mb-0.5">
-                          <h3 className="text-sm font-semibold text-ink-primary">
-                            {step.title}
-                          </h3>
-                          <span className="flex items-center gap-1 text-[10px] text-ink-tertiary">
-                            <Clock className="w-2.5 h-2.5" />
-                            {step.time}
-                          </span>
-                        </div>
-                        <p className="text-xs text-ink-secondary leading-relaxed">
-                          {step.description}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => setCurrentPage(step.page)}
-                        className="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg bg-accent-indigo/10 text-[11px] font-medium text-accent-indigo hover:bg-accent-indigo/20 transition-colors"
-                      >
-                        {step.action}
-                        <ArrowRight className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+          {/* Progress */}
+          <div className="mt-6 max-w-md">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs text-ink-tertiary">Your progress</span>
+              <span className="text-xs font-medium text-accent-indigo">{progress}%</span>
+            </div>
+            <div className="h-2 bg-canvas rounded-full overflow-hidden">
+              <div
+                className="h-full bg-accent-indigo rounded-full transition-all"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
           </div>
         </div>
+      </section>
 
-        {/* Total time */}
-        <div className="mt-4 text-center">
-          <p className="text-sm text-ink-secondary">
-            Total setup time: <span className="font-semibold text-ink-primary">~13 minutes</span>
-          </p>
+      {/* Steps */}
+      <section className="max-w-content mx-auto px-6 py-10">
+        <div className="space-y-3">
+          {STEPS.map((step, index) => {
+            const isCompleted = completedSteps.has(step.id);
+            const isLast = index === STEPS.length - 1;
+
+            return (
+              <div
+                key={step.id}
+                className={`flex items-start gap-4 p-4 rounded-xl border transition-colors ${
+                  isCompleted
+                    ? 'bg-accent-teal/[0.02] border-accent-teal/20'
+                    : 'bg-surface border-ink-wash hover:border-accent-indigo/20'
+                }`}
+              >
+                {/* Checkbox */}
+                <button
+                  onClick={() => !isLast && toggleStep(step.id)}
+                  className={`mt-0.5 flex-shrink-0 ${isLast ? 'pointer-events-none' : ''}`}
+                >
+                  {isCompleted ? (
+                    <CheckCircle2 className="w-5 h-5 text-accent-teal" />
+                  ) : (
+                    <Circle className="w-5 h-5 text-ink-wash" />
+                  )}
+                </button>
+
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className={isCompleted ? 'text-accent-teal' : 'text-accent-indigo'}>
+                      {step.icon}
+                    </span>
+                    <h3 className={`text-sm font-semibold ${isCompleted ? 'text-ink-tertiary line-through' : 'text-ink-primary'}`}>
+                      {step.title}
+                    </h3>
+                    <span className="text-[10px] text-ink-tertiary ml-auto">{step.estimatedTime}</span>
+                  </div>
+                  <p className={`text-xs leading-relaxed ${isCompleted ? 'text-ink-tertiary' : 'text-ink-secondary'}`}>
+                    {step.description}
+                  </p>
+                </div>
+
+                {/* Action */}
+                <button
+                  onClick={() => setCurrentPage(step.page)}
+                  className="flex-shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg bg-accent-indigo text-white text-xs font-medium hover:bg-accent-indigo/90 transition-colors"
+                >
+                  {step.action} <ArrowRight className="w-3 h-3" />
+                </button>
+              </div>
+            );
+          })}
         </div>
-      </div>
+      </section>
 
       {/* Resources */}
-      <div className="border-y border-ink-wash bg-surface/50">
-        <div className="max-w-[720px] mx-auto px-6 py-10">
-          <h2 className="text-xl font-semibold text-ink-primary mb-6 text-center">
-            Helpful Resources
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {RESOURCES.map((resource) => {
-              const Icon = resource.icon;
-              return (
-                <button
-                  key={resource.title}
-                  onClick={() => setCurrentPage('help')}
-                  className="flex items-start gap-3 p-4 bg-surface rounded-xl border border-ink-wash hover:border-accent-indigo/30 transition-all text-left"
-                >
-                  <div className="w-9 h-9 rounded-lg bg-accent-indigo/10 flex items-center justify-center shrink-0">
-                    <Icon className="w-4 h-4 text-accent-indigo" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-ink-primary mb-0.5">
-                      {resource.title}
-                    </h3>
-                    <p className="text-[11px] text-ink-secondary leading-relaxed">
-                      {resource.description}
-                    </p>
-                  </div>
-                </button>
-              );
-            })}
+      <section className="bg-surface border-y border-ink-wash">
+        <div className="max-w-content mx-auto px-6 py-10">
+          <h2 className="text-lg font-semibold text-ink-primary mb-4">Helpful Resources</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <button
+              onClick={() => setCurrentPage('help')}
+              className="p-4 rounded-xl bg-canvas border border-ink-wash text-left hover:border-accent-indigo/20 transition-colors"
+            >
+              <BookOpen className="w-5 h-5 text-accent-indigo mb-2" />
+              <h3 className="text-sm font-medium text-ink-primary">Help Center</h3>
+              <p className="text-xs text-ink-secondary mt-1">Searchable guides and FAQs</p>
+            </button>
+            <button
+              onClick={() => setCurrentPage('contact')}
+              className="p-4 rounded-xl bg-canvas border border-ink-wash text-left hover:border-accent-indigo/20 transition-colors"
+            >
+              <Users className="w-5 h-5 text-accent-teal mb-2" />
+              <h3 className="text-sm font-medium text-ink-primary">Contact Support</h3>
+              <p className="text-xs text-ink-secondary mt-1">Get help from our team</p>
+            </button>
+            <button
+              onClick={() => setCurrentPage('pricing')}
+              className="p-4 rounded-xl bg-canvas border border-ink-wash text-left hover:border-accent-indigo/20 transition-colors"
+            >
+              <Rocket className="w-5 h-5 text-accent-amber mb-2" />
+              <h3 className="text-sm font-medium text-ink-primary">Pricing Plans</h3>
+              <p className="text-xs text-ink-secondary mt-1">Find the right plan for you</p>
+            </button>
           </div>
         </div>
-      </div>
-
-      {/* Support CTA */}
-      <div className="max-w-[720px] mx-auto px-6 py-10 text-center">
-        <h2 className="text-lg font-semibold text-ink-primary mb-2">
-          Need Help Getting Started?
-        </h2>
-        <p className="text-sm text-ink-secondary mb-5 max-w-[400px] mx-auto">
-          Our team is available to help you get the most out of BuildSignal. Reach out anytime.
-        </p>
-        <button
-          onClick={() => setCurrentPage('contact')}
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-accent-indigo text-white text-sm font-semibold hover:bg-accent-indigo-dim transition-all"
-        >
-          Contact Support
-          <ArrowRight className="w-4 h-4" />
-        </button>
-      </div>
+      </section>
     </div>
   );
 }
