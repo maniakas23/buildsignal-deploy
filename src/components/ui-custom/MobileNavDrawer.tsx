@@ -13,7 +13,7 @@ import { useAuth } from '@/hooks/useAuth';
 // ═══════════════════════════════════════════════════════════════
 // Mobile Navigation Drawer
 // Full-featured slide-out menu giving mobile users access to
-// all 47 pages organized by category.
+// all 48 pages organized by category.
 // ═══════════════════════════════════════════════════════════════
 
 interface NavGroup {
@@ -62,6 +62,7 @@ const NAV_GROUPS: NavGroup[] = [
       { id: 'launch-readiness', label: 'Launch Readiness', icon: <Rocket className="w-4.5 h-4.5" /> },
       { id: 'commercial-launch', label: 'Commercial Launch', icon: <Sparkles className="w-4.5 h-4.5" /> },
       { id: 'production-excellence', label: 'Production RC', icon: <Shield className="w-4.5 h-4.5" /> },
+      { id: 'production-readiness', label: 'Production Readiness', icon: <Award className="w-4.5 h-4.5" /> },
       { id: 'system-validation', label: 'QA Validation', icon: <CheckCircle2 className="w-4.5 h-4.5" /> },
       { id: 'release-checklist', label: 'Release Checklist', icon: <ClipboardList className="w-4.5 h-4.5" /> },
       { id: 'validation', label: 'Scorecard', icon: <FileCheck className="w-4.5 h-4.5" /> },

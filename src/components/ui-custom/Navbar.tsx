@@ -49,6 +49,7 @@ const qualityLinks = [
   { id: 'launch-readiness', label: 'Launch', icon: <Rocket className="w-3.5 h-3.5" /> },
   { id: 'commercial-launch', label: 'CLC', icon: <Sparkles className="w-3.5 h-3.5" /> },
   { id: 'production-excellence', label: 'RC', icon: <Shield className="w-3.5 h-3.5" /> },
+  { id: 'production-readiness', label: 'Prod', icon: <Award className="w-3.5 h-3.5" /> },
   { id: 'system-validation', label: 'QA', icon: <CheckCircle2 className="w-3.5 h-3.5" /> },
 ];
 
