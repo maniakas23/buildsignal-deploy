@@ -1,0 +1,5 @@
+BuildSignal v1.0 Production Deployment
+Trigger: Root-level build
+Config: npm install --include=dev && npx vite build
+Destination: dist
+Timestamp: 2026-07-20T01:50:00Z
