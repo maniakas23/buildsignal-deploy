@@ -1,2 +1,5 @@
+# Redirect www to apex domain (SEO)
+https://www.buildsignal.net/*  https://buildsignal.net/:splat  301
+
 # BuildSignal SPA Routing — redirect all paths to index.html for client-side routing
 /*    /index.html   200
