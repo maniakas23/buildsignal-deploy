@@ -16,7 +16,7 @@ createRoot(document.getElementById('root')!).render(
           <AccessibilityInit />
           <App />
         </TRPCProvider>
-      </ErrorBoundary>
+      </BrowserRouter>
     </ErrorBoundary>
   </StrictMode>,
 )
