@@ -1,11 +1,11 @@
 /**
- * SignalCore Engine — Cloudflare Worker Entry Point
+ * Kestovar Engine — Cloudflare Worker Entry Point
  *
- * The SignalCore Engine is the infrastructure intelligence processing layer.
+ * The Kestovar Engine is the infrastructure intelligence processing layer.
  * It handles signal ingestion, normalization, AI analysis, pattern detection,
  * and confidence scoring.
  *
- * Deployed to: api.signalcore.buildsignal.com
+ * Deployed to: api.kestovar.buildsignal.com
  */
 
 import { Hono } from "hono";
@@ -18,8 +18,10 @@ app.use(secureHeaders());
 
 app.use(cors({
   origin: [
-    "https://app.buildsignal.com",
-    "https://api.buildsignal.com",
+    "https://buildsignal.net",
+    "https://www.buildsignal.net",
+    "https://buildsignal-v2.pages.dev",
+    "https://api.buildsignal.net",
     "http://localhost:3000",
     "http://localhost:5173",
   ],
@@ -27,7 +29,7 @@ app.use(cors({
 }));
 
 app.get("/health", (c) => c.json({
-  service: "signalcore",
+  service: "kestovar-engine",
   version: "1.0.0",
   status: "healthy",
   timestamp: new Date().toISOString(),
@@ -58,7 +60,7 @@ app.get("/ready", async (c) => {
 });
 
 app.get("/version", (c) => c.json({
-  application: "signalcore",
+  application: "kestovar-engine",
   version: "1.0.0",
   build: "24.0",
   engineApi: "v1",
