@@ -1,8 +1,10 @@
 User-agent: *
 Allow: /
 Disallow: /api/
-Disallow: /health
-Disallow: /ready
-Disallow: /version
+Disallow: /login
+Disallow: /signup
+Disallow: /password-reset
+Disallow: /settings
 
+# Sitemap
 Sitemap: https://buildsignal.com/sitemap.xml
