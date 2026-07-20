@@ -1,23 +1,20 @@
 # SignalCore Engine — Cloudflare Worker
-# Infrastructure intelligence engine, signal processing, AI analysis
 # Deployed to: api.signalcore.buildsignal.com
+# Deploy: cd packages/signalcore && npx wrangler deploy
 name = "signalcore-engine-production"
 main = "src/index.ts"
 compatibility_date = "2026-07-16"
 compatibility_flags = ["nodejs_compat"]
 
-# D1 Database
 [[d1_databases]]
 binding = "DB"
 database_name = "signalcore-db-production"
 database_id = "SIGNALCORE_DB_PRODUCTION_ID"
 
-# R2 Bucket
 [[r2_buckets]]
 binding = "RAW_SIGNALS"
 bucket_name = "signalcore-raw-signals-production"
 
-# Queues
 [[queues.producers]]
 binding = "PROCESSING_QUEUE"
 queue = "signalcore-processing-production"
@@ -27,16 +24,17 @@ queue = "signalcore-processing-production"
 max_batch_size = 20
 max_batch_timeout = 60
 
-# Cron Triggers
 [[triggers]]
 crons = ["*/10 * * * *", "0 * * * *", "0 6 * * *"]
 
-# Environment Variables
 [vars]
 ENGINE_NAME = "signalcore"
 NODE_ENV = "production"
 
-# Preview Environment
+routes = [
+  { pattern = "api.signalcore.buildsignal.com/*", custom_domain = true }
+]
+
 [env.preview]
 name = "signalcore-engine-preview"
 
@@ -52,10 +50,15 @@ bucket_name = "signalcore-raw-signals-preview"
 [env.preview.vars]
 NODE_ENV = "preview"
 
-# Custom Domain
-routes = [
-  { pattern = "api.signalcore.buildsignal.com/*", custom_domain = true }
-]
+[[env.preview.queues.producers]]
+binding = "PROCESSING_QUEUE"
+queue = "signalcore-processing-preview"
 
-[env.preview.routes]
-[{ pattern = "api-preview.signalcore.buildsignal.com/*", custom_domain = true }]
+[[env.preview.queues.consumers]]
+queue = "signalcore-processing-preview"
+max_batch_size = 20
+max_batch_timeout = 60
+
+[[env.preview.routes]]
+pattern = "api-preview.signalcore.buildsignal.com/*"
+custom_domain = true
