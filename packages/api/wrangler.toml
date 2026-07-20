@@ -1,18 +1,16 @@
 # BuildSignal API — Cloudflare Worker
-# Authentication, tRPC, billing, reports and customer operations
 # Deployed to: api.buildsignal.com
+# Deploy: cd packages/api && npx wrangler deploy
 name = "buildsignal-api-production"
 main = "src/index.ts"
 compatibility_date = "2026-07-16"
 compatibility_flags = ["nodejs_compat"]
 
-# D1 Database
 [[d1_databases]]
 binding = "DB"
 database_name = "buildsignal-db-production"
 database_id = "a8ecb143-6aa6-4741-b4e8-fe3e16695452"
 
-# R2 Buckets
 [[r2_buckets]]
 binding = "DOCUMENTS"
 bucket_name = "buildsignal-documents-production"
@@ -21,7 +19,6 @@ bucket_name = "buildsignal-documents-production"
 binding = "REPORTS"
 bucket_name = "buildsignal-reports-production"
 
-# Queues
 [[queues.producers]]
 binding = "INGESTION_QUEUE"
 queue = "buildsignal-ingestion-production"
@@ -40,17 +37,18 @@ queue = "buildsignal-alerts-production"
 max_batch_size = 50
 max_batch_timeout = 10
 
-# Cron Triggers
 [[triggers]]
 crons = ["*/5 * * * *", "0 */6 * * *"]
 
-# Environment Variables (non-secret)
 [vars]
 APP_NAME = "buildsignal"
 NODE_ENV = "production"
 SIGNALCORE_API_URL = "https://api.signalcore.buildsignal.com"
 
-# Preview Environment
+routes = [
+  { pattern = "api.buildsignal.com/*", custom_domain = true }
+]
+
 [env.preview]
 name = "buildsignal-api-preview"
 
@@ -71,7 +69,28 @@ bucket_name = "buildsignal-reports-preview"
 NODE_ENV = "preview"
 SIGNALCORE_API_URL = "https://api.signalcore.buildsignal.com"
 
-# Service Bindings
+[[env.preview.queues.producers]]
+binding = "INGESTION_QUEUE"
+queue = "buildsignal-ingestion-preview"
+
+[[env.preview.queues.consumers]]
+queue = "buildsignal-ingestion-preview"
+max_batch_size = 10
+max_batch_timeout = 30
+
+[[env.preview.queues.producers]]
+binding = "ALERTS_QUEUE"
+queue = "buildsignal-alerts-preview"
+
+[[env.preview.queues.consumers]]
+queue = "buildsignal-alerts-preview"
+max_batch_size = 50
+max_batch_timeout = 10
+
+[[env.preview.routes]]
+pattern = "api-preview.buildsignal.com/*"
+custom_domain = true
+
 [[services]]
 binding = "SIGNALCORE"
 service = "signalcore-engine-production"
@@ -79,11 +98,3 @@ service = "signalcore-engine-production"
 [[env.preview.services]]
 binding = "SIGNALCORE"
 service = "signalcore-engine-preview"
-
-# Custom Domain
-routes = [
-  { pattern = "api.buildsignal.com/*", custom_domain = true }
-]
-
-[env.preview.routes]
-[{ pattern = "api-preview.buildsignal.com/*", custom_domain = true }]
