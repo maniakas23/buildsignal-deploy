@@ -1,9 +1,11 @@
-/**
- * BuildSignal Shared UI States
- */
-
-import { Loader2, AlertTriangle, Inbox, MapPin, Bell, RefreshCw, Plus, Database, ExternalLink } from 'lucide-react';
+import { useState } from 'react';
+import { Loader2, Inbox, MapPin, Bell, RefreshCw, Plus, Database } from 'lucide-react';
 import { isDemoMode } from '@/signalcore/engine';
+
+// ═══════════════════════════════════════════════════════════════
+// BuildSignal UI States — Loading, Empty, Error, Skeleton
+// Powered by Kestovar
+// ═══════════════════════════════════════════════════════════════
 
 const LOADING_MESSAGES = [
   "Analyzing infrastructure activity...",
@@ -20,20 +22,67 @@ function getLoadingMessage(input?: string): string {
   return LOADING_MESSAGES[Math.floor(Math.random() * LOADING_MESSAGES.length)];
 }
 
-interface LoadingProps {
-  message?: string;
-}
+interface LoadingProps { message?: string; }
+interface ErrorProps { message?: string; onRetry?: () => void; }
 
+// ─── Loading State ───
 export function LoadingState({ message }: LoadingProps) {
   return (
     <div className="flex flex-col items-center justify-center py-16 px-6" role="status" aria-live="polite" aria-busy="true">
       <Loader2 className="w-8 h-8 text-accent-indigo animate-spin mb-4" aria-hidden="true" />
       <p className="text-body text-ink-secondary">{getLoadingMessage(message)}</p>
-      <p className="text-caption mt-2">This usually takes a few seconds</p>
+      <p className="text-caption mt-2">Powered by Kestovar</p>
     </div>
   );
 }
 
+// ═══════════════════════════════════════════════════════════════
+// Friendly Error State — No red warning triangles
+// Uses blue/gray tones to avoid triggering threat response (amygdala)
+// Offers multiple paths: retry, demo data, or contact support
+// ═══════════════════════════════════════════════════════════════
+
+export function ErrorState({ message, onRetry }: ErrorProps) {
+  const [showDemo, setShowDemo] = useState(false);
+
+  return (
+    <div className="flex flex-col items-center justify-center py-16 px-6" role="alert" aria-live="polite">
+      <div className="w-14 h-14 rounded-full bg-accent-indigo/10 flex items-center justify-center mb-4" aria-hidden="true">
+        <RefreshCw className="w-7 h-7 text-accent-indigo" aria-hidden="true" />
+      </div>
+      <h3 className="text-[16px] font-semibold text-ink-primary mb-2">Setting up your intelligence feed</h3>
+      <p className="text-[13px] text-ink-secondary text-center max-w-md mb-2">
+        {message || "We're connecting to your data sources. This usually takes a few moments."}
+      </p>
+      <p className="text-[11px] text-ink-tertiary text-center mb-6">
+        Try loading sample data to explore the platform while we finish the setup.
+      </p>
+
+      <div className="flex flex-col sm:flex-row items-center gap-3">
+        {onRetry && (
+          <button
+            onClick={onRetry}
+            className="flex items-center gap-2 px-5 py-3 bg-accent-indigo text-white rounded-xl text-[12px] font-medium hover:bg-accent-indigo/90 transition-colors"
+            aria-label="Retry loading data"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Retry Connection
+          </button>
+        )}
+        <button
+          onClick={() => setShowDemo(!showDemo)}
+          className="flex items-center gap-2 px-5 py-3 border border-accent-indigo/30 text-accent-indigo rounded-xl text-[12px] font-medium hover:bg-accent-indigo/10 transition-colors"
+          aria-label="Load sample data"
+        >
+          <Database className="w-4 h-4" />
+          {showDemo ? 'Hide Sample Data' : 'Load Sample Data'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Skeleton Loading ───
 export function SkeletonRow({ className = '' }: { className?: string }) {
   return (
     <div className={`bg-surface rounded-xl p-5 border border-[#243444] mb-3 ${className}`}>
@@ -68,39 +117,26 @@ export function SkeletonGrid({ count = 6, className = '' }: { count?: number; cl
   );
 }
 
+// ─── Empty State ───
 export function EmptyState({ title = 'No results found', description = 'Try adjusting your filters or search criteria.', icon = 'inbox' }: { title?: string; description?: string; icon?: 'inbox' | 'map' | 'bell' | 'database' }) {
   const icons = { inbox: Inbox, map: MapPin, bell: Bell, database: Database };
   const Icon = icons[icon] || Inbox;
   return (
     <div className="flex flex-col items-center justify-center py-16 px-6">
       <Icon className="w-10 h-10 text-ink-tertiary mb-4" />
-      <p className="text-h3 text-ink-secondary mb-1">{title}</p>
-      <p className="text-sidebar text-ink-tertiary max-w-md text-center">{description}</p>
+      <p className="text-[16px] font-semibold text-ink-secondary mb-1">{title}</p>
+      <p className="text-[12px] text-ink-tertiary max-w-md text-center">{description}</p>
     </div>
   );
 }
 
-export function ErrorState({ title = 'Something went wrong', description = 'We encountered an error loading this data. Please try again.', onRetry }: { title?: string; description?: string; onRetry?: () => void }) {
-  return (
-    <div className="flex flex-col items-center justify-center py-16 px-6">
-      <AlertTriangle className="w-10 h-10 text-accent-crimson mb-4" />
-      <p className="text-h3 text-ink-secondary mb-1">{title}</p>
-      <p className="text-sidebar text-ink-tertiary max-w-md text-center mb-4">{description}</p>
-      {onRetry && (
-        <button onClick={onRetry} className="flex items-center gap-2 px-4 py-2 bg-accent-indigo text-white rounded-lg hover:bg-accent-indigo/90 transition-colors">
-          <RefreshCw className="w-4 h-4" /> Try Again
-        </button>
-      )}
-    </div>
-  );
-}
-
+// ─── Demo Mode Banner ───
 export function DemoModeBanner() {
   if (!isDemoMode()) return null;
   return (
     <div className="bg-accent-amber/10 border-b border-accent-amber/20 px-4 py-1.5 text-center">
       <p className="text-[11px] text-accent-amber font-medium">
-        Demo Mode — Some features are simulated for demonstration purposes
+        Demo Mode — Toggle off for live Kestovar data
       </p>
     </div>
   );
