@@ -66,6 +66,14 @@ export function track(event: Omit<TelemetryEvent, 'timestamp'>) {
   saveEvents(events);
 }
 
+/** Track an event by string name (used by components) */
+export function trackEvent(eventName: string, data?: Record<string, unknown>) {
+  track({
+    type: eventName as TelemetryEventType,
+    metadata: data,
+  });
+}
+
 export function trackPageView(page: string) {
   track({ type: 'page_view', page });
 }
@@ -119,7 +127,7 @@ export function clearTelemetry() {
 
 // React hook for tracking page views
 export function useTelemetry() {
-  const trackEvent = useCallback((event: Omit<TelemetryEvent, 'timestamp'>) => {
+  const trackEventFn = useCallback((event: Omit<TelemetryEvent, 'timestamp'>) => {
     track(event);
   }, []);
 
@@ -127,5 +135,5 @@ export function useTelemetry() {
     trackPageView(page);
   }, []);
 
-  return { track: trackEvent, trackPageView: trackView, getSummary: getTelemetrySummary };
+  return { track: trackEventFn, trackPageView: trackView, getSummary: getTelemetrySummary };
 }
