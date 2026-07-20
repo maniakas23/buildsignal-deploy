@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useStore } from '@/store/useStore';
 import {
-  Map, Layers, Filter, Crosshair, Info, X,
-  Navigation, ZoomIn, ZoomOut, Maximize2,
-  Building2, HardHat, Zap, Droplets, Road,
-  ChevronUp, ChevronDown, Target
+  Map, Layers, Filter, Crosshair, X,
+  Navigation, ZoomIn, ZoomOut,
+  Building2, HardHat, Zap, Droplets, Route,
+  ChevronDown, Target
 } from 'lucide-react';
 
 /* ------------------------------------------------------------------ */
@@ -22,7 +22,7 @@ const MAP_MARKERS = [
 
 const TYPE_CONFIG: Record<string, { icon: React.ElementType; color: string; bg: string; label: string }> = {
   'mixed-use': { icon: Building2, color: 'text-accent-indigo', bg: 'bg-accent-indigo', label: 'Mixed-Use' },
-  'transit': { icon: Road, color: 'text-accent-teal', bg: 'bg-accent-teal', label: 'Transit' },
+  'transit': { icon: Route, color: 'text-accent-teal', bg: 'bg-accent-teal', label: 'Transit' },
   'utility': { icon: Zap, color: 'text-accent-amber', bg: 'bg-accent-amber', label: 'Utility' },
   'industrial': { icon: HardHat, color: 'text-accent-violet', bg: 'bg-accent-violet', label: 'Industrial' },
   'education': { icon: Building2, color: 'text-accent-crimson', bg: 'bg-accent-crimson', label: 'Education' },
