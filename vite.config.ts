@@ -2,21 +2,23 @@ import path from "path"
 const __dirname = import.meta.dirname
 import react from "@vitejs/plugin-react"
 import { defineConfig } from "vite"
+import { inspectAttr } from 'kimi-plugin-inspect-react'
 
 // https://vite.dev/config/
-export default defineConfig(async ({ mode }) => {
-  const plugins: any[] = [react()]
-  
-  if (mode === 'development') {
-    const devServer = (await import("@hono/vite-dev-server")).default
-    const { inspectAttr } = await import("kimi-plugin-inspect")
-    plugins.unshift(devServer({ entry: "api/boot.ts", exclude: [/^\/(?!api\/).*$/] }))
-    plugins.unshift(inspectAttr())
-  }
-  
+export default defineConfig(({ mode }) => {
+  const apiUrl = process.env.VITE_API_URL || "http://localhost:8787"
+
   return {
-    plugins,
-    server: { port: 3000 },
+    plugins: [inspectAttr(), react()],
+    server: {
+      port: 3000,
+      proxy: {
+        "/api": { target: apiUrl, changeOrigin: true, secure: false },
+        "/health": { target: apiUrl, changeOrigin: true, secure: false },
+        "/ready": { target: apiUrl, changeOrigin: true, secure: false },
+        "/version": { target: apiUrl, changeOrigin: true, secure: false },
+      },
+    },
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),
@@ -32,5 +34,8 @@ export default defineConfig(async ({ mode }) => {
       },
     },
     envDir: path.resolve(__dirname),
+    define: {
+      "import.meta.env.VITE_API_URL": JSON.stringify(process.env.VITE_API_URL || ""),
+    },
   }
-});
+})
