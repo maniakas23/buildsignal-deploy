@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
+# ═══════════════════════════════════════════════════════════════
 # BuildSignal Production Deployment Script
 # Deploys the separated Cloudflare stack:
 #   1. API Worker (api.buildsignal.com)
 #   2. SignalCore Worker (api.signalcore.buildsignal.com)
 #   3. Frontend Pages (app.buildsignal.com)
-
+# Usage: ./deploy.sh [production|preview]
+# ═══════════════════════════════════════════════════════════════
 set -euo pipefail
 
 ENVIRONMENT="${1:-production}"
@@ -23,23 +25,23 @@ echo ""
 
 if [[ "$ENVIRONMENT" == "preview" ]]; then
   echo "Step 2: Applying D1 migrations to preview..."
-  npm run db:migrate:preview
+  npx wrangler d1 migrations apply buildsignal-db-preview --remote \
+    --config packages/api/wrangler.toml
   echo "Preview migrations applied"
 else
   echo "Step 2: D1 migrations for PRODUCTION must be applied manually:"
-  echo "   npm run db:migrate:prod"
+  echo "   npx wrangler d1 migrations apply buildsignal-db-production --remote \\"
+  echo "     --config packages/api/wrangler.toml"
   echo "   Skipping automatic migration for safety."
 fi
 echo ""
 
 echo "Step 3: Deploying API Worker..."
-cd packages/api
 if [[ "$ENVIRONMENT" == "preview" ]]; then
-  npx wrangler deploy --env preview
+  cd packages/api && npx wrangler deploy --env preview && cd ../..
 else
-  npx wrangler deploy --env production
+  cd packages/api && npx wrangler deploy && cd ../..
 fi
-cd ../..
 echo "API Worker deployed"
 echo ""
 
@@ -60,24 +62,24 @@ done
 echo ""
 
 echo "Step 5: Deploying SignalCore Worker..."
-cd packages/signalcore
 if [[ "$ENVIRONMENT" == "preview" ]]; then
-  npx wrangler deploy --env preview
+  cd packages/signalcore && npx wrangler deploy --env preview && cd ../..
 else
-  npx wrangler deploy --env production
+  cd packages/signalcore && npx wrangler deploy && cd ../..
 fi
-cd ../..
 echo "SignalCore Worker deployed"
 echo ""
 
 echo "Step 6: Deploying Frontend to Cloudflare Pages..."
-cd packages/frontend
 if [[ "$ENVIRONMENT" == "preview" ]]; then
-  npm run deploy:preview
+  npx wrangler pages deploy packages/frontend/dist \
+    --project-name buildsignal-app-production \
+    --branch preview
 else
-  npm run deploy
+  npx wrangler pages deploy packages/frontend/dist \
+    --project-name buildsignal-app-production \
+    --branch production
 fi
-cd ../..
 echo "Frontend deployed"
 echo ""
 
@@ -97,7 +99,7 @@ echo ""
 
 echo "BuildSignal $ENVIRONMENT deployment complete!"
 echo ""
-echo "   Frontend: $APP_URL"
-echo "   API:      $API_URL"
+echo "   Frontend:   $APP_URL"
+echo "   API:        $API_URL"
 echo "   SignalCore: https://api.signalcore.buildsignal.com"
 echo ""
