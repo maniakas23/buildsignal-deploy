@@ -1,0 +1,4 @@
+BuildSignal v1.0 Production Deployment Trigger
+Timestamp: 2026-07-20T01:35:00Z
+Config: npm install --include=dev && npm run build:frontend
+Output: packages/frontend/dist
