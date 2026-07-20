@@ -1,11 +1,20 @@
 import { useState } from 'react';
-import { Shield, ArrowRight, CheckCircle, Loader2 } from 'lucide-react';
+import { Shield, ArrowRight, CheckCircle, Loader2, Zap, Users, Clock } from 'lucide-react';
 
 const VALID_CODES = ['BETA2026', 'SIGNALVIP', 'BUILDALPHA', 'EARLYACCESS'];
 
 interface Props {
   onAccessGranted: () => void;
 }
+
+// Customer avatar stack for social proof
+const CUSTOMER_AVATARS = [
+  { bg: 'bg-accent-indigo', init: 'JD' },
+  { bg: 'bg-accent-teal', init: 'MK' },
+  { bg: 'bg-accent-amber', init: 'SR' },
+  { bg: 'bg-accent-violet', init: 'AL' },
+  { bg: 'bg-accent-crimson', init: 'TW' },
+];
 
 export default function BetaAccessGate({ onAccessGranted }: Props) {
   const [code, setCode] = useState('');
@@ -20,30 +29,21 @@ export default function BetaAccessGate({ onAccessGranted }: Props) {
     e.preventDefault();
     setError('');
     setLoading(true);
-
-    // Simulate validation delay
     await new Promise((r) => setTimeout(r, 800));
-
     if (VALID_CODES.includes(code.trim().toUpperCase())) {
       localStorage.setItem('buildsignal_beta_access', 'granted');
       localStorage.setItem('buildsignal_beta_date', new Date().toISOString());
       onAccessGranted();
     } else {
-      setError('Invalid access code. Please try again or join the waitlist.');
+      setError("That code didn't match — want us to check for you? Join the waitlist and we'll verify your access.");
     }
-
     setLoading(false);
   };
 
   const handleWaitlist = (e: React.FormEvent) => {
     e.preventDefault();
-    // Store waitlist signup
     const waitlist = JSON.parse(localStorage.getItem('buildsignal_waitlist') || '[]');
-    waitlist.push({
-      email: waitlistEmail,
-      role: waitlistRole,
-      date: new Date().toISOString(),
-    });
+    waitlist.push({ email: waitlistEmail, role: waitlistRole, date: new Date().toISOString() });
     localStorage.setItem('buildsignal_waitlist', JSON.stringify(waitlist));
     setWaitlistSubmitted(true);
   };
@@ -52,19 +52,49 @@ export default function BetaAccessGate({ onAccessGranted }: Props) {
     <div className="min-h-screen bg-canvas flex items-center justify-center px-4">
       <div className="max-w-md w-full">
         {/* Logo */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-6">
           <div className="w-16 h-16 rounded-2xl bg-accent-indigo flex items-center justify-center mx-auto mb-4 shadow-lg shadow-accent-indigo/20">
             <Shield className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-ink-primary mb-2">BuildSignal</h1>
-          <p className="text-sm text-ink-secondary">Private Beta Access</p>
+          <h1 className="text-2xl font-bold text-ink-primary mb-1">BuildSignal</h1>
+          <p className="text-sm text-ink-secondary">Infrastructure Intelligence Platform</p>
+        </div>
+
+        {/* Value Proposition — answers the "why should I care?" question */}
+        <div className="bg-surface/50 border border-accent-indigo/10 rounded-xl p-4 mb-5 text-center">
+          <p className="text-sm text-ink-primary font-medium mb-2 flex items-center justify-center gap-2">
+            <Zap className="w-4 h-4 text-accent-amber" />
+            Get 45-60 day head starts on construction projects
+          </p>
+          <p className="text-xs text-ink-tertiary">
+            Monitor permits, zoning changes, and utility filings across 2,400+ data sources — before they go public.
+          </p>
+        </div>
+
+        {/* Social Proof — authority by association */}
+        <div className="flex items-center justify-center gap-3 mb-5">
+          <div className="flex -space-x-2">
+            {CUSTOMER_AVATARS.map((a, i) => (
+              <div key={i} className={`w-7 h-7 rounded-full ${a.bg} border-2 border-canvas flex items-center justify-center text-[9px] font-bold text-white`}>
+                {a.init}
+              </div>
+            ))}
+          </div>
+          <div className="text-xs text-ink-secondary">
+            <span className="font-semibold text-ink-primary">200+</span> CRE professionals
+          </div>
+          <span className="text-ink-wash">|</span>
+          <div className="flex items-center gap-1 text-xs text-accent-teal">
+            <Clock className="w-3 h-3" />
+            <span>Live now</span>
+          </div>
         </div>
 
         {!waitlistMode ? (
           <div className="bg-surface rounded-2xl p-6 shadow-card border border-ink-wash">
-            <h2 className="text-lg font-semibold text-ink-primary mb-2">Enter Access Code</h2>
+            <h2 className="text-lg font-semibold text-ink-primary mb-2">Private Beta Access</h2>
             <p className="text-sm text-ink-secondary mb-5">
-              BuildSignal is currently in private beta. Enter your invite code to access the platform.
+              Enter your invite code to access the platform.
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -78,7 +108,16 @@ export default function BetaAccessGate({ onAccessGranted }: Props) {
                   autoFocus
                 />
                 {error && (
-                  <p className="text-xs text-accent-crimson mt-2 text-center">{error}</p>
+                  <div className="mt-2 p-3 rounded-lg bg-accent-indigo/5 border border-accent-indigo/10">
+                    <p className="text-xs text-ink-secondary text-center">{error}</p>
+                    <button
+                      type="button"
+                      onClick={() => { setWaitlistMode(true); setError(''); }}
+                      className="text-xs text-accent-indigo font-medium hover:underline mt-1 block mx-auto"
+                    >
+                      Join the waitlist instead
+                    </button>
+                  </div>
                 )}
               </div>
 
@@ -87,23 +126,14 @@ export default function BetaAccessGate({ onAccessGranted }: Props) {
                 disabled={!code.trim() || loading}
                 className="w-full py-3 rounded-xl bg-accent-indigo text-white font-medium flex items-center justify-center gap-2 hover:bg-accent-indigo/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <>
-                    Access Platform <ArrowRight className="w-4 h-4" />
-                  </>
-                )}
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Access Platform <ArrowRight className="w-4 h-4" /></>}
               </button>
             </form>
 
             <div className="mt-5 pt-4 border-t border-ink-wash text-center">
               <p className="text-sm text-ink-secondary">
-                Don&apos;t have a code?{' '}
-                <button
-                  onClick={() => { setWaitlistMode(true); setError(''); }}
-                  className="text-accent-indigo font-medium hover:underline"
-                >
+                Don't have a code?{' '}
+                <button onClick={() => { setWaitlistMode(true); setError(''); }} className="text-accent-indigo font-medium hover:underline">
                   Join the waitlist
                 </button>
               </p>
@@ -112,14 +142,11 @@ export default function BetaAccessGate({ onAccessGranted }: Props) {
         ) : waitlistSubmitted ? (
           <div className="bg-surface rounded-2xl p-6 shadow-card border border-ink-wash text-center">
             <CheckCircle className="w-12 h-12 text-accent-teal mx-auto mb-4" />
-            <h2 className="text-lg font-semibold text-ink-primary mb-2">You&apos;re on the list!</h2>
+            <h2 className="text-lg font-semibold text-ink-primary mb-2">You're on the list!</h2>
             <p className="text-sm text-ink-secondary mb-4">
-              We&apos;ll email you at <strong>{waitlistEmail}</strong> when access is available.
+              We'll email you at <strong>{waitlistEmail}</strong> when access is available.
             </p>
-            <button
-              onClick={() => { setWaitlistMode(false); setWaitlistSubmitted(false); }}
-              className="text-accent-indigo text-sm font-medium hover:underline"
-            >
+            <button onClick={() => { setWaitlistMode(false); setWaitlistSubmitted(false); }} className="text-accent-indigo text-sm font-medium hover:underline">
               Back to access code
             </button>
           </div>
@@ -127,7 +154,7 @@ export default function BetaAccessGate({ onAccessGranted }: Props) {
           <div className="bg-surface rounded-2xl p-6 shadow-card border border-ink-wash">
             <h2 className="text-lg font-semibold text-ink-primary mb-2">Join the Waitlist</h2>
             <p className="text-sm text-ink-secondary mb-5">
-              Get early access to BuildSignal. We&apos;re onboarding new users weekly.
+              Get early access to BuildSignal. We're onboarding new users weekly.
             </p>
 
             <form onSubmit={handleWaitlist} className="space-y-4">
@@ -142,7 +169,6 @@ export default function BetaAccessGate({ onAccessGranted }: Props) {
                   className="w-full px-4 py-3 rounded-xl bg-canvas border border-ink-wash text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus:ring-2 focus:ring-accent-indigo/30 focus:border-accent-indigo"
                 />
               </div>
-
               <div>
                 <label className="block text-xs font-medium text-ink-secondary mb-1.5">Role</label>
                 <select
@@ -161,20 +187,13 @@ export default function BetaAccessGate({ onAccessGranted }: Props) {
                   <option value="other">Other</option>
                 </select>
               </div>
-
-              <button
-                type="submit"
-                className="w-full py-3 rounded-xl bg-accent-indigo text-white font-medium hover:bg-accent-indigo/90 transition-colors"
-              >
+              <button type="submit" className="w-full py-3 rounded-xl bg-accent-indigo text-white font-medium hover:bg-accent-indigo/90 transition-colors">
                 Join Waitlist
               </button>
             </form>
 
             <div className="mt-5 pt-4 border-t border-ink-wash text-center">
-              <button
-                onClick={() => setWaitlistMode(false)}
-                className="text-accent-indigo text-sm font-medium hover:underline"
-              >
+              <button onClick={() => setWaitlistMode(false)} className="text-accent-indigo text-sm font-medium hover:underline">
                 I have an access code
               </button>
             </div>
