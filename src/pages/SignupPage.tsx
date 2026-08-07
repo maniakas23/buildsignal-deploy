@@ -14,7 +14,6 @@ import {
   ArrowRight,
   Lock,
   Shield,
-  Users,
   Check,
   AlertCircle,
   Eye,
@@ -630,11 +629,11 @@ export function SignupPage() {
                   <ul className="space-y-2 text-sm text-muted-foreground">
                     <li className="flex items-center gap-2">
                       <TrendingUp className="h-4 w-4 text-green-500 shrink-0" />
-                      Predict market surges 3-6 months early
+                      AI-powered trend analysis across construction markets
                     </li>
                     <li className="flex items-center gap-2">
                       <Zap className="h-4 w-4 text-green-500 shrink-0" />
-                      Cut research time by 80%
+                      Streamline market research with automated intelligence gathering
                     </li>
                     <li className="flex items-center gap-2">
                       <Shield className="h-4 w-4 text-green-500 shrink-0" />
@@ -643,15 +642,15 @@ export function SignupPage() {
                   </ul>
                 </div>
 
-                {/* Social Proof */}
+                {/* Free Trial Box */}
                 <div className="bg-primary/5 border border-primary/10 rounded-xl p-5">
                   <div className="flex items-center gap-2 mb-3">
-                    <Users className="h-5 w-5 text-primary" />
-                    <span className="font-semibold">Join 10,000+ professionals</span>
+                    <Sparkles className="h-5 w-5 text-primary" />
+                    <span className="font-semibold">Start with a 14-Day Free Trial</span>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    who trust BuildSignal for commercial intelligence across construction,
-                    real estate, and infrastructure.
+                    Full access to all features. No credit card required. Cancel anytime.
+                    Get actionable intelligence for your markets within minutes.
                   </p>
                 </div>
 
