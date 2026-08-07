@@ -1,122 +1,235 @@
-// Login Page — Platform Completion Mode
-// Authenticates via Kimi OAuth. No local password system.
-// Shows loading state during redirect. Handles OAuth errors.
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Building2, ArrowRight, Globe, Eye, EyeOff, Mail, Lock, UserPlus } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { cn } from "@/lib/utils";
 
-import { useState } from 'react';
-import { useStore } from '@/store/useStore';
-import { Signal, ArrowRight, AlertTriangle, Loader2 } from 'lucide-react';
+export function Login() {
+  const navigate = useNavigate();
+  const { login } = useAuth();
+  const [domain, setDomain] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [mode, setMode] = useState<"sso" | "password">("password");
 
-function getOAuthUrl() {
-  const kimiAuthUrl = import.meta.env.VITE_KIMI_AUTH_URL;
-  const appID = import.meta.env.VITE_APP_ID;
-  const redirectUri = `${window.location.origin}/api/oauth/callback`;
-  const state = btoa(redirectUri);
+  const handleLogin = () => {
+    window.location.href = "https://api.buildsignal.net/auth/login";
+  };
 
-  const url = new URL(`${kimiAuthUrl}/api/oauth/authorize`);
-  url.searchParams.set('client_id', appID);
-  url.searchParams.set('redirect_uri', redirectUri);
-  url.searchParams.set('response_type', 'code');
-  url.searchParams.set('scope', 'profile');
-  url.searchParams.set('state', state);
-
-  return url.toString();
-}
-
-// Parse OAuth error from URL if redirected back with an error
-function getOAuthError(): string | null {
-  const params = new URLSearchParams(window.location.search);
-  const error = params.get('error');
-  const errorDescription = params.get('error_description');
-  if (error === 'access_denied') return 'Login was cancelled. Please try again.';
-  if (error) return errorDescription || `Authentication failed: ${error}`;
-  return null;
-}
-
-export default function Login() {
-  const { setCurrentPage } = useStore();
-  const [isRedirecting, setIsRedirecting] = useState(false);
-  // Read OAuth error from URL during initial render (not in an effect)
-  const [oauthError] = useState<string | null>(() => {
-    const error = getOAuthError();
-    // Clean error from URL synchronously
-    if (window.location.search) {
-      window.history.replaceState({}, '', window.location.pathname);
+  const handleSso = () => {
+    // In production, this would call the SSO discovery API
+    if (domain.includes("@")) {
+      window.location.href = `https://api.buildsignal.net/auth/sso?email=${encodeURIComponent(domain)}`;
     }
-    return error;
-  });
+  };
 
-  const handleSignIn = () => {
-    setIsRedirecting(true);
-    window.location.href = getOAuthUrl();
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
+    try {
+      await login(email, password);
+      navigate("/dashboard");
+    } catch {
+      setError("Invalid email or password. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-canvas flex flex-col items-center justify-center px-6">
-      <div className="w-full max-w-sm">
-        {/* Logo */}
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <Signal className="w-7 h-7 text-ink-primary" />
-          <span className="text-xl font-semibold text-ink-primary tracking-tight">BuildSignal</span>
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="w-full max-w-md space-y-8 p-8">
+        {/* Branding */}
+        <div className="text-center">
+          <div className="mx-auto h-14 w-14 bg-primary/10 rounded-xl flex items-center justify-center mb-4">
+            <Building2 className="h-8 w-8 text-primary" />
+          </div>
+          <h2 className="text-3xl font-bold tracking-tight">Welcome back</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Sign in to your BuildSignal account
+          </p>
         </div>
 
-        {/* Error Banner */}
-        {oauthError && (
-          <div className="mb-4 bg-accent-crimson/[0.06] border border-accent-crimson/20 rounded-xl p-4 flex items-start gap-3 animate-fade-in">
-            <AlertTriangle className="w-4 h-4 text-accent-crimson flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-accent-crimson">{oauthError}</p>
+        {/* Error Message */}
+        {error && (
+          <div className="bg-destructive/10 border border-destructive/20 text-destructive text-sm rounded-lg p-3 flex items-center gap-2">
+            <span className="font-medium">{error}</span>
           </div>
         )}
 
-        {/* Sign In Card */}
-        <div className="bg-surface rounded-2xl p-6 shadow-card border border-ink-wash">
-          <h1 className="text-lg font-semibold text-ink-primary text-center mb-1">
-            {isRedirecting ? 'Redirecting to Kimi...' : 'Welcome Back'}
-          </h1>
-          <p className="text-sm text-ink-tertiary text-center mb-6">
-            {isRedirecting
-              ? 'Please wait while we authenticate you.'
-              : 'Sign in with your Kimi account to continue.'}
-          </p>
+        {/* Email/Password Form */}
+        <form onSubmit={handleEmailLogin} className="space-y-4">
+          <div className="space-y-2">
+            <label htmlFor="login-email" className="text-sm font-medium">
+              Email
+            </label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <input
+                id="login-email"
+                type="email"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setError("");
+                }}
+                placeholder="you@company.com"
+                className="w-full rounded-lg border border-input bg-background pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label htmlFor="login-password" className="text-sm font-medium">
+                Password
+              </label>
+              <button
+                type="button"
+                onClick={() => alert("Password reset functionality coming soon.")}
+                className="text-xs text-primary hover:underline"
+              >
+                Forgot password?
+              </button>
+            </div>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <input
+                id="login-password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setError("");
+                }}
+                placeholder="Enter your password"
+                className="w-full rounded-lg border border-input bg-background pl-10 pr-10 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
+            </div>
+          </div>
 
           <button
-            onClick={handleSignIn}
-            disabled={isRedirecting}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-accent-indigo text-white text-sm font-medium hover:bg-accent-indigo/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            type="submit"
+            disabled={isLoading}
+            className={cn(
+              "w-full flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors",
+              isLoading && "opacity-70 cursor-not-allowed"
+            )}
           >
-            {isRedirecting ? (
+            {isLoading ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Redirecting...
+                <div className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                Signing in...
               </>
             ) : (
               <>
-                Sign in with Kimi
-                <ArrowRight className="w-4 h-4" />
+                Sign In
+                <ArrowRight className="h-4 w-4" />
               </>
             )}
           </button>
+        </form>
 
-          {/* Divider */}
-          <div className="flex items-center gap-3 my-5">
-            <div className="flex-1 h-px bg-ink-wash" />
-            <span className="text-[11px] text-ink-tertiary">or</span>
-            <div className="flex-1 h-px bg-ink-wash" />
+        {/* Divider */}
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
           </div>
-
-          {/* Sign up link */}
-          <button
-            onClick={() => setCurrentPage('signup')}
-            disabled={isRedirecting}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-canvas border border-ink-wash text-sm font-medium text-ink-secondary hover:bg-surface transition-colors disabled:opacity-50"
-          >
-            Create a new account
-          </button>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background px-2 text-muted-foreground">
+              Or continue with
+            </span>
+          </div>
         </div>
 
-        {/* Password hint */}
-        <p className="text-center text-xs text-ink-tertiary mt-4">
-          BuildSignal uses Kimi for authentication. Your password is managed by Kimi.
-        </p>
+        {/* SSO / Kimi Login */}
+        <div className="space-y-3">
+          <button
+            onClick={handleLogin}
+            className="w-full flex items-center justify-center gap-2 rounded-lg border border-input bg-background px-4 py-3 text-sm font-medium hover:bg-accent transition-colors"
+          >
+            <Globe className="h-4 w-4" />
+            Continue with Kimi
+          </button>
+
+          <button
+            onClick={() => setMode(mode === "sso" ? "password" : "sso")}
+            className="w-full flex items-center justify-center gap-2 rounded-lg border border-input bg-background px-4 py-3 text-sm font-medium hover:bg-accent transition-colors"
+          >
+            <Building2 className="h-4 w-4" />
+            {mode === "sso" ? "Hide Enterprise SSO" : "Enterprise SSO"}
+            <ArrowRight
+              className={cn(
+                "h-4 w-4 transition-transform",
+                mode === "sso" && "rotate-90"
+              )}
+            />
+          </button>
+
+          {mode === "sso" && (
+            <div className="space-y-2 pt-2">
+              <input
+                type="text"
+                placeholder="yourname@company.com"
+                value={domain}
+                onChange={(e) => setDomain(e.target.value)}
+                className="w-full rounded-lg border border-input bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+              <button
+                onClick={handleSso}
+                disabled={!domain.includes("@")}
+                className="w-full flex items-center justify-center gap-2 rounded-lg border border-input bg-background px-4 py-3 text-sm font-medium hover:bg-accent disabled:opacity-50 transition-colors"
+              >
+                <Building2 className="h-4 w-4" />
+                Continue with SSO
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Sign up link */}
+        <div className="text-center text-sm text-muted-foreground pt-4 border-t border-border">
+          <div className="flex items-center justify-center gap-2">
+            <UserPlus className="h-4 w-4" />
+            <span>Don't have an account?</span>
+            <button
+              onClick={() => navigate("/signup")}
+              className="text-primary hover:underline font-medium"
+            >
+              Sign up
+            </button>
+          </div>
+        </div>
+
+        {/* Trust footer */}
+        <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1">
+            <Lock className="h-3 w-3" />
+            SSL Secure
+          </span>
+          <span className="flex items-center gap-1">
+            <Building2 className="h-3 w-3" />
+            SOC 2 Type II
+          </span>
+        </div>
       </div>
     </div>
   );
