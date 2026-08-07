@@ -88,7 +88,7 @@ export function Home() {
       number: "02",
       title: "AI Analyzes Patterns",
       description:
-        "Our machine learning models process data from 500+ sources—permits, zoning filings, infrastructure spend, and demographic shifts—in real time.",
+        "Our machine learning models process permit data, zoning filings, infrastructure spend, and demographic shifts in real time.",
       icon: Brain,
     },
     {
@@ -218,7 +218,7 @@ export function Home() {
           </h1>
 
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            AI-powered infrastructure intelligence across 500+ US counties. Get
+            AI-powered infrastructure intelligence for construction markets. Get
             actionable permit insights, growth forecasts, and market
             opportunities delivered to your inbox.
           </p>
@@ -647,8 +647,8 @@ export function Home() {
               Ready to Spot the Next Construction Boom?
             </h2>
             <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-              Join thousands of professionals who use BuildSignal to find
-              opportunities first. Start your 14-day free trial today.
+              Get market intelligence delivered to your inbox. Start your 14-day
+              free trial today.
             </p>
           </div>
 
