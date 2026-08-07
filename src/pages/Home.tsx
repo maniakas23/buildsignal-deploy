@@ -367,14 +367,14 @@ export function Home() {
 
           {/* Visual hint */}
           <div className="pt-8 flex justify-center">
-            <div className="flex items-center gap-6 text-muted-foreground/60 text-sm">
+            <div className="flex flex-wrap items-center justify-center gap-6 text-muted-foreground/60 text-sm">
               <div className="flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-primary" />
                 <span>No credit card required</span>
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-primary" />
-                <span>7-day free trial</span>
+                <span>14-day free trial</span>
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-primary" />
@@ -416,7 +416,7 @@ export function Home() {
                     <MessageSquare className="h-6 w-6 text-primary/40" />
                   </div>
                   <p className="text-sm leading-relaxed flex-1 mb-6">
-                    "{t.quote}"
+                    &ldquo;{t.quote}&rdquo;
                   </p>
                   <div className="space-y-3">
                     <StarRating rating={t.rating} />
@@ -446,13 +446,13 @@ export function Home() {
         <div className="container mx-auto px-4">
           <div className="text-center space-y-4 mb-14">
             <Badge variant="outline" className="text-xs uppercase tracking-wider">
-              Who It's For
+              Who It&apos;s For
             </Badge>
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
               Built for Every Player in the Construction Ecosystem
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
-              Whether you're acquiring land, advising clients, or planning
+              Whether you&apos;re acquiring land, advising clients, or planning
               infrastructure, BuildSignal gives you the intelligence edge.
             </p>
           </div>
@@ -629,7 +629,7 @@ export function Home() {
               Simple Pricing, Powerful Results
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
-              Start with a 7-day free trial. No credit card required. Upgrade or
+              Start with a 14-day free trial. No credit card required. Upgrade or
               cancel anytime.
             </p>
           </div>
@@ -729,7 +729,7 @@ export function Home() {
             </h2>
             <p className="text-lg text-muted-foreground max-w-xl mx-auto">
               Join thousands of professionals who use BuildSignal to find
-              opportunities first. Start your 7-day free trial today.
+              opportunities first. Start your 14-day free trial today.
             </p>
           </div>
 
