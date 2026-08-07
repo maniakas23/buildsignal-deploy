@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard'
+import { DashboardTour } from '@/components/tour/DashboardTour'
+import { HelpWidget } from '@/components/help/HelpWidget'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -175,7 +177,7 @@ export function Dashboard() {
   return (
     <div className='container mx-auto py-8 px-4 max-w-7xl'>
       {/* Header */}
-      <div className='mb-8'>
+      <div className='dashboard-header mb-8'>
         <h1 className='text-3xl font-bold tracking-tight' style={{ color: COLORS.deepNavy }}>
           Dashboard
         </h1>
@@ -198,7 +200,7 @@ export function Dashboard() {
       </div>
 
       {/* ─── Stats Row ─────────────────────────────────────────────────── */}
-      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8'>
+      <div className='stats-row grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8'>
         {/* Total Opportunities */}
         <Card
           className='relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 border-l-4'
@@ -295,7 +297,7 @@ export function Dashboard() {
       {/* ─── Charts Section ─────────────────────────────────────────────── */}
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8'>
         {/* Opportunity Trend */}
-        <Card className='transition-all duration-300 hover:shadow-md'>
+        <Card className='opportunity-trend-chart transition-all duration-300 hover:shadow-md'>
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className='text-base font-semibold' style={{ color: COLORS.deepNavy }}>
@@ -336,7 +338,7 @@ export function Dashboard() {
         </Card>
 
         {/* Market Breakdown */}
-        <Card className='transition-all duration-300 hover:shadow-md'>
+        <Card className='market-breakdown-chart transition-all duration-300 hover:shadow-md'>
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className='text-base font-semibold' style={{ color: COLORS.deepNavy }}>
@@ -388,7 +390,7 @@ export function Dashboard() {
       {/* ─── Recent Opportunities + Alerts Row ─────────────────────────── */}
       <div className='grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8'>
         {/* Recent Opportunities Feed */}
-        <div className='lg:col-span-2'>
+        <div className='recent-opportunities lg:col-span-2'>
           <Card className='transition-all duration-300 hover:shadow-md'>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
@@ -468,7 +470,7 @@ export function Dashboard() {
         </div>
 
         {/* Alert Summary */}
-        <div>
+        <div className='alert-summary'>
           <Card className='transition-all duration-300 hover:shadow-md h-full'>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -514,7 +516,7 @@ export function Dashboard() {
       </div>
 
       {/* ─── Quick Actions ──────────────────────────────────────────────── */}
-      <div className='flex flex-wrap gap-3'>
+      <div className='quick-actions flex flex-wrap gap-3'>
         <Button
           className='transition-all duration-200 hover:shadow-md'
           style={{ backgroundColor: COLORS.signalBlue }}
@@ -570,6 +572,10 @@ export function Dashboard() {
           Add to Watchlist
         </Button>
       </div>
+
+      {/* ─── Tour & Help Widget ────────────────────────────────────────── */}
+      <DashboardTour />
+      <HelpWidget />
     </div>
   )
 }
