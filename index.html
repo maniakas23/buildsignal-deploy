@@ -5,20 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <!-- ============================================================ -->
-    <!--  GOOGLE ANALYTICS 4 — PLACEHOLDER                            -->
-    <!--  Replace G-BUILDSIGNAL with your production GA4 ID before    -->
-    <!--  customer outreach. Get your ID at:                          -->
-    <!--  https://analytics.google.com → Admin → Data Streams         -->
-    <!--  Verify events in DebugView before going live.                -->
+    <!--  ANALYTICS — Custom local-first with GA4 upgrade path        -->
+    <!--  Current mode: local-only (logs to console + localStorage)     -->
+    <!--  To enable GA4: set ANALYTICS_ID = "ga4-GA_MEASUREMENT_ID"   -->
+    <!--  in src/hooks/usePageTracking.ts and add the gtag script     -->
+    <!--  below.                                                      -->
     <!-- ============================================================ -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-BUILDSIGNAL"></script>
+    <!-- GA4 script placeholder — uncomment when ready:
+    <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      gtag('config', 'G-BUILDSIGNAL');
+      gtag('config', 'GA_MEASUREMENT_ID');
     </script>
-    <meta name="analytics-status" content="placeholder-pending-production-ga4-id" />
+    -->
 
     <!-- Title & Description -->
     <title>BuildSignal — AI-Powered Infrastructure Intelligence for Construction</title>
