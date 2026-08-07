@@ -29,6 +29,7 @@ import NotFound from "./pages/NotFound";
 import AuthLayout from "./components/AuthLayout";
 import { Toaster } from "@/components/ui/toaster";
 
+// BuildSignal v1.1.9 - Live Deployment
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
