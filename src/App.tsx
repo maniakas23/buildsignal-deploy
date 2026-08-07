@@ -28,12 +28,14 @@ import { DemoRequestPage } from "./pages/DemoRequestPage";
 import { PrivacyPage } from "./pages/PrivacyPage";
 import { TermsPage } from "./pages/TermsPage";
 import { SampleReportPage } from "./pages/SampleReportPage";
+import { RoadmapPage } from "./pages/RoadmapPage";
+import { EmailPreviewPage } from "./pages/EmailPreviewPage";
 import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
 import NotFound from "./pages/NotFound";
 import AuthLayout from "./components/AuthLayout";
 import { Toaster } from "@/components/ui/toaster";
 
-// BuildSignal v1.1.10 - Live Deployment
+// BuildSignal v1.2.0 - Customer Acquisition & Onboarding
 function App() {
   usePageTracking();
 
@@ -57,6 +59,8 @@ function App() {
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/sample-report" element={<SampleReportPage />} />
+          <Route path="/roadmap" element={<RoadmapPage />} />
+          <Route path="/email-preview" element={<EmailPreviewPage />} />
 
           {/* Auth-gated routes */}
           <Route element={<AuthLayout />}>
