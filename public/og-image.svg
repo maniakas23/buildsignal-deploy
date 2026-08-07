@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0B1F33"/>
+      <stop offset="100%" style="stop-color:#0a1929"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <g stroke="#1F5EFF" stroke-opacity="0.15" stroke-width="1">
+    <line x1="0" y1="200" x2="1200" y2="200"/>
+    <line x1="0" y1="400" x2="1200" y2="400"/>
+    <line x1="300" y1="0" x2="300" y2="630"/>
+    <line x1="600" y1="0" x2="600" y2="630"/>
+    <line x1="900" y1="0" x2="900" y2="630"/>
+  </g>
+  <circle cx="600" cy="240" r="50" fill="none" stroke="#1F5EFF" stroke-width="4"/>
+  <circle cx="600" cy="240" r="30" fill="none" stroke="#1F5EFF" stroke-width="2" stroke-opacity="0.6"/>
+  <circle cx="600" cy="240" r="12" fill="#1F5EFF"/>
+  <path d="M600 190 Q650 190 680 160" fill="none" stroke="#18A999" stroke-width="3" stroke-linecap="round"/>
+  <path d="M600 190 Q550 190 520 160" fill="none" stroke="#18A999" stroke-width="3" stroke-linecap="round"/>
+  <path d="M600 290 Q650 290 680 320" fill="none" stroke="#18A999" stroke-width="3" stroke-linecap="round"/>
+  <path d="M600 290 Q550 290 520 320" fill="none" stroke="#18A999" stroke-width="3" stroke-linecap="round"/>
+  <text x="600" y="360" text-anchor="middle" font-family="Arial, sans-serif" font-size="72" font-weight="bold" fill="white">BuildSignal</text>
+  <text x="600" y="410" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" fill="#8896a8" letter-spacing="2">INFRASTRUCTURE INTELLIGENCE PLATFORM</text>
+  <text x="600" y="550" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#4a5a6a">2.1M+ Permits Tracked  ·  500+ Counties Monitored  ·  AI-Powered</text>
+</svg>
