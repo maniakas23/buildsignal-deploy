@@ -64,8 +64,8 @@ module.exports = {
         "halogen-white": "#E8F4FD",
       },
       fontFamily: {
-        sans: ['Geist', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        mono: ['Geist Mono', 'ui-monospace', 'Cascadia Code', 'Source Code Pro', 'monospace'],
+        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        mono: ['JetBrains Mono', 'ui-monospace', 'Cascadia Code', 'Source Code Pro', 'monospace'],
       },
       fontSize: {
         'display': ['60px', { lineHeight: '1.1', letterSpacing: '-1.5px', fontWeight: '700' }],
@@ -110,7 +110,7 @@ module.exports = {
         "caret-blink": "caret-blink 1.25s ease-out infinite",
         "fade-in-up": "fade-in-up 0.4s ease-out forwards",
         "pulse-glow": "pulse-glow 1.5s ease-in-out infinite",
-        "shimmer": "shimmer 1.5s ease-in-out infinite",
+        "shimmer": "shimmer 1.5s ease-out infinite",
       },
     },
   },
