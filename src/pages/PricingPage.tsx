@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { trackEvent } from "@/hooks/usePageTracking";
 import {
   Check,
   Building2,
@@ -228,6 +229,13 @@ export function PricingPage() {
   };
 
   const handleSelectPlan = (planId: string) => {
+    const plan = plans.find((p) => p.id === planId);
+    trackEvent("purchase_intent", {
+      plan_id: planId,
+      billing_cycle: billingCycle,
+      value: plan?.price,
+      currency: "USD",
+    });
     navigate(`/signup?plan=${planId}&cycle=${billingCycle}`);
   };
 
