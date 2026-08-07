@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { trackEvent } from "@/hooks/usePageTracking";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -27,8 +28,28 @@ export function NewsletterSignup() {
     e.preventDefault();
     if (!validate(email)) return;
     setIsSubmitting(true);
-    // Simulate API call
+
+    // TODO: Replace with real API call when backend is ready
+    // POST /api/v1/newsletter/subscribe { email }
+    // Expected response: { success: true, subscriberId: string }
+
     setTimeout(() => {
+      try {
+        // Store in localStorage for now (dev/demo mode)
+        const subscribers = JSON.parse(localStorage.getItem("buildsignal_newsletter") || "[]");
+        subscribers.push({
+          email: email.trim().toLowerCase(),
+          subscribedAt: new Date().toISOString(),
+          source: "homepage_footer",
+        });
+        localStorage.setItem("buildsignal_newsletter", JSON.stringify(subscribers));
+
+        // Track conversion event
+        trackEvent("newsletter_subscribe", { source: "homepage" });
+      } catch {
+        // localStorage unavailable — still show success
+      }
+
       setIsSubmitting(false);
       setSubmitted(true);
       setEmail("");
