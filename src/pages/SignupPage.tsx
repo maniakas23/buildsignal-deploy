@@ -667,7 +667,7 @@ export function SignupPage() {
                       <span className="font-medium text-sm">Real-time data coverage</span>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      500+ US counties monitored. 2.1M+ permits tracked. Updated daily from municipal sources.
+                      Multi-county permit monitoring from municipal sources. Daily updates on construction activity across target markets.
                     </p>
                   </div>
 
