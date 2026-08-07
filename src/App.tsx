@@ -1,8 +1,8 @@
-import { Routes, Route, Navigate, Outlet } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { TRPCProvider } from "./providers/trpc";
 import { queryClient } from "./lib/query";
-import { Home } from "./pages/Home";
+import { usePageTracking } from "./hooks/usePageTracking";
 import { Login } from "./pages/Login";
 import { SignupPage } from "./pages/SignupPage";
 import { WelcomePage } from "./pages/WelcomePage";
@@ -27,18 +27,20 @@ import { DemoRequestPage } from "./pages/DemoRequestPage";
 import { PrivacyPage } from "./pages/PrivacyPage";
 import { TermsPage } from "./pages/TermsPage";
 import NotFound from "./pages/NotFound";
+import AuthLayout from "./components/AuthLayout";
 import { Toaster } from "@/components/ui/toaster";
 
-// BuildSignal v1.1.10 - Public Landing Page + Auth Routes
+// BuildSignal v1.1.9 - Live Deployment
 function App() {
+  usePageTracking();
+
   return (
     <QueryClientProvider client={queryClient}>
       <TRPCProvider>
         <Routes>
-          {/* Public routes — accessible to all visitors */}
-          <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignupPage />} />
+          <Route path="/welcome" element={<WelcomePage />} />
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/help" element={<HelpPage />} />
           <Route path="/contact" element={<ContactPage />} />
@@ -48,10 +50,8 @@ function App() {
           <Route path="/demo" element={<DemoRequestPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/terms" element={<TermsPage />} />
-
-          {/* Auth-protected routes — redirect to /login when not authenticated */}
           <Route element={<AuthLayout />}>
-            <Route path="/welcome" element={<WelcomePage />} />
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/opportunities" element={<OpportunityDashboard />} />
             <Route path="/counties/:id" element={<CountyDetail />} />
@@ -64,23 +64,12 @@ function App() {
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/sso" element={<SSOPage />} />
           </Route>
-
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Toaster />
       </TRPCProvider>
     </QueryClientProvider>
   );
-}
-
-/* ------------------------------------------------------------------ */
-/*  AuthLayout — renders child routes via Outlet.                     */
-/*  In a full implementation this would check auth state and          */
-/*  redirect unauthenticated users to /login.                         */
-/*  For now we render the protected page shell.                       */
-/* ------------------------------------------------------------------ */
-function AuthLayout() {
-  return <Outlet />;
 }
 
 export default App;
