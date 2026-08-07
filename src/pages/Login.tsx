@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Building2, ArrowRight, Eye, EyeOff, Mail, Lock, UserPlus, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
@@ -96,13 +96,12 @@ export function Login() {
                 <label htmlFor="login-password" className="text-sm font-medium">
                   Password
                 </label>
-                <button
-                  type="button"
-                  onClick={() => navigate("/contact")}
+                <Link
+                  to="/forgot-password"
                   className="text-xs text-primary hover:underline"
                 >
-                  Need help? Contact support
-                </button>
+                  Forgot password?
+                </Link>
               </div>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
