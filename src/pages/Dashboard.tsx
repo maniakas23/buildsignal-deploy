@@ -156,10 +156,18 @@ function SectorTooltip({ active, payload }: any) {
 }
 
 export function Dashboard() {
+  // ALL hooks must be called before any conditional returns
   const [hoveredOpportunity, setHoveredOpportunity] = useState<number | null>(null)
 
-  // ─── Onboarding Check ─────────────────────────────────────────────
-  const onboardingComplete = localStorage.getItem('buildsignal_onboarding_complete')
+  // Onboarding check — AFTER all hooks
+  const onboardingComplete = (() => {
+    try {
+      return localStorage.getItem('buildsignal_onboarding_complete')
+    } catch {
+      return 'skipped'
+    }
+  })()
+
   if (onboardingComplete === null) {
     return <OnboardingWizard />
   }
