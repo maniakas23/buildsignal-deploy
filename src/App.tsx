@@ -27,11 +27,12 @@ import { ReportsHubPage } from "./pages/ReportsHubPage";
 import { DemoRequestPage } from "./pages/DemoRequestPage";
 import { PrivacyPage } from "./pages/PrivacyPage";
 import { TermsPage } from "./pages/TermsPage";
+import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
 import NotFound from "./pages/NotFound";
 import AuthLayout from "./components/AuthLayout";
 import { Toaster } from "@/components/ui/toaster";
 
-// BuildSignal v1.1.9 - Live Deployment
+// BuildSignal v1.1.10 - Live Deployment
 function App() {
   usePageTracking();
 
@@ -43,6 +44,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignupPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/welcome" element={<WelcomePage />} />
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/help" element={<HelpPage />} />
