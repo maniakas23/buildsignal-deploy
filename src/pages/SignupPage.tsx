@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { trackEvent } from "@/hooks/usePageTracking";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -185,6 +186,12 @@ export function SignupPage() {
       setIsSubmitting(true);
       try {
         await login(email, password);
+        trackEvent("sign_up", {
+          method: "email",
+          plan: selectedPlan || "unknown",
+          billing_cycle: billingCycle,
+          company: company,
+        });
         navigate("/welcome");
       } catch {
         setErrors({ submit: "Something went wrong. Please try again." });
