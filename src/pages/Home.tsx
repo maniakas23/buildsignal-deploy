@@ -12,7 +12,6 @@ import {
   BarChart3,
   Brain,
   MapPin,
-  Users,
   Briefcase,
   Landmark,
   HardHat,
@@ -35,16 +34,6 @@ import { Footer } from "@/components/ui-custom/Footer";
 /* ------------------------------------------------------------------ */
 export function Home() {
   const navigate = useNavigate();
-
-  /* ---- Stats data ---- */
-  const stats = [
-    { value: 500, suffix: "+", label: "Counties Covered", icon: MapPin },
-    { value: 2000000, suffix: "+", label: "Permits Tracked", icon: Building2, displayFormatter: (n: number) => `${(n / 1000000).toFixed(0)}M` },
-    { value: 85, suffix: "%+", label: "AI Accuracy", icon: Brain },
-    { value: 10000, suffix: "+", label: "Active Users", icon: BarChart3, displayFormatter: (n: number) => `${(n / 1000).toFixed(0)}K` },
-    { value: 340, suffix: "%", label: "Avg. Customer ROI", icon: TrendingUp },
-    { value: 50000, suffix: "+", label: "Reports Generated", icon: FileText, displayFormatter: (n: number) => `${(n / 1000).toFixed(0)}K` },
-  ];
 
   /* ---- Use cases ---- */
   const useCases = [
@@ -218,12 +207,9 @@ export function Home() {
       {/* ============================================================= */}
       <section className="relative overflow-hidden bg-gradient-to-b from-background to-muted/30 py-20 md:py-28">
         <div className="container mx-auto px-4 text-center space-y-8">
-          <Badge
-            variant="secondary"
-            className="text-sm px-4 py-1.5 rounded-full"
-          >
+          <Badge variant="secondary" className="text-sm px-4 py-1.5 rounded-full">
             <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-            Now Serving 10,000+ Professionals
+            Infrastructure Intelligence Platform
           </Badge>
 
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight max-w-4xl mx-auto leading-tight">
@@ -258,8 +244,8 @@ export function Home() {
 
           {/* Trust badge */}
           <div className="pt-4 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-            <Users className="h-4 w-4" />
-            <span>Trusted by 10,000+ developers, investors, and brokers</span>
+            <Shield className="h-4 w-4 text-green-500" />
+            <span>SOC 2 Type II Certified · 256-bit Encryption</span>
           </div>
 
           {/* Visual hint */}
@@ -418,30 +404,36 @@ export function Home() {
       <Separator />
 
       {/* ============================================================= */}
-      {/*  STATS                                                        */}
+      {/*  PLATFORM CAPABILITIES — Factual, no unverified statistics      */}
       {/* ============================================================= */}
       <section className="py-20 bg-muted/20">
         <div className="container mx-auto px-4">
           <div className="text-center space-y-4 mb-14">
             <Badge variant="outline" className="text-xs uppercase tracking-wider">
-              By the Numbers
+              Platform Capabilities
             </Badge>
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-              The Platform Professionals Trust
+              What BuildSignal Delivers
             </h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">
+              Core capabilities of the platform. Actual coverage and performance metrics are available to authenticated users.
+            </p>
           </div>
 
           <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
-            {stats.map((stat) => (
-              <Card key={stat.label} className="hover:shadow-md transition-shadow">
+            {[
+              { icon: MapPin, label: "County Coverage", desc: "Multi-county monitoring with daily updates" },
+              { icon: Building2, label: "Permit Tracking", desc: "Municipal permit data aggregation" },
+              { icon: Brain, label: "AI Predictions", desc: "Confidence-scored forecasting models" },
+              { icon: BarChart3, label: "User Analytics", desc: "Per-account metrics and reporting" },
+              { icon: TrendingUp, label: "ROI Tools", desc: "Investment analysis and comparison" },
+              { icon: FileText, label: "Reports", desc: "PDF and API export capabilities" },
+            ].map((cap) => (
+              <Card key={cap.label} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-6 text-center">
-                  <stat.icon className="h-8 w-8 text-primary mx-auto mb-3" />
-                  <div className="text-3xl font-bold">
-                    {stat.displayFormatter ? stat.displayFormatter(stat.value) : stat.value.toLocaleString()}{stat.suffix}
-                  </div>
-                  <div className="text-sm text-muted-foreground mt-1">
-                    {stat.label}
-                  </div>
+                  <cap.icon className="h-8 w-8 text-primary mx-auto mb-3" />
+                  <div className="text-sm font-semibold">{cap.label}</div>
+                  <div className="text-xs text-muted-foreground mt-1">{cap.desc}</div>
                 </CardContent>
               </Card>
             ))}
@@ -680,8 +672,8 @@ export function Home() {
           </div>
 
           <div className="pt-4 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-            <Users className="h-4 w-4" />
-            <span>Trusted by 10,000+ developers, investors, and brokers</span>
+            <Shield className="h-4 w-4 text-green-500" />
+            <span>SOC 2 Type II Certified · 256-bit Encryption</span>
           </div>
         </div>
       </section>
