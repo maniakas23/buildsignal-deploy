@@ -27,6 +27,7 @@ import { ReportsHubPage } from "./pages/ReportsHubPage";
 import { DemoRequestPage } from "./pages/DemoRequestPage";
 import { PrivacyPage } from "./pages/PrivacyPage";
 import { TermsPage } from "./pages/TermsPage";
+import { SampleReportPage } from "./pages/SampleReportPage";
 import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
 import NotFound from "./pages/NotFound";
 import AuthLayout from "./components/AuthLayout";
@@ -55,6 +56,7 @@ function App() {
           <Route path="/demo" element={<DemoRequestPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/terms" element={<TermsPage />} />
+          <Route path="/sample-report" element={<SampleReportPage />} />
 
           {/* Auth-gated routes */}
           <Route element={<AuthLayout />}>
