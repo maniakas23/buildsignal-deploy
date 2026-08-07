@@ -29,6 +29,7 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 import { NewsletterSignup } from "@/components/marketing/NewsletterSignup";
+import { Footer } from "@/components/ui-custom/Footer";
 
 /* ------------------------------------------------------------------ */
 /*  Count-up hook                                                      */
@@ -758,6 +759,8 @@ export function Home() {
           </div>
         </div>
       </section>
+
+      <Footer />
     </div>
   );
 }
