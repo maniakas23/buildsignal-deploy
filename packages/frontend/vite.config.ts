@@ -40,10 +40,30 @@ export default defineConfig(({ mode }) => {
       },
     },
     build: {
+      chunkSizeWarningLimit: 1000,
       cssMinify: false,
       rollupOptions: {
         output: {
-          inlineDynamicImports: true,
+          manualChunks(id) {
+            if (id.includes('node_modules/react') || id.includes('node_modules/react-dom') || id.includes('node_modules/react-router')) {
+              return 'vendor-react';
+            }
+            if (id.includes('node_modules/recharts')) {
+              return 'vendor-charts';
+            }
+            if (id.includes('node_modules/three') || id.includes('node_modules/@react-three')) {
+              return 'vendor-three';
+            }
+            if (id.includes('node_modules/@radix-ui')) {
+              return 'vendor-radix';
+            }
+            if (id.includes('node_modules/lodash') || id.includes('node_modules/zod') || id.includes('node_modules/zustand')) {
+              return 'vendor-utils';
+            }
+            if (id.includes('node_modules')) {
+              return 'vendor';
+            }
+          },
         },
       },
     },
