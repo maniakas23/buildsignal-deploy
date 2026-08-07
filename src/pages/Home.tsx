@@ -105,7 +105,7 @@ export function Home() {
     {
       title: "Real-Time Permit Tracking",
       description:
-        "Monitor building permits across 500+ US counties as they're filed. Filter by type, value, and geography.",
+        "Monitor building permits across US counties as they're filed. Filter by type, value, and geography.",
       icon: TrendingUp,
     },
     {
@@ -297,10 +297,10 @@ export function Home() {
                 </div>
                 <h3 className="font-semibold text-sm mb-2">Nationwide Data Coverage</h3>
                 <p className="text-sm leading-relaxed flex-1 mb-4 text-muted-foreground">
-                  500+ US counties monitored daily. 2.1M+ building permits tracked from municipal sources. Coverage updates weekly.
+                  Multi-county monitoring with daily data aggregation. Municipal permit tracking across target markets. Coverage expands regularly.
                 </p>
                 <div className="text-xs text-muted-foreground border-t pt-3">
-                  Updated: Daily from 500+ municipal sources
+                  Status: Active data aggregation
                 </div>
               </CardContent>
             </Card>
