@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { trackEvent } from "@/hooks/usePageTracking";
 
 export function ContactPage() {
   const navigate = useNavigate();
@@ -42,6 +43,10 @@ export function ContactPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim() || !form.email.trim() || !form.message.trim()) return;
+    trackEvent("contact", {
+      inquiry_type: form.inquiryType || "general",
+      company: form.company || undefined,
+    });
     setSubmitted(true);
   };
 
