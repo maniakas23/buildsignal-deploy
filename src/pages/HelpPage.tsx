@@ -538,11 +538,11 @@ export function HelpPage() {
             </form>
           )}
 
-          {/* Existing Tickets (Mock) */}
+          {/* Sample Tickets (Illustrative Examples) - Mock data for demonstration */}
           <div className="mt-6 pt-6 border-t">
             <div className="flex items-center gap-2 mb-3">
               <List className="h-4 w-4 text-muted-foreground" />
-              <h4 className="text-sm font-medium">Your Recent Tickets</h4>
+              <h4 className="text-sm font-medium">Sample Tickets (Illustrative Examples)</h4>
             </div>
             <div className="space-y-2">
               {[
