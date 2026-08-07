@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { trackEvent } from "@/hooks/usePageTracking";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -68,6 +69,11 @@ export function DemoRequestPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    trackEvent("demo_request", {
+      demo_type: form.demoType,
+      use_case: form.useCase,
+      company: form.company,
+    });
     setSubmitted(true);
   };
 
