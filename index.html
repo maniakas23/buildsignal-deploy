@@ -4,6 +4,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+    <!-- Google tag (gtag.js) - REPLACE G-BUILDSIGNAL with your real GA4 Measurement ID -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-BUILDSIGNAL"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-BUILDSIGNAL');
+    </script>
+
     <!-- Title & Description -->
     <title>BuildSignal — AI-Powered Infrastructure Intelligence for Construction</title>
     <meta name="description" content="Predict construction trends before they happen. AI-powered permit intelligence across 500+ US counties." />
