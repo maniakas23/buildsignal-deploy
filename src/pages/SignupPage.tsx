@@ -21,6 +21,8 @@ import {
   EyeOff,
   Zap,
   Building2,
+  Sparkles,
+  TrendingUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +36,49 @@ interface Plan {
   highlighted: boolean;
   cta: string;
 }
+
+const defaultPlans: Plan[] = [
+  {
+    id: "scout",
+    name: "Scout",
+    price: 99,
+    interval: "month",
+    description: "Perfect for individual investors and small teams exploring new markets.",
+    features: ["5 counties", "Weekly email reports", "Basic predictions", "Email support"],
+    highlighted: false,
+    cta: "Start Free Trial",
+  },
+  {
+    id: "professional",
+    name: "Professional",
+    price: 249,
+    interval: "month",
+    description: "For growing teams that need deeper intelligence and more coverage.",
+    features: ["25 counties", "Daily alerts + weekly briefings", "Advanced predictions", "API access", "Priority support"],
+    highlighted: true,
+    cta: "Start Free Trial",
+  },
+  {
+    id: "business",
+    name: "Business",
+    price: 599,
+    interval: "month",
+    description: "Built for organizations managing multi-market portfolios at scale.",
+    features: ["Unlimited counties", "Real-time alerts", "Custom models", "Full API + webhooks", "SSO & SAML", "Dedicated account manager"],
+    highlighted: false,
+    cta: "Start Free Trial",
+  },
+  {
+    id: "enterprise",
+    name: "Enterprise",
+    price: 0,
+    interval: "custom",
+    description: "Tailored deployments for large enterprises with custom data needs.",
+    features: ["Everything in Business", "Custom data integrations", "White-label reports", "On-premise option", "SLA guarantees", "24/7 phone support"],
+    highlighted: false,
+    cta: "Talk to Sales",
+  },
+];
 
 const testimonials = [
   {
@@ -84,7 +129,7 @@ export function SignupPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const plans = (config.data?.plans || []) as Plan[];
+  const plans = (config.data?.plans?.length ? config.data.plans : defaultPlans) as Plan[];
 
   useEffect(() => {
     if (preselectedPlan) {
@@ -468,7 +513,7 @@ export function SignupPage() {
                         <div className="bg-muted/50 rounded-lg p-6">
                           <Building2 className="h-10 w-10 text-primary mx-auto mb-3" />
                           <h3 className="text-lg font-semibold mb-1">
-                            You're almost there!
+                            You&apos;re almost there!
                           </h3>
                           <p className="text-muted-foreground text-sm mb-4">
                             Start your 14-day free trial. No credit card required.
@@ -588,6 +633,28 @@ export function SignupPage() {
             {/* Sidebar */}
             <div className="hidden lg:block">
               <div className="sticky top-8 space-y-6">
+                {/* Value Proposition */}
+                <div className="bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-xl p-5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Sparkles className="h-5 w-5 text-primary" />
+                    <span className="font-semibold">Why BuildSignal?</span>
+                  </div>
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    <li className="flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4 text-green-500 shrink-0" />
+                      Predict market surges 3-6 months early
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Zap className="h-4 w-4 text-green-500 shrink-0" />
+                      Cut research time by 80%
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Shield className="h-4 w-4 text-green-500 shrink-0" />
+                      Bank-grade security &amp; SOC 2 certified
+                    </li>
+                  </ul>
+                </div>
+
                 {/* Social Proof */}
                 <div className="bg-primary/5 border border-primary/10 rounded-xl p-5">
                   <div className="flex items-center gap-2 mb-3">
@@ -619,7 +686,7 @@ export function SignupPage() {
                         ))}
                       </div>
                       <p className="text-sm text-muted-foreground mb-2 italic">
-                        "{t.quote}"
+                        &ldquo;{t.quote}&rdquo;
                       </p>
                       <div className="text-xs">
                         <span className="font-medium">{t.author}</span>
