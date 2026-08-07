@@ -14,6 +14,7 @@ import {
   HelpCircle,
   ArrowRight,
   MessageSquare,
+  Star,
 } from "lucide-react";
 import { trpc } from "@/providers/trpc";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +31,77 @@ interface Plan {
   highlighted: boolean;
   cta: string;
 }
+
+const defaultPlans: Plan[] = [
+  {
+    id: "scout",
+    name: "Scout",
+    price: 99,
+    interval: "month",
+    description: "Perfect for individual investors and small teams exploring new markets.",
+    features: [
+      "5 counties",
+      "Weekly email reports",
+      "Basic predictions",
+      "Email support",
+      "7-day data history",
+    ],
+    highlighted: false,
+    cta: "Start Free Trial",
+  },
+  {
+    id: "professional",
+    name: "Professional",
+    price: 249,
+    interval: "month",
+    description: "For growing teams that need deeper intelligence and more coverage.",
+    features: [
+      "25 counties",
+      "Daily alerts + weekly briefings",
+      "Advanced predictions",
+      "API access",
+      "Priority support",
+      "90-day data history",
+    ],
+    highlighted: true,
+    cta: "Start Free Trial",
+  },
+  {
+    id: "business",
+    name: "Business",
+    price: 599,
+    interval: "month",
+    description: "Built for organizations managing multi-market portfolios at scale.",
+    features: [
+      "Unlimited counties",
+      "Real-time alerts",
+      "Custom models",
+      "Full API + webhooks",
+      "SSO & SAML",
+      "Dedicated account manager",
+      "Full historical data",
+    ],
+    highlighted: false,
+    cta: "Start Free Trial",
+  },
+  {
+    id: "enterprise",
+    name: "Enterprise",
+    price: 0,
+    interval: "custom",
+    description: "Tailored deployments for large enterprises with custom data needs.",
+    features: [
+      "Everything in Business",
+      "Custom data integrations",
+      "White-label reports",
+      "On-premise option",
+      "SLA guarantees",
+      "24/7 phone support",
+    ],
+    highlighted: false,
+    cta: "Talk to Sales",
+  },
+];
 
 const allFeatures = [
   { key: "reports", label: "Intelligence Reports", icon: Zap },
@@ -68,6 +140,16 @@ const faqs = [
     question: "Do you offer refunds?",
     answer:
       "We offer a 14-day money-back guarantee. If you're not satisfied, contact support within 14 days of your first charge for a full refund.",
+  },
+  {
+    question: "What payment methods do you accept?",
+    answer:
+      "We accept all major credit cards (Visa, Mastercard, American Express), ACH bank transfers for annual plans, and wire transfers for Enterprise customers.",
+  },
+  {
+    question: "Can I add team members to my account?",
+    answer:
+      "Absolutely. Professional plans include up to 5 team members, Business plans include unlimited team members, and Enterprise plans include custom user provisioning with SSO.",
   },
 ];
 
@@ -125,7 +207,7 @@ export function PricingPage() {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  const plans = (config.data?.plans || []) as Plan[];
+  const plans = (config.data?.plans?.length ? config.data.plans : defaultPlans) as Plan[];
 
   const getAnnualPrice = (price: number) => {
     if (price === 0) return 0;
@@ -203,6 +285,7 @@ export function PricingPage() {
                 {isHighlighted && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                     <Badge className="bg-primary text-primary-foreground px-3 py-1">
+                      <Star className="h-3 w-3 mr-1 fill-current" />
                       Most Popular
                     </Badge>
                   </div>
@@ -247,7 +330,7 @@ export function PricingPage() {
                       : "border border-input bg-background hover:bg-accent hover:text-accent-foreground"
                   )}
                 >
-                  Start Free Trial
+                  {plan.cta}
                 </button>
               </div>
             );
