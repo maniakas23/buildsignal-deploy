@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Building2, ArrowRight, Globe, Eye, EyeOff, Mail, Lock, UserPlus, ArrowLeft } from "lucide-react";
+import { Building2, ArrowRight, Eye, EyeOff, Mail, Lock, UserPlus, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 
@@ -14,10 +14,6 @@ export function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [mode, setMode] = useState<"sso" | "password">("password");
-
-  const handleLogin = () => {
-    window.location.href = "https://api.buildsignal.net/auth/login";
-  };
 
   const handleSso = () => {
     if (domain.includes("@")) {
@@ -102,10 +98,10 @@ export function Login() {
                 </label>
                 <button
                   type="button"
-                  onClick={() => alert("Password reset functionality coming soon.")}
+                  onClick={() => navigate("/contact")}
                   className="text-xs text-primary hover:underline"
                 >
-                  Forgot password?
+                  Need help? Contact support
                 </button>
               </div>
               <div className="relative">
@@ -158,28 +154,8 @@ export function Login() {
             </button>
           </form>
 
-          {/* Divider */}
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                Or continue with
-              </span>
-            </div>
-          </div>
-
-          {/* SSO / Kimi Login */}
+          {/* Enterprise SSO */}
           <div className="space-y-3">
-            <button
-              onClick={handleLogin}
-              className="w-full flex items-center justify-center gap-2 rounded-lg border border-input bg-background px-4 py-3 text-sm font-medium hover:bg-accent transition-colors"
-            >
-              <Globe className="h-4 w-4" />
-              Continue with Kimi
-            </button>
-
             <button
               onClick={() => setMode(mode === "sso" ? "password" : "sso")}
               className="w-full flex items-center justify-center gap-2 rounded-lg border border-input bg-background px-4 py-3 text-sm font-medium hover:bg-accent transition-colors"
