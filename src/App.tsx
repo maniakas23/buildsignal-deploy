@@ -3,6 +3,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { TRPCProvider } from "./providers/trpc";
 import { queryClient } from "./lib/query";
 import { usePageTracking } from "./hooks/usePageTracking";
+import { Home } from "./pages/Home";
 import { Login } from "./pages/Login";
 import { SignupPage } from "./pages/SignupPage";
 import { WelcomePage } from "./pages/WelcomePage";
@@ -38,6 +39,8 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TRPCProvider>
         <Routes>
+          {/* Public routes */}
+          <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/welcome" element={<WelcomePage />} />
@@ -50,8 +53,9 @@ function App() {
           <Route path="/demo" element={<DemoRequestPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/terms" element={<TermsPage />} />
+
+          {/* Auth-gated routes */}
           <Route element={<AuthLayout />}>
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/opportunities" element={<OpportunityDashboard />} />
             <Route path="/counties/:id" element={<CountyDetail />} />
@@ -64,6 +68,7 @@ function App() {
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/sso" element={<SSOPage />} />
           </Route>
+
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Toaster />
