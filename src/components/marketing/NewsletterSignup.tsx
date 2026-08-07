@@ -52,7 +52,7 @@ export function NewsletterSignup() {
             </p>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Users className="h-3.5 w-3.5" />
-              <span>Join 5,000+ professionals. No spam, unsubscribe anytime.</span>
+              <span>Weekly insights on construction trends. No spam, unsubscribe anytime.</span>
             </div>
           </div>
 
