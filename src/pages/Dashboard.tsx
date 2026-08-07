@@ -87,7 +87,7 @@ const alerts = [
   {
     id: 1,
     severity: 'critical' as const,
-    message: 'New permit filed in Austin, TX \u2014 $42M mixed-use project',
+    message: 'New permit filed in Austin, TX — $42M mixed-use project',
     time: '2 hours ago',
   },
   {
@@ -169,6 +169,19 @@ export function Dashboard() {
         </p>
       </div>
 
+      {/* Sample Data Banner */}
+      <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg dark:bg-amber-950/30 dark:border-amber-900">
+        <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300">
+          <svg className="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span className="font-medium text-sm">Sample Data — Illustrative Example</span>
+        </div>
+        <p className="text-xs text-amber-700 dark:text-amber-400 mt-1 ml-7">
+          This dashboard shows example data for demonstration purposes. Your actual dashboard will display real opportunities, alerts, and metrics from your subscribed markets after account activation.
+        </p>
+      </div>
+
       {/* ─── Stats Row ─────────────────────────────────────────────────── */}
       <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8'>
         {/* Total Opportunities */}
@@ -191,6 +204,7 @@ export function Dashboard() {
               </span>
             </div>
             <p className='text-xs text-muted-foreground mt-2'>vs. previous 30 days</p>
+            <p className="text-[10px] text-muted-foreground/60 mt-3 pt-2 border-t border-border/30 uppercase tracking-wider">Sample</p>
           </CardContent>
         </Card>
 
@@ -214,6 +228,7 @@ export function Dashboard() {
               </Badge>
             </div>
             <p className='text-xs text-muted-foreground mt-2'>across all markets</p>
+            <p className="text-[10px] text-muted-foreground/60 mt-3 pt-2 border-t border-border/30 uppercase tracking-wider">Sample</p>
           </CardContent>
         </Card>
 
@@ -235,6 +250,7 @@ export function Dashboard() {
               <span className='text-xs text-muted-foreground font-medium'>counties</span>
             </div>
             <p className='text-xs text-muted-foreground mt-2'>15 states monitored</p>
+            <p className="text-[10px] text-muted-foreground/60 mt-3 pt-2 border-t border-border/30 uppercase tracking-wider">Sample</p>
           </CardContent>
         </Card>
 
@@ -256,6 +272,7 @@ export function Dashboard() {
               <span className='text-xs text-muted-foreground font-medium'>est.</span>
             </div>
             <p className='text-xs text-muted-foreground mt-2'>year-to-date potential</p>
+            <p className="text-[10px] text-muted-foreground/60 mt-3 pt-2 border-t border-border/30 uppercase tracking-wider">Sample</p>
           </CardContent>
         </Card>
       </div>
@@ -265,9 +282,12 @@ export function Dashboard() {
         {/* Opportunity Trend */}
         <Card className='transition-all duration-300 hover:shadow-md'>
           <CardHeader>
-            <CardTitle className='text-base font-semibold' style={{ color: COLORS.deepNavy }}>
-              Opportunity Trend
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className='text-base font-semibold' style={{ color: COLORS.deepNavy }}>
+                Opportunity Trend
+              </CardTitle>
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Sample</span>
+            </div>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width='100%' height={280}>
@@ -303,9 +323,12 @@ export function Dashboard() {
         {/* Market Breakdown */}
         <Card className='transition-all duration-300 hover:shadow-md'>
           <CardHeader>
-            <CardTitle className='text-base font-semibold' style={{ color: COLORS.deepNavy }}>
-              Market Breakdown
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className='text-base font-semibold' style={{ color: COLORS.deepNavy }}>
+                Market Breakdown
+              </CardTitle>
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Sample</span>
+            </div>
           </CardHeader>
           <CardContent>
             <div className='flex items-center'>
@@ -352,17 +375,14 @@ export function Dashboard() {
         {/* Recent Opportunities Feed */}
         <div className='lg:col-span-2'>
           <Card className='transition-all duration-300 hover:shadow-md'>
-            <CardHeader className='flex flex-row items-center justify-between'>
-              <CardTitle className='text-base font-semibold' style={{ color: COLORS.deepNavy }}>
-                Recent Opportunities
-              </CardTitle>
-              <Button
-                variant='link'
-                className='text-xs h-auto p-0'
-                style={{ color: COLORS.signalBlue }}
-              >
-                View all
-              </Button>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className='text-base font-semibold' style={{ color: COLORS.deepNavy }}>
+                  Recent Opportunities
+                </CardTitle>
+                <p className="text-xs text-muted-foreground mt-1">Example projects for demonstration</p>
+              </div>
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Sample</span>
             </CardHeader>
             <CardContent className='px-0'>
               {/* Header row */}
@@ -436,9 +456,12 @@ export function Dashboard() {
         <div>
           <Card className='transition-all duration-300 hover:shadow-md h-full'>
             <CardHeader>
-              <CardTitle className='text-base font-semibold' style={{ color: COLORS.deepNavy }}>
-                Alert Summary
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className='text-base font-semibold' style={{ color: COLORS.deepNavy }}>
+                  Alert Summary
+                </CardTitle>
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Sample</span>
+              </div>
             </CardHeader>
             <CardContent className='space-y-4'>
               {alerts.map((alert) => (
