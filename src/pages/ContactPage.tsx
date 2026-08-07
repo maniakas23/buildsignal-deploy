@@ -89,24 +89,23 @@ export function ContactPage() {
                 <Phone className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                 <div>
                   <div className="font-medium text-sm">Phone</div>
-                  <a
-                    href="tel:+14155551234"
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                  >
-                    +1 (415) 555-1234
-                  </a>
+                  <div className="text-sm text-muted-foreground">
+                    Phone support available for Business and Enterprise plans.
+                    <br />
+                    Schedule a call via <a href="mailto:support@buildsignal.net" className="text-primary hover:underline">support@buildsignal.net</a>
+                  </div>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <MapPin className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                 <div>
-                  <div className="font-medium text-sm">Address</div>
+                  <div className="font-medium text-sm">Company</div>
                   <div className="text-sm text-muted-foreground">
-                    123 Market Street
+                    BuildSignal, Inc.
                     <br />
-                    Suite 456
+                    Remote-first team
                     <br />
-                    San Francisco, CA 94105
+                    San Francisco Bay Area
                   </div>
                 </div>
               </div>
@@ -312,23 +311,12 @@ export function ContactPage() {
 
       <Separator />
 
-      {/* Map Placeholder */}
-      <div className="text-center space-y-4">
-        <h2 className="text-xl font-semibold">Visit Our Office</h2>
-        <p className="text-muted-foreground">
-          We're located in the heart of San Francisco's financial district.
+      {/* Remote-first note */}
+      <div className="text-center space-y-2">
+        <h2 className="text-xl font-semibold">Remote-First Team</h2>
+        <p className="text-muted-foreground max-w-xl mx-auto">
+          BuildSignal is a remote-first company with team members across the United States. We collaborate digitally and are available to connect via video call or in-person meetings for Enterprise clients.
         </p>
-        <div className="aspect-video bg-muted rounded-xl flex items-center justify-center">
-          <div className="text-center">
-            <MapPin className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">
-              Interactive map coming soon
-            </p>
-            <p className="text-xs text-muted-foreground">
-              123 Market Street, San Francisco, CA 94105
-            </p>
-          </div>
-        </div>
       </div>
     </div>
   );
