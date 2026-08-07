@@ -1,51 +1,99 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
-declare global {
-  interface Window {
-    gtag?: (
-      command: string,
-      action: string,
-      params?: Record<string, unknown>
-    ) => void;
+const ANALYTICS_ID = "custom"; // Set to "ga4-XXXXXXXX" to enable real GA4, or "custom" for local-only
+
+interface AnalyticsEvent {
+  event: string;
+  path: string;
+  timestamp: number;
+  params?: Record<string, unknown>;
+}
+
+function getAnalyticsStore(): AnalyticsEvent[] {
+  try {
+    const raw = localStorage.getItem("buildsignal_analytics");
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
   }
 }
 
-const GA_MEASUREMENT_ID = "G-BUILDSIGNAL";
+function appendEvent(event: AnalyticsEvent) {
+  try {
+    const store = getAnalyticsStore();
+    store.push(event);
+    // Keep last 500 events
+    if (store.length > 500) store.shift();
+    localStorage.setItem("buildsignal_analytics", JSON.stringify(store));
+  } catch {
+    // localStorage may be unavailable
+  }
+}
 
-/**
- * Track page views in Google Analytics 4 for SPA route changes.
- * Call this once at the top level of your app (inside Router).
- *
- * IMPORTANT: Replace G-BUILDSIGNAL with your real GA4 Measurement ID
- * in both this file and index.html.
- */
+function isGA4Enabled(): boolean {
+  return ANALYTICS_ID.startsWith("ga4-");
+}
+
+function getGA4Id(): string {
+  return ANALYTICS_ID.replace("ga4-", "");
+}
+
 export function usePageTracking() {
   const location = useLocation();
 
   useEffect(() => {
-    if (typeof window.gtag !== "undefined") {
-      window.gtag("event", "page_view", {
-        page_path: location.pathname + location.search,
+    const path = location.pathname + location.search;
+    const event: AnalyticsEvent = {
+      event: "page_view",
+      path,
+      timestamp: Date.now(),
+      params: {
+        page_path: path,
         page_location: window.location.href,
         page_title: document.title,
-        send_to: GA_MEASUREMENT_ID,
+      },
+    };
+    appendEvent(event);
+    // eslint-disable-next-line no-console
+    console.log("[Analytics] page_view", path);
+
+    // If GA4 is enabled, send to gtag (requires real GA4 script in index.html)
+    if (isGA4Enabled() && typeof window.gtag !== "undefined") {
+      window.gtag("event", "page_view", {
+        page_path: path,
+        page_location: window.location.href,
+        page_title: document.title,
+        send_to: getGA4Id(),
       });
     }
   }, [location]);
 }
 
-/**
- * Helper to send GA4 conversion events safely.
- */
 export function trackEvent(
   eventName: string,
   params?: Record<string, unknown>
 ) {
-  if (typeof window.gtag !== "undefined") {
+  const event: AnalyticsEvent = {
+    event: eventName,
+    path: window.location.pathname,
+    timestamp: Date.now(),
+    params,
+  };
+  appendEvent(event);
+  // eslint-disable-next-line no-console
+  console.log("[Analytics] event", eventName, params);
+
+  if (isGA4Enabled() && typeof window.gtag !== "undefined") {
     window.gtag("event", eventName, {
-      send_to: GA_MEASUREMENT_ID,
+      send_to: getGA4Id(),
       ...params,
     });
+  }
+}
+
+declare global {
+  interface Window {
+    gtag?: (command: string, action: string, params?: Record<string, unknown>) => void;
   }
 }
