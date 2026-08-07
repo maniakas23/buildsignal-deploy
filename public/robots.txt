@@ -1,11 +1,14 @@
 User-agent: *
 Allow: /
-
-Disallow: /admin
-Disallow: /internal
 Disallow: /dashboard
 Disallow: /settings
 Disallow: /billing
+Disallow: /watchlists
+Disallow: /reports
+Disallow: /recommendations
+Disallow: /operations
 Disallow: /sso
+Disallow: /county/
+Disallow: /email-preview
 
 Sitemap: https://buildsignal.net/sitemap.xml
