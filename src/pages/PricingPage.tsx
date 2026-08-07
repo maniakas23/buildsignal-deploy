@@ -19,6 +19,7 @@ import {
 import { trpc } from "@/providers/trpc";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Footer } from "@/components/ui-custom/Footer";
 import { cn } from "@/lib/utils";
 
 interface Plan {
@@ -487,6 +488,8 @@ export function PricingPage() {
           </div>
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 }
