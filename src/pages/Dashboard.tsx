@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -156,6 +157,12 @@ function SectorTooltip({ active, payload }: any) {
 
 export function Dashboard() {
   const [hoveredOpportunity, setHoveredOpportunity] = useState<number | null>(null)
+
+  // ─── Onboarding Check ─────────────────────────────────────────────
+  const onboardingComplete = localStorage.getItem('buildsignal_onboarding_complete')
+  if (onboardingComplete === null) {
+    return <OnboardingWizard />
+  }
 
   return (
     <div className='container mx-auto py-8 px-4 max-w-7xl'>
