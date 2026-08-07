@@ -54,8 +54,8 @@ export default {
         "halogen-white": "#E8F4FD",
       },
       fontFamily: {
-        sans: ['Geist', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        mono: ['Geist Mono', 'ui-monospace', 'Cascadia Code', 'Source Code Pro', 'monospace'],
+        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        mono: ['JetBrains Mono', 'ui-monospace', 'Cascadia Code', 'Source Code Pro', 'monospace'],
       },
       borderRadius: {
         xl: "calc(var(--radius) + 4px)",
