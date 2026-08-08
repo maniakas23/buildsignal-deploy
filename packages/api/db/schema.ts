@@ -192,3 +192,15 @@ export const ingestionSources = sqliteTable("ingestion_sources", {
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
   updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
+
+// ─── Usage Tracking ───
+export const usageTracking = sqliteTable("usage_tracking", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  userId: integer("userId").notNull(),
+  organizationId: integer("organizationId"),
+  feature: text("feature").notNull(), // e.g., "search", "report", "county_view"
+  count: integer("count").default(1),
+  period: text("period").notNull(), // "daily", "monthly"
+  periodDate: text("periodDate").notNull(), // "2026-08-08"
+  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
