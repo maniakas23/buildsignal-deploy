@@ -2,7 +2,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { createRouter, authedQuery, publicQuery } from "./middleware";
 import { feedback } from "../db/schema";
-import { eq, desc, and, sql } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 
 export const feedbackRouter = createRouter({
   // Submit feedback
@@ -151,24 +151,26 @@ export const feedbackRouter = createRouter({
         });
       }
 
-      let query = ctx.db
+      const conditions: ReturnType<typeof eq>[] = [];
+      if (input.status) conditions.push(eq(feedback.status, input.status));
+      if (input.type) conditions.push(eq(feedback.type, input.type));
+
+      if (conditions.length > 0) {
+        return ctx.db
+          .select()
+          .from(feedback)
+          .where(and(...conditions))
+          .orderBy(desc(feedback.createdAt))
+          .limit(input.limit)
+          .all();
+      }
+
+      return ctx.db
         .select()
         .from(feedback)
         .orderBy(desc(feedback.createdAt))
-        .limit(input.limit) as unknown as {
-        where: (
-          cond: ReturnType<typeof eq>
-        ) => { all: () => Promise<(typeof feedback.$inferSelect)[]> };
-      };
-
-      if (input.status) {
-        query = (query as any).where(eq(feedback.status, input.status));
-      }
-      if (input.type) {
-        query = (query as any).where(eq(feedback.type, input.type));
-      }
-
-      return query.all();
+        .limit(input.limit)
+        .all();
     }),
 
   // Admin: Update feedback status
