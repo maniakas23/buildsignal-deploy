@@ -1,0 +1,191 @@
+import { Link, useLocation } from "react-router-dom";
+import {
+  LayoutDashboard,
+  Target,
+  Bell,
+  MapPin,
+  FileText,
+  Eye,
+  Settings,
+  HelpCircle,
+  X,
+  Signal,
+} from "lucide-react";
+
+interface AppSidebarProps {
+  isMobileOpen: boolean;
+  onMobileClose: () => void;
+}
+
+interface NavItem {
+  label: string;
+  to: string;
+  icon: React.ComponentType<{
+    className?: string;
+    size?: number;
+    strokeWidth?: number;
+  }>;
+  ariaLabel: string;
+}
+
+const topNavItems: NavItem[] = [
+  {
+    label: "Dashboard",
+    to: "/dashboard",
+    icon: LayoutDashboard,
+    ariaLabel: "Navigate to Dashboard",
+  },
+  {
+    label: "Opportunities",
+    to: "/opportunities",
+    icon: Target,
+    ariaLabel: "Navigate to Opportunities",
+  },
+  {
+    label: "Alerts",
+    to: "/alerts",
+    icon: Bell,
+    ariaLabel: "Navigate to Alerts",
+  },
+  {
+    label: "Counties",
+    to: "/counties",
+    icon: MapPin,
+    ariaLabel: "Navigate to Counties",
+  },
+  {
+    label: "Reports",
+    to: "/reports",
+    icon: FileText,
+    ariaLabel: "Navigate to Reports",
+  },
+  {
+    label: "Watchlist",
+    to: "/watchlist",
+    icon: Eye,
+    ariaLabel: "Navigate to Watchlist",
+  },
+];
+
+const bottomNavItems: NavItem[] = [
+  {
+    label: "Settings",
+    to: "/settings",
+    icon: Settings,
+    ariaLabel: "Navigate to Settings",
+  },
+  {
+    label: "Help",
+    to: "/help",
+    icon: HelpCircle,
+    ariaLabel: "Navigate to Help",
+  },
+];
+
+export default function AppSidebar({
+  isMobileOpen,
+  onMobileClose,
+}: AppSidebarProps) {
+  const location = useLocation();
+
+  const isActive = (to: string) => {
+    if (to === "/counties") {
+      return (
+        location.pathname === "/counties" ||
+        location.pathname.startsWith("/counties/")
+      );
+    }
+    return location.pathname === to;
+  };
+
+  const handleNavClick = () => {
+    if (window.innerWidth < 768) {
+      onMobileClose();
+    }
+  };
+
+  return (
+    <aside
+      id="main-navigation"
+      className={`
+        fixed inset-y-0 left-0 z-50 w-[240px] transform bg-white shadow-2xl transition-transform duration-300 ease-in-out
+        ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
+        md:relative md:translate-x-0 md:shadow-none md:transition-none
+        flex flex-col border-r border-[#F5F5F5]
+      `}
+      role="navigation"
+      aria-label="Main navigation"
+    >
+      {/* Logo */}
+      <div className="flex items-center justify-between px-4 py-4">
+        <div className="flex items-center gap-2">
+          <Signal className="h-5 w-5 text-[#1F5EFF]" />
+          <span className="font-bold text-lg text-[#0B1F33]">
+            BuildSignal
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={onMobileClose}
+          className="md:hidden p-1 rounded-md text-[#0B1F33] hover:bg-[#F5F5F5] transition-colors duration-200 cursor-pointer"
+          aria-label="Close navigation menu"
+        >
+          <X className="h-5 w-5" />
+        </button>
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 flex flex-col px-3 py-2 gap-1">
+        {topNavItems.map((item) => {
+          const active = isActive(item.to);
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.to}
+              to={item.to}
+              aria-label={item.ariaLabel}
+              aria-current={active ? "page" : undefined}
+              className={`
+                flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold tracking-[0.5px] transition-colors duration-200 ease-out cursor-pointer
+                ${active
+                  ? "bg-[rgba(31,94,255,0.08)] text-[#1F5EFF]"
+                  : "text-[#0B1F33] hover:text-[#18A999] hover:bg-[rgba(24,169,153,0.04)]"
+                }
+              `}
+              onClick={handleNavClick}
+            >
+              <Icon className="h-[18px] w-[18px] shrink-0" size={18} />
+              <span>{item.label}</span>
+            </Link>
+          );
+        })}
+
+        <div className="my-2 h-px bg-[#F5F5F5]" role="separator" />
+
+        {bottomNavItems.map((item) => {
+          const active = isActive(item.to);
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.to}
+              to={item.to}
+              aria-label={item.ariaLabel}
+              aria-current={active ? "page" : undefined}
+              className={`
+                flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold tracking-[0.5px] transition-colors duration-200 ease-out cursor-pointer
+                ${active
+                  ? "bg-[rgba(31,94,255,0.08)] text-[#1F5EFF]"
+                  : "text-[#0B1F33] hover:text-[#18A999] hover:bg-[rgba(24,169,153,0.04)]"
+                }
+              `}
+              onClick={handleNavClick}
+            >
+              <Icon className="h-[18px] w-[18px] shrink-0" size={18} />
+              <span>{item.label}</span>
+            </Link>
+          );
+        })}
+      </nav>
+    </aside>
+  );
+}
