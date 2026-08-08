@@ -12,13 +12,15 @@ import { useEngineQuery, useEngineListQuery } from '@/hooks/useEngine';
 import { SkeletonGrid, SkeletonRow, ErrorState, EmptyState } from '@/components/ui-custom/EngineStates';
 import type { Zone, SurgeAlert, Pattern } from '@/types';
 import type { DashboardMetrics, Recommendation } from '@/signalcore/engine';
-import { Clock, BookOpen, FolderOpen, TrendingUp, MapPin, Zap, CheckCircle2, AlertTriangle, Eye, ArrowRight, Activity, Shield, Sparkles } from 'lucide-react';
+import { Clock, BookOpen, FolderOpen, TrendingUp, MapPin, Zap, CheckCircle2, AlertTriangle, Eye, ArrowRight, Activity, Shield, Sparkles, RefreshCw, Wifi, WifiOff } from 'lucide-react';
 import { OpportunityFeed } from '@/components/intelligence/OpportunityFeed';
 import { IntelligenceWorkspace } from '@/components/workspace/IntelligenceWorkspace';
 import { ExecutiveSummary } from '@/components/dashboard/ExecutiveSummary';
 import { SilentErrorBoundary } from '@/components/ErrorBoundary';
 // PI-5: Retention & engagement widgets
 import DashboardWidgets from '@/components/dashboard/DashboardWidgets';
+import { trpc } from '@/providers/trpc';
+import { useNavigate } from 'react-router-dom';
 
 const LIFECYCLE_STAGES: { id: string; label: string; color: string; bg: string }[] = [
   { id: 'new', label: 'New', color: 'text-ink-tertiary', bg: 'bg-ink-tertiary' },
@@ -70,6 +72,71 @@ function RecentlyViewed() {
         </div>
       </div>
     </section>
+  );
+}
+
+function DataFreshnessBanner() {
+  const { data: health, isLoading: healthLoading } = trpc.analytics.healthScore.useQuery();
+  const { data: countySummary, isLoading: countyLoading } = trpc.county.summary.useQuery();
+  const { data: patternList, isLoading: patternLoading } = trpc.pattern.list.useQuery();
+
+  const isLoading = healthLoading || countyLoading || patternLoading;
+  const hasData = !!(countySummary && countySummary.total > 0) || !!(patternList && patternList.patterns && patternList.patterns.length > 0);
+
+  const statusColor =
+    health?.status === 'healthy'
+      ? 'text-accent-teal'
+      : health?.status === 'degraded'
+        ? 'text-accent-amber'
+        : 'text-accent-crimson';
+
+  const statusBg =
+    health?.status === 'healthy'
+      ? 'bg-accent-teal/5 border-accent-teal/10'
+      : health?.status === 'degraded'
+        ? 'bg-accent-amber/5 border-accent-amber/10'
+        : 'bg-accent-crimson/5 border-accent-crimson/10';
+
+  return (
+    <div className={`${statusBg} border-y`}>
+      <div className="max-w-content mx-auto px-6 py-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+        {isLoading ? (
+          <span className="flex items-center gap-1.5 text-ink-tertiary">
+            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+            Checking data freshness…
+          </span>
+        ) : (
+          <>
+            <span className="flex items-center gap-1.5 text-ink-secondary">
+              {hasData ? (
+                <Wifi className={`w-3.5 h-3.5 ${statusColor}`} />
+              ) : (
+                <WifiOff className="w-3.5 h-3.5 text-ink-tertiary" />
+              )}
+              <span className={`font-medium ${statusColor}`}>
+                {health?.status === 'healthy' ? 'Data pipeline healthy' : health?.status === 'degraded' ? 'Data pipeline degraded' : hasData ? 'Data pipeline active' : 'No data ingested yet'}
+              </span>
+            </span>
+            {health && (
+              <>
+                <span className="w-px h-3 bg-ink-wash hidden sm:block" />
+                <span className="text-ink-tertiary">
+                  Provider health: <span className="font-medium text-ink-primary">{health.providerHealth}%</span>
+                </span>
+                <span className="w-px h-3 bg-ink-wash hidden sm:block" />
+                <span className="text-ink-tertiary">
+                  Coverage: <span className="font-medium text-ink-primary">{health.coverageHealth}%</span>
+                </span>
+              </>
+            )}
+            <span className="w-px h-3 bg-ink-wash hidden sm:block" />
+            <span className="text-ink-tertiary text-xs">
+              Last checked: {new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+            </span>
+          </>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -356,116 +423,166 @@ function TrustBar({ dashboard }: { dashboard: DashboardMetrics | null }) {
   );
 }
 
+function NoOpportunitiesEmptyState() {
+  const navigate = useNavigate();
+  return (
+    <div className="bg-surface border border-border rounded-2xl p-10 text-center max-w-content mx-auto">
+      <div className="w-16 h-16 rounded-full bg-canvas flex items-center justify-center mx-auto mb-4">
+        <MapPin className="w-8 h-8 text-ink-tertiary" />
+      </div>
+      <h3 className="text-lg font-semibold text-ink-primary mb-2">
+        No opportunities detected yet
+      </h3>
+      <p className="text-sm text-ink-secondary max-w-md mx-auto mb-6">
+        Opportunity analysis runs as new permit, zoning, and infrastructure data is ingested.
+        Once your monitored counties begin generating signals, opportunities will appear here automatically.
+      </p>
+      <button
+        onClick={() => navigate('/counties')}
+        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-accent-indigo text-white text-sm font-medium hover:bg-accent-indigo/90 transition-colors"
+      >
+        <MapPin className="w-4 h-4" />
+        Explore County Coverage
+      </button>
+    </div>
+  );
+}
+
 export default function OpportunityDashboard() {
   const { setCurrentPage } = useStore();
   const [selectedOpp, setSelectedOpp] = useState<number | null>(null);
   const { data: dashboard, state: dashState, error: dashError, refetch: dashRefetch } = useEngineQuery<DashboardMetrics>(fetchDashboard, []);
   const { data: recommendations, state: recState, error: recError, refetch: recRefetch } = useEngineListQuery(fetchRecommendations, []);
 
+  /* tRPC freshness queries */
+  const { data: countySummary } = trpc.county.summary.useQuery();
+  const { data: patternList } = trpc.pattern.list.useQuery();
+
+  /* Determine if we have any real backend data */
+  const hasRealData = !!(countySummary && countySummary.total > 0) || !!(patternList && patternList.patterns && patternList.patterns.length > 0);
+
+  /* Show honest empty state when engine returns empty AND tRPC confirms no backend data */
+  const showHonestEmpty = dashState === 'success' && recState === 'success' &&
+    (!dashboard || (dashboard.zones.length === 0 && dashboard.recentSurges.length === 0)) &&
+    (!recommendations || recommendations.length === 0) &&
+    !hasRealData;
+
   return (
     <div className="relative">
       <ExecutiveBrief dashboard={dashboard} dashState={dashState} onNavigate={setCurrentPage} />
       <TrustBar dashboard={dashboard} />
+      <DataFreshnessBanner />
 
-      {/* Executive Summary */}
-      <section className="max-w-content mx-auto px-6 pt-6" aria-label="Executive summary">
-        <SilentErrorBoundary>
-          <ExecutiveSummary onViewOpportunity={(id) => setSelectedOpp(id)} onViewAlerts={() => setCurrentPage('alerts')} />
-        </SilentErrorBoundary>
-      </section>
+      {/* Honest Empty State */}
+      {showHonestEmpty && (
+        <section className="max-w-content mx-auto px-6 py-10">
+          <NoOpportunitiesEmptyState />
+        </section>
+      )}
 
-      {/* Recommended Actions */}
-      <section className="max-w-content mx-auto px-6 pt-2 pb-4" aria-label="Recommended actions">
-        <SectionHeader title="Recommended Actions" subtitle="Highest-confidence opportunities based on your monitored areas" />
-        {(recState === 'loading' || recState === 'idle') && <SkeletonGrid count={3} />}
-        {recState === 'error' && <ErrorState message={recError || 'Failed to load recommendations'} onRetry={recRefetch} />}
-        {recState === 'success' && recommendations && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6" role="feed" aria-label="Recommendations">
-            {recommendations.length === 0 && (
-              <div className="col-span-full">
-                <EmptyState title="Analyzing your areas" message="SignalCore is processing permits, zoning changes, and utility filings. Recommendations typically appear within 24 hours." />
-                <div className="flex justify-center gap-3 mt-4">
-                  <button onClick={() => setCurrentPage('map')} className="px-4 py-2 rounded-lg bg-accent-indigo text-white text-sm font-medium hover:bg-accent-indigo/90 transition-colors">Explore the Map</button>
-                  <button onClick={() => setCurrentPage('projects')} className="px-4 py-2 rounded-lg bg-surface border border-ink-wash text-ink-secondary text-sm font-medium hover:bg-canvas transition-colors">Browse All Projects</button>
+      {!showHonestEmpty && (
+        <>
+          {/* Executive Summary */}
+          <section className="max-w-content mx-auto px-6 pt-6" aria-label="Executive summary">
+            <SilentErrorBoundary>
+              <ExecutiveSummary onViewOpportunity={(id) => setSelectedOpp(id)} onViewAlerts={() => setCurrentPage('alerts')} />
+            </SilentErrorBoundary>
+          </section>
+
+          {/* Recommended Actions */}
+          <section className="max-w-content mx-auto px-6 pt-2 pb-4" aria-label="Recommended actions">
+            <SectionHeader title="Recommended Actions" subtitle="Highest-confidence opportunities based on your monitored areas" />
+            {(recState === 'loading' || recState === 'idle') && <SkeletonGrid count={3} />}
+            {recState === 'error' && <ErrorState message={recError || 'Failed to load recommendations'} onRetry={recRefetch} />}
+            {recState === 'success' && recommendations && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6" role="feed" aria-label="Recommendations">
+                {recommendations.length === 0 && (
+                  <div className="col-span-full">
+                    <EmptyState title="Analyzing your areas" message="SignalCore is processing permits, zoning changes, and utility filings. Recommendations typically appear within 24 hours." />
+                    <div className="flex justify-center gap-3 mt-4">
+                      <button onClick={() => setCurrentPage('map')} className="px-4 py-2 rounded-lg bg-accent-indigo text-white text-sm font-medium hover:bg-accent-indigo/90 transition-colors">Explore the Map</button>
+                      <button onClick={() => setCurrentPage('projects')} className="px-4 py-2 rounded-lg bg-surface border border-ink-wash text-ink-secondary text-sm font-medium hover:bg-canvas transition-colors">Browse All Projects</button>
+                    </div>
+                  </div>
+                )}
+                {recommendations.map((rec, i) => (<RecommendationCard key={rec.id} rec={rec} index={i} />))}
+              </div>
+            )}
+          </section>
+
+          {/* Today's Activity Summary */}
+          <TodaySummary dashboard={dashboard} />
+
+          {/* Opportunities by Area */}
+          <section className="max-w-content mx-auto px-6 py-10">
+            <SectionHeader title="Opportunities by Area" subtitle="Live monitoring across all coverage areas" />
+            {(dashState === 'loading' || dashState === 'idle') && <SkeletonGrid count={4} />}
+            {dashState === 'error' && <ErrorState message={dashError || 'Failed to load zones'} onRetry={dashRefetch} />}
+            {dashState === 'success' && dashboard && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  {dashboard.zones.length === 0 && <EmptyState title="No coverage areas yet" message="BuildSignal is establishing coverage. Check back in 24 hours or contact support." />}
+                  {dashboard.zones.map((zone: Zone, i: number) => (<ZoneCard key={zone.id} zone={zone} index={i} />))}
+                </div>
+                <div className="bg-surface rounded-2xl p-5 shadow-card">
+                  <div className="flex items-center justify-between mb-4"><h3 className="text-base font-semibold text-ink-primary">Recent Activity</h3><ConfidenceBadge score={92} /></div>
+                  {dashboard.recentSurges.length === 0 && <EmptyState title="No activity detected" message="BuildSignal is monitoring for activity." icon="bell" />}
+                  <div className="divide-y divide-ink-wash">{dashboard.recentSurges.map((alert: SurgeAlert, i: number) => (<SurgeItem key={alert.id} alert={alert} index={i} />))}</div>
                 </div>
               </div>
             )}
-            {recommendations.map((rec, i) => (<RecommendationCard key={rec.id} rec={rec} index={i} />))}
-          </div>
-        )}
-      </section>
+          </section>
 
-      {/* Today's Activity Summary */}
-      <TodaySummary dashboard={dashboard} />
+          {/* Intelligence Summary */}
+          <section className="max-w-content mx-auto px-6 py-10 border-t border-ink-wash">
+            <SectionHeader title="Intelligence Summary" subtitle="Overview of current market conditions" />
+            {(dashState === 'loading' || dashState === 'idle') && <SkeletonRow />}
+            {dashState === 'error' && <ErrorState message="Failed to load summary" onRetry={dashRefetch} />}
+            {dashState === 'success' && dashboard?.summary && (
+              <div className="bg-surface rounded-2xl p-6 shadow-card">
+                <ConfidenceBadge score={91} />
+                <p className="text-base text-ink-secondary leading-relaxed mt-4">{dashboard.summary.content}</p>
+                <div className="flex items-center justify-between mt-6 pt-4 border-t border-ink-wash">
+                  <div className="flex items-center gap-2 text-xs text-ink-tertiary font-mono"><ClockIcon className="w-3.5 h-3.5" />Last updated: {new Date(dashboard.summary.generatedAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</div>
+                  <button onClick={() => setCurrentPage('summary')} className="btn-secondary">View Full Report</button>
+                </div>
+              </div>
+            )}
+          </section>
 
-      {/* Opportunities by Area */}
-      <section className="max-w-content mx-auto px-6 py-10">
-        <SectionHeader title="Opportunities by Area" subtitle="Live monitoring across all coverage areas" />
-        {(dashState === 'loading' || dashState === 'idle') && <SkeletonGrid count={4} />}
-        {dashState === 'error' && <ErrorState message={dashError || 'Failed to load zones'} onRetry={dashRefetch} />}
-        {dashState === 'success' && dashboard && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              {dashboard.zones.length === 0 && <EmptyState title="No coverage areas yet" message="BuildSignal is establishing coverage. Check back in 24 hours or contact support." />}
-              {dashboard.zones.map((zone: Zone, i: number) => (<ZoneCard key={zone.id} zone={zone} index={i} />))}
+          {/* Growth Patterns */}
+          <section className="bg-canvas border-t border-ink-wash">
+            <div className="max-w-content mx-auto px-6 py-10">
+              <SectionHeader title="Growth Patterns" subtitle="Validated patterns that predict development activity" />
+              {(dashState === 'loading' || dashState === 'idle') && <SkeletonGrid count={3} />}
+              {dashState === 'error' && <ErrorState message="Failed to load patterns" onRetry={dashRefetch} />}
+              {dashState === 'success' && dashboard && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {dashboard.patterns.length === 0 && <EmptyState title="No growth patterns active" />}
+                  {dashboard.patterns.slice(0, 3).map((pattern: Pattern, i: number) => (<PatternCard key={pattern.id} pattern={pattern} index={i} />))}
+                </div>
+              )}
             </div>
-            <div className="bg-surface rounded-2xl p-5 shadow-card">
-              <div className="flex items-center justify-between mb-4"><h3 className="text-base font-semibold text-ink-primary">Recent Activity</h3><ConfidenceBadge score={92} /></div>
-              {dashboard.recentSurges.length === 0 && <EmptyState title="No activity detected" message="BuildSignal is monitoring for activity." icon="bell" />}
-              <div className="divide-y divide-ink-wash">{dashboard.recentSurges.map((alert: SurgeAlert, i: number) => (<SurgeItem key={alert.id} alert={alert} index={i} />))}</div>
-            </div>
-          </div>
-        )}
-      </section>
+          </section>
 
-      {/* Intelligence Summary */}
-      <section className="max-w-content mx-auto px-6 py-10 border-t border-ink-wash">
-        <SectionHeader title="Intelligence Summary" subtitle="Overview of current market conditions" />
-        {(dashState === 'loading' || dashState === 'idle') && <SkeletonRow />}
-        {dashState === 'error' && <ErrorState message="Failed to load summary" onRetry={dashRefetch} />}
-        {dashState === 'success' && dashboard?.summary && (
-          <div className="bg-surface rounded-2xl p-6 shadow-card">
-            <ConfidenceBadge score={91} />
-            <p className="text-base text-ink-secondary leading-relaxed mt-4">{dashboard.summary.content}</p>
-            <div className="flex items-center justify-between mt-6 pt-4 border-t border-ink-wash">
-              <div className="flex items-center gap-2 text-xs text-ink-tertiary font-mono"><ClockIcon className="w-3.5 h-3.5" />Last updated: {new Date(dashboard.summary.generatedAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</div>
-              <button onClick={() => setCurrentPage('summary')} className="btn-secondary">View Full Report</button>
-            </div>
-          </div>
-        )}
-      </section>
+          {/* Onboarding Checklist */}
+          <section className="max-w-content mx-auto px-6 pt-6"><OnboardingChecklist /></section>
 
-      {/* Growth Patterns */}
-      <section className="bg-canvas border-t border-ink-wash">
-        <div className="max-w-content mx-auto px-6 py-10">
-          <SectionHeader title="Growth Patterns" subtitle="Validated patterns that predict development activity" />
-          {(dashState === 'loading' || dashState === 'idle') && <SkeletonGrid count={3} />}
-          {dashState === 'error' && <ErrorState message="Failed to load patterns" onRetry={dashRefetch} />}
-          {dashState === 'success' && dashboard && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {dashboard.patterns.length === 0 && <EmptyState title="No growth patterns active" />}
-              {dashboard.patterns.slice(0, 3).map((pattern: Pattern, i: number) => (<PatternCard key={pattern.id} pattern={pattern} index={i} />))}
-            </div>
-          )}
-        </div>
-      </section>
+          {/* Recently Viewed */}
+          <RecentlyViewed />
 
-      {/* Onboarding Checklist */}
-      <section className="max-w-content mx-auto px-6 pt-6"><OnboardingChecklist /></section>
+          {/* PI-5: Retention & Engagement Widgets */}
+          <section className="max-w-content mx-auto px-6">
+            <DashboardWidgets />
+          </section>
 
-      {/* Recently Viewed */}
-      <RecentlyViewed />
-
-      {/* PI-5: Retention & Engagement Widgets */}
-      <section className="max-w-content mx-auto px-6">
-        <DashboardWidgets />
-      </section>
-
-      {/* Intelligence Feed */}
-      <section className="max-w-content mx-auto px-6 py-10 border-t border-ink-wash">
-        <div className="flex items-center gap-3 mb-2"><Sparkles className="w-5 h-5 text-accent-indigo" /><div><SectionHeader title="Intelligence Feed" subtitle="Ranked opportunities with full context and explainability" /></div></div>
-        <OpportunityFeed limit={5} onSelectOpportunity={(opp) => { setSelectedOpp(opp.id); }} />
-      </section>
+          {/* Intelligence Feed */}
+          <section className="max-w-content mx-auto px-6 py-10 border-t border-ink-wash">
+            <div className="flex items-center gap-3 mb-2"><Sparkles className="w-5 h-5 text-accent-indigo" /><div><SectionHeader title="Intelligence Feed" subtitle="Ranked opportunities with full context and explainability" /></div></div>
+            <OpportunityFeed limit={5} onSelectOpportunity={(opp) => { setSelectedOpp(opp.id); }} />
+          </section>
+        </>
+      )}
 
       {/* Intelligence Workspace */}
       {selectedOpp && (
