@@ -1,6 +1,9 @@
 # Redirect www to apex domain (SEO)
 www.buildsignal.net/*  buildsignal.net/:splat  301
 
+# API proxy — forward all API calls to the backend Worker
+/api/*  https://api.buildsignal.net/api/:splat  200
+
 # Static assets — serve directly, do not redirect to index.html
 /robots.txt  /robots.txt  200
 /sitemap.xml  /sitemap.xml  200
@@ -9,5 +12,5 @@ www.buildsignal.net/*  buildsignal.net/:splat  301
 /favicon.svg  /favicon.svg  200
 /og-image.svg  /og-image.svg  200
 
-# BuildSignal SPA Routing — redirect all paths to index.html for client-side routing
+# BuildSignal SPA Routing — redirect all remaining paths to index.html for client-side routing
 /*    /index.html   200
