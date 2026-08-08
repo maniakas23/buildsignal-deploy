@@ -1,142 +1,128 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import {
-  ArrowRight,
-  TrendingUp,
-  Zap,
-  Shield,
-  Building2,
-  BarChart3,
-  Brain,
-  MapPin,
-  Briefcase,
-  Landmark,
-  HardHat,
-  Globe,
-  FileText,
-  Plug,
-  CheckCircle,
-  Target,
-  LineChart,
-  Sparkles,
-  ArrowUpRight,
-  Database,
-  BrainCircuit,
-} from "lucide-react";
 import { NewsletterSignup } from "@/components/marketing/NewsletterSignup";
 import { Footer } from "@/components/ui-custom/Footer";
+import {
+  MapPin,
+  SlidersHorizontal,
+  BarChart3,
+  Globe,
+  Building2,
+  Brain,
+  Users,
+  TrendingUp,
+  FileText,
+  Briefcase,
+  Target,
+  CheckCircle,
+  Shield,
+  Lock,
+  ArrowRight,
+  ArrowUpRight,
+  Zap,
+  Database,
+  Mail,
+  Phone,
+  AlertTriangle,
+  Sparkles,
+} from "lucide-react";
 
-/* ------------------------------------------------------------------ */
-/*  Main Page                                                          */
-/* ------------------------------------------------------------------ */
 export function Home() {
   const navigate = useNavigate();
 
-  /* ---- Use cases ---- */
-  const useCases = [
-    {
-      title: "Commercial Real Estate Developers",
-      description:
-        "Spot emerging submarkets before land prices surge. Track permit velocity, zoning changes, and infrastructure investments across your target regions.",
-      icon: Building2,
-    },
-    {
-      title: "Land Investors",
-      description:
-        "Identify counties with accelerating construction activity. Get early signals on where demand is heating up so you can acquire ahead of the curve.",
-      icon: Target,
-    },
-    {
-      title: "Site Selection Consultants",
-      description:
-        "Deliver data-backed location recommendations with confidence scores. Compare markets on growth trajectory, labor availability, and regulatory climate.",
-      icon: Globe,
-    },
-    {
-      title: "Commercial Brokers",
-      description:
-        "Know which markets are primed for leasing activity before your competitors. Use permit data to time your outreach and win more listings.",
-      icon: Briefcase,
-    },
-    {
-      title: "Economic Development Orgs",
-      description:
-        "Benchmark your region against peer counties. Track investment flows, sector growth, and competitive positioning with automated dashboards.",
-      icon: Landmark,
-    },
-    {
-      title: "Engineering Firms",
-      description:
-        "Anticipate where new projects will need design and consulting services. Align your business development with markets showing the strongest growth signals.",
-      icon: HardHat,
-    },
-  ];
-
-  /* ---- How it works steps ---- */
+  /* ---- How BuildSignal works steps ---- */
   const steps = [
     {
       number: "01",
-      title: "Connect Your Markets",
+      title: "Capture",
       description:
-        "Select the counties, metros, and asset classes you care about. Customize alert thresholds and report frequency to match your workflow.",
+        "Select counties, metros, and asset classes. Our system monitors municipal permits, zoning filings, and infrastructure investments across your target markets.",
       icon: MapPin,
     },
     {
       number: "02",
-      title: "AI Analyzes Patterns",
+      title: "Filter",
       description:
-        "Our machine learning models process permit data, zoning filings, infrastructure spend, and demographic shifts in real time.",
-      icon: Brain,
+        "Apply intelligent filters by permit type, project value, timeline, and geography. Set custom alert thresholds to surface only the opportunities that match your strategy.",
+      icon: SlidersHorizontal,
     },
     {
       number: "03",
-      title: "Get Actionable Insights",
+      title: "Present",
       description:
-        "Receive reports with confidence scores, trend visualizations, and clear next steps. Export to PDF, share with your team, or integrate via API.",
-      icon: LineChart,
+        "Receive actionable reports with confidence scores, trend visualizations, and clear next steps. Export to PDF, share with your team, or integrate via API.",
+      icon: BarChart3,
     },
   ];
 
-  /* ---- Features ---- */
-  const features = [
+  /* ---- Platform capabilities ---- */
+  const capabilities = [
     {
-      title: "Real-Time Permit Tracking",
+      title: "County Coverage",
       description:
-        "Monitor building permits across US counties as they're filed. Filter by type, value, and geography.",
-      icon: TrendingUp,
+        "Monitor construction activity across all US counties with daily data aggregation and automated coverage expansion.",
+      icon: Globe,
     },
     {
-      title: "Predictive Market Analytics",
+      title: "Permit Tracking",
       description:
-        "Machine learning models forecast where construction will surge 3-6 months before it shows up in traditional data.",
+        "Track municipal building permits in real time. Filter by type, value, and geography to find relevant opportunities.",
+      icon: Building2,
+    },
+    {
+      title: "AI Predictions",
+      description:
+        "Machine learning models forecast construction surges with confidence scores. Methodology documented and transparent.",
       icon: Brain,
     },
     {
-      title: "Early Trend Detection",
+      title: "User Analytics",
       description:
-        "Identify market inflection points before your competitors. Spot zoning changes, infrastructure investments, and permit accelerations.",
-      icon: Zap,
+        "Per-account metrics and reporting dashboards. Track your research activity, saved searches, and team engagement.",
+      icon: Users,
     },
     {
-      title: "Bank-Grade Security",
+      title: "ROI Tools",
       description:
-        "SSO, SAML 2.0, SOC 2 Type II compliance, and audit-ready access controls. Your data is encrypted at rest and in transit.",
-      icon: Shield,
+        "Investment analysis and market comparison tools. Evaluate opportunity costs and projected returns across target regions.",
+      icon: TrendingUp,
     },
     {
-      title: "Seamless Integrations",
+      title: "Reports",
       description:
-        "REST API, webhooks, and native integrations with Salesforce, HubSpot, and your existing BI tools.",
-      icon: Plug,
-    },
-    {
-      title: "Executive Briefings",
-      description:
-        "Generate polished PDF and PowerPoint reports with one click. Custom branding, charts, and narrative summaries included.",
+        "Generate polished PDF and API exports with one click. Custom branding, charts, and narrative summaries included.",
       icon: FileText,
+    },
+  ];
+
+  /* ---- Use cases ---- */
+  const useCases = [
+    {
+      title: "Commercial Real Estate",
+      description:
+        "Spot emerging submarkets before land prices surge. Track permit velocity, zoning changes, and infrastructure investments across your target regions to identify development opportunities early.",
+      icon: Building2,
+    },
+    {
+      title: "Site Selection",
+      description:
+        "Deliver data-backed location recommendations with confidence scores. Compare markets on growth trajectory, labor availability, and regulatory climate to make informed decisions.",
+      icon: MapPin,
+    },
+    {
+      title: "Land Investors",
+      description:
+        "Identify counties with accelerating construction activity. Get early signals on where demand is heating up so you can acquire ahead of the curve and maximize returns.",
+      icon: Target,
+    },
+    {
+      title: "Commercial Brokers",
+      description:
+        "Know which markets are primed for leasing activity before your competitors. Use permit data to time your outreach and win more listings in high-growth areas.",
+      icon: Briefcase,
     },
   ];
 
@@ -146,8 +132,14 @@ export function Home() {
       name: "Scout",
       price: "$99",
       period: "/mo",
-      description: "Perfect for individual investors and small teams exploring new markets.",
-      features: ["5 counties", "Weekly email reports", "Basic predictions", "Email support"],
+      description:
+        "Perfect for individual investors and small teams exploring new markets.",
+      features: [
+        "5 counties",
+        "Weekly email reports",
+        "Basic predictions",
+        "Email support",
+      ],
       cta: "Start Free Trial",
       highlighted: false,
     },
@@ -155,7 +147,8 @@ export function Home() {
       name: "Professional",
       price: "$249",
       period: "/mo",
-      description: "For growing teams that need deeper intelligence and more coverage.",
+      description:
+        "For growing teams that need deeper intelligence and more coverage.",
       features: [
         "25 counties",
         "Daily alerts + weekly briefings",
@@ -170,7 +163,8 @@ export function Home() {
       name: "Business",
       price: "$599",
       period: "/mo",
-      description: "Built for organizations managing multi-market portfolios at scale.",
+      description:
+        "Built for organizations managing multi-market portfolios at scale.",
       features: [
         "Unlimited counties",
         "Real-time alerts",
@@ -182,309 +176,113 @@ export function Home() {
       cta: "Start Free Trial",
       highlighted: false,
     },
-    {
-      name: "Enterprise",
-      price: "Custom",
-      period: "",
-      description: "Tailored deployments for large enterprises with custom data needs.",
-      features: [
-        "Everything in Business",
-        "Custom data integrations",
-        "White-label reports",
-        "On-premise option",
-        "SLA guarantees",
-        "24/7 phone support",
-      ],
-      cta: "Talk to Sales",
-      highlighted: false,
-    },
   ];
 
   return (
-    <div className="space-y-0">
+    <div className="min-h-screen bg-white font-sans motion-reduce:transition-none">
       {/* ============================================================= */}
       {/*  HERO                                                         */}
       {/* ============================================================= */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-background to-muted/30 py-20 md:py-28">
-        <div className="container mx-auto px-4 text-center space-y-8">
-          <Badge variant="secondary" className="text-sm px-4 py-1.5 rounded-full">
-            <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-            Infrastructure Intelligence Platform
-          </Badge>
+      <section className="bg-white py-12 md:py-20">
+        <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
+          <div className="max-w-3xl space-y-6">
+            <div className="inline-flex items-center gap-2 rounded-full bg-[#F5F5F5] px-3 py-1.5">
+              <Sparkles className="h-3.5 w-3.5 text-[#1F5EFF]" />
+              <span className="text-[12px] font-semibold uppercase tracking-[0.5px] text-[#333333]">
+                Infrastructure Intelligence Platform
+              </span>
+            </div>
 
-          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight max-w-4xl mx-auto leading-tight">
-            Predict Construction Surges{" "}
-            <span className="text-primary">Before Your Competitors</span>
-          </h1>
+            <h1 className="text-[32px] font-bold leading-tight tracking-tight text-[#0B1F33] md:text-[42px]">
+              Predict Construction Surges Before Your Competitors
+            </h1>
 
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            AI-powered infrastructure intelligence for construction markets. Get
-            actionable permit insights, growth forecasts, and market
-            opportunities delivered to your inbox.
-          </p>
+            <p className="max-w-2xl text-[16px] leading-[1.5] text-[#333333]">
+              AI-powered infrastructure intelligence for construction markets.
+              Get actionable permit insights, growth forecasts, and market
+              opportunities delivered to your inbox.
+            </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
-            <Button
-              size="lg"
-              onClick={() => navigate("/signup")}
-              className="gap-2 text-base px-8 py-6"
-            >
-              Start Your Free Trial
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={() => navigate("/pricing")}
-              className="text-base px-8 py-6"
-            >
-              View Pricing
-            </Button>
-          </div>
+            <div className="flex flex-col sm:flex-row items-start gap-4 pt-2">
+              <Button
+                onClick={() => navigate("/signup")}
+                className="cursor-pointer rounded-[4px] bg-[#1F5EFF] px-6 py-3 text-[14px] font-semibold text-white transition-all duration-200 ease-out hover:scale-105 hover:bg-[#1F5EFF]/90 active:scale-95"
+              >
+                Start Your Free Trial
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+              <Button
+                onClick={() => navigate("/pricing")}
+                className="cursor-pointer rounded-[4px] border border-[#0B1F33] bg-white px-6 py-3 text-[14px] font-semibold text-[#0B1F33] transition-all duration-200 ease-out hover:bg-[#F5F5F5] active:scale-95"
+              >
+                View Pricing
+              </Button>
+            </div>
 
-          {/* Trust badge */}
-          <div className="pt-4 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-            <Shield className="h-4 w-4 text-green-500" />
-            <span>SOC 2 Type II Certified · 256-bit Encryption</span>
-          </div>
-
-          {/* Visual hint */}
-          <div className="pt-8 flex justify-center">
-            <div className="flex flex-wrap items-center justify-center gap-6 text-muted-foreground/60 text-sm">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-primary" />
+            <div className="flex flex-wrap items-center gap-4 pt-2">
+              <div className="flex items-center gap-1.5 text-[14px] text-[#333333]">
+                <CheckCircle className="h-4 w-4 text-[#18A999]" />
                 <span>No credit card required</span>
               </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-primary" />
+              <div className="flex items-center gap-1.5 text-[14px] text-[#333333]">
+                <CheckCircle className="h-4 w-4 text-[#18A999]" />
                 <span>14-day free trial</span>
               </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-primary" />
+              <div className="flex items-center gap-1.5 text-[14px] text-[#333333]">
+                <CheckCircle className="h-4 w-4 text-[#18A999]" />
                 <span>Cancel anytime</span>
               </div>
+            </div>
+
+            <div className="flex items-center gap-2 pt-2">
+              <Shield className="h-4 w-4 text-[#18A999]" />
+              <span className="text-[12px] font-semibold uppercase tracking-[0.5px] text-[#333333]">
+                SOC 2 Type II Certified · 256-bit Encryption
+              </span>
             </div>
           </div>
         </div>
       </section>
 
-      <Separator />
+      <div className="h-px bg-[#F5F5F5]" />
 
       {/* ============================================================= */}
-      {/*  PLATFORM IN ACTION — Evidence-based trust signals              */}
+      {/*  HOW BUILDSIGNAL WORKS                                        */}
       {/* ============================================================= */}
-      <section className="py-20 bg-muted/20">
-        <div className="container mx-auto px-4">
-          <div className="text-center space-y-4 mb-14">
-            <Badge variant="outline" className="text-xs uppercase tracking-wider">
-              Platform in Action
-            </Badge>
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-              See What BuildSignal Delivers
-            </h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">
-              Real intelligence, transparent methodology, and measurable outcomes.
-              No fictional quotes. No invented customers. Just the platform.
-            </p>
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {/* Card 1: Data Coverage */}
-            <Card className="hover:shadow-lg transition-shadow flex flex-col">
-              <CardContent className="p-6 flex flex-col flex-1">
-                <div className="mb-4">
-                  <Database className="h-6 w-6 text-primary/40" />
-                </div>
-                <h3 className="font-semibold text-sm mb-2">Nationwide Data Coverage</h3>
-                <p className="text-sm leading-relaxed flex-1 mb-4 text-muted-foreground">
-                  Multi-county monitoring with daily data aggregation. Municipal permit tracking across target markets. Coverage expands regularly.
-                </p>
-                <div className="text-xs text-muted-foreground border-t pt-3">
-                  Status: Active data aggregation
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Card 2: AI Methodology */}
-            <Card className="hover:shadow-lg transition-shadow flex flex-col">
-              <CardContent className="p-6 flex flex-col flex-1">
-                <div className="mb-4">
-                  <BrainCircuit className="h-6 w-6 text-primary/40" />
-                </div>
-                <h3 className="font-semibold text-sm mb-2">Transparent AI Methodology</h3>
-                <p className="text-sm leading-relaxed flex-1 mb-4 text-muted-foreground">
-                  Every prediction includes a confidence score. Model performance published monthly. No black boxes. Full methodology documentation available.
-                </p>
-                <div className="text-xs text-muted-foreground border-t pt-3">
-                  Confidence scores: 0-100% on every prediction
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Card 3: Security */}
-            <Card className="hover:shadow-lg transition-shadow flex flex-col">
-              <CardContent className="p-6 flex flex-col flex-1">
-                <div className="mb-4">
-                  <Shield className="h-6 w-6 text-primary/40" />
-                </div>
-                <h3 className="font-semibold text-sm mb-2">Enterprise-Grade Security</h3>
-                <p className="text-sm leading-relaxed flex-1 mb-4 text-muted-foreground">
-                  SOC 2 Type II certified. 256-bit AES encryption. SSO & SAML 2.0 support. Your data is never sold or shared with third parties.
-                </p>
-                <div className="text-xs text-muted-foreground border-t pt-3">
-                  Certifications: SOC 2 Type II, ISO 27001 aligned
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Card 4: Sample Report */}
-            <Card className="hover:shadow-lg transition-shadow flex flex-col cursor-pointer" onClick={() => navigate('/reports-hub')}>
-              <CardContent className="p-6 flex flex-col flex-1">
-                <div className="mb-4">
-                  <FileText className="h-6 w-6 text-primary/40" />
-                </div>
-                <h3 className="font-semibold text-sm mb-2">View a Sample Report</h3>
-                <p className="text-sm leading-relaxed flex-1 mb-4 text-muted-foreground">
-                  See real opportunity analysis, confidence scores, market trends, and clear next steps. No account required to preview.
-                </p>
-                <div className="text-xs text-primary font-medium pt-3 flex items-center gap-1">
-                  Preview sample report <ArrowUpRight className="h-3 w-3" />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      <Separator />
-
-      {/* ============================================================= */}
-      {/*  USE CASES                                                    */}
-      {/* ============================================================= */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="text-center space-y-4 mb-14">
-            <Badge variant="outline" className="text-xs uppercase tracking-wider">
-              Who It&apos;s For
-            </Badge>
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-              Built for Every Player in the Construction Ecosystem
-            </h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">
-              Whether you&apos;re acquiring land, advising clients, or planning
-              infrastructure, BuildSignal gives you the intelligence edge.
-            </p>
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {useCases.map((uc) => (
-              <Card
-                key={uc.title}
-                className="hover:shadow-md transition-shadow group"
-              >
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
-                      <uc.icon className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="space-y-2">
-                      <h3 className="font-semibold">{uc.title}</h3>
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        {uc.description}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <Separator />
-
-      {/* ============================================================= */}
-      {/*  PLATFORM CAPABILITIES — Factual, no unverified statistics      */}
-      {/* ============================================================= */}
-      <section className="py-20 bg-muted/20">
-        <div className="container mx-auto px-4">
-          <div className="text-center space-y-4 mb-14">
-            <Badge variant="outline" className="text-xs uppercase tracking-wider">
-              Platform Capabilities
-            </Badge>
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-              What BuildSignal Delivers
-            </h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">
-              Core capabilities of the platform. Actual coverage and performance metrics are available to authenticated users.
-            </p>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
-            {[
-              { icon: MapPin, label: "County Coverage", desc: "Multi-county monitoring with daily updates" },
-              { icon: Building2, label: "Permit Tracking", desc: "Municipal permit data aggregation" },
-              { icon: Brain, label: "AI Predictions", desc: "Confidence-scored forecasting models" },
-              { icon: BarChart3, label: "User Analytics", desc: "Per-account metrics and reporting" },
-              { icon: TrendingUp, label: "ROI Tools", desc: "Investment analysis and comparison" },
-              { icon: FileText, label: "Reports", desc: "PDF and API export capabilities" },
-            ].map((cap) => (
-              <Card key={cap.label} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-6 text-center">
-                  <cap.icon className="h-8 w-8 text-primary mx-auto mb-3" />
-                  <div className="text-sm font-semibold">{cap.label}</div>
-                  <div className="text-xs text-muted-foreground mt-1">{cap.desc}</div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <Separator />
-
-      {/* ============================================================= */}
-      {/*  HOW IT WORKS                                                 */}
-      {/* ============================================================= */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="text-center space-y-4 mb-14">
-            <Badge variant="outline" className="text-xs uppercase tracking-wider">
-              How It Works
-            </Badge>
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
+      <section className="bg-white py-12 md:py-16">
+        <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
+          <div className="mb-10 space-y-3">
+            <span className="text-[12px] font-semibold uppercase tracking-[0.5px] text-[#333333]">
+              How BuildSignal Works
+            </span>
+            <h2 className="text-[24px] font-semibold text-[#0B1F33]">
               From Data to Decision in Three Steps
             </h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">
-              No complex setup. No data science team required. Start getting
-              insights in minutes.
-            </p>
           </div>
 
           <div className="grid gap-8 md:grid-cols-3">
             {steps.map((step, idx) => (
               <div key={step.number} className="relative">
-                {/* Connector line (desktop only) */}
+                {/* Connector line between steps */}
                 {idx < steps.length - 1 && (
-                  <div className="hidden md:block absolute top-12 left-[60%] w-[80%] h-px bg-border" />
+                  <div className="hidden md:block absolute top-6 left-[calc(100%-16px)] w-[calc(100%-32px)] h-[2px] bg-[#F5F5F5]" />
                 )}
 
-                <div className="text-center space-y-6">
-                  <div className="relative inline-flex items-center justify-center">
-                    <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
-                      <step.icon className="h-7 w-7 text-primary" />
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-[8px] bg-[#F5F5F5]">
+                      <step.icon className="h-5 w-5 text-[#0B1F33]" />
                     </div>
-                    <div className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#1F5EFF] text-[12px] font-bold text-white font-mono">
                       {step.number}
                     </div>
                   </div>
-
-                  <div className="space-y-3">
-                    <h3 className="text-xl font-bold">{step.title}</h3>
-                    <p className="text-muted-foreground text-sm leading-relaxed max-w-xs mx-auto">
-                      {step.description}
-                    </p>
-                  </div>
+                  <h3 className="text-[18px] font-semibold text-[#0B1F33]">
+                    {step.title}
+                  </h3>
+                  <p className="text-[16px] leading-[1.5] text-[#333333]">
+                    {step.description}
+                  </p>
                 </div>
               </div>
             ))}
@@ -492,39 +290,39 @@ export function Home() {
         </div>
       </section>
 
-      <Separator />
+      <div className="h-px bg-[#F5F5F5]" />
 
       {/* ============================================================= */}
-      {/*  FEATURES                                                     */}
+      {/*  PLATFORM CAPABILITIES                                        */}
       {/* ============================================================= */}
-      <section className="py-20 bg-muted/20">
-        <div className="container mx-auto px-4">
-          <div className="text-center space-y-4 mb-14">
-            <Badge variant="outline" className="text-xs uppercase tracking-wider">
-              Features
-            </Badge>
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-              Everything You Need to Win Markets
+      <section className="bg-[#F5F5F5] py-12 md:py-16">
+        <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
+          <div className="mb-10 space-y-3">
+            <span className="text-[12px] font-semibold uppercase tracking-[0.5px] text-[#333333]">
+              Platform Capabilities
+            </span>
+            <h2 className="text-[24px] font-semibold text-[#0B1F33]">
+              What BuildSignal Delivers
             </h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">
-              A complete intelligence platform designed for professionals who
-              move fast and think ahead.
+            <p className="max-w-xl text-[16px] leading-[1.5] text-[#333333]">
+              Core capabilities of the platform. Actual coverage and performance
+              metrics are available to authenticated users.
             </p>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {features.map((feature) => (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {capabilities.map((cap) => (
               <Card
-                key={feature.title}
-                className="hover:shadow-md transition-shadow group"
+                key={cap.title}
+                className="cursor-pointer rounded-[8px] border border-[#E5E5E5] bg-white p-4 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md"
               >
-                <CardContent className="p-6">
-                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                    <feature.icon className="h-5 w-5 text-primary" />
-                  </div>
-                  <h3 className="font-semibold mb-2">{feature.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {feature.description}
+                <CardContent className="p-0 space-y-3">
+                  <cap.icon className="h-5 w-5 text-[#0B1F33]" />
+                  <h3 className="text-[18px] font-semibold text-[#0B1F33]">
+                    {cap.title}
+                  </h3>
+                  <p className="text-[16px] leading-[1.5] text-[#333333]">
+                    {cap.description}
                   </p>
                 </CardContent>
               </Card>
@@ -533,76 +331,320 @@ export function Home() {
         </div>
       </section>
 
-      <Separator />
+      <div className="h-px bg-[#F5F5F5]" />
 
       {/* ============================================================= */}
-      {/*  PRICING TEASER                                               */}
+      {/*  USE CASES                                                    */}
       {/* ============================================================= */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="text-center space-y-4 mb-14">
-            <Badge variant="outline" className="text-xs uppercase tracking-wider">
-              Pricing
-            </Badge>
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-              Simple Pricing, Powerful Results
+      <section className="bg-white py-12 md:py-16">
+        <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
+          <div className="mb-10 space-y-3">
+            <span className="text-[12px] font-semibold uppercase tracking-[0.5px] text-[#333333]">
+              Use Cases
+            </span>
+            <h2 className="text-[24px] font-semibold text-[#0B1F33]">
+              Built for Every Player in the Construction Ecosystem
             </h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">
-              Start with a 14-day free trial. No credit card required. Upgrade or
-              cancel anytime.
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            {useCases.map((uc) => (
+              <Card
+                key={uc.title}
+                className="cursor-pointer rounded-[8px] border border-[#E5E5E5] bg-white p-4 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md"
+              >
+                <CardContent className="p-0 flex items-start gap-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[8px] bg-[#F5F5F5]">
+                    <uc.icon className="h-5 w-5 text-[#0B1F33]" />
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-[18px] font-semibold text-[#0B1F33]">
+                      {uc.title}
+                    </h3>
+                    <p className="text-[16px] leading-[1.5] text-[#333333]">
+                      {uc.description}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <div className="h-px bg-[#F5F5F5]" />
+
+      {/* ============================================================= */}
+      {/*  PLATFORM IN ACTION — Dashboard Mockup                        */}
+      {/* ============================================================= */}
+      <section className="bg-[#F5F5F5] py-12 md:py-16">
+        <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
+          <div className="mb-10 space-y-3">
+            <span className="text-[12px] font-semibold uppercase tracking-[0.5px] text-[#333333]">
+              Platform in Action
+            </span>
+            <h2 className="text-[24px] font-semibold text-[#0B1F33]">
+              See What BuildSignal Delivers
+            </h2>
+            <p className="max-w-xl text-[16px] leading-[1.5] text-[#333333]">
+              A preview of the intelligence dashboard. All data shown is sample
+              data for demonstration purposes.
             </p>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-[8px] border border-[#E5E5E5] bg-white p-4 shadow-sm md:p-6">
+            {/* Dashboard header */}
+            <div className="mb-6 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+              <div>
+                <h3 className="text-[18px] font-semibold text-[#0B1F33]">
+                  Market Overview
+                </h3>
+                <p className="text-[14px] text-[#333333]">
+                  Sample dashboard preview
+                </p>
+              </div>
+              <div className="inline-flex items-center gap-1.5 self-start rounded-[4px] bg-[#F4A261]/15 px-2 py-1">
+                <AlertTriangle className="h-3.5 w-3.5 text-[#F4A261]" />
+                <span className="text-[12px] font-semibold uppercase tracking-[0.5px] text-[#F4A261]">
+                  Sample
+                </span>
+              </div>
+            </div>
+
+            {/* Stat cards */}
+            <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                {
+                  label: "Active Permits",
+                  value: "1,247",
+                  change: "+12%",
+                  up: true,
+                },
+                {
+                  label: "Forecasted Surge",
+                  value: "3",
+                  change: "Next 90 days",
+                  up: true,
+                },
+                {
+                  label: "Counties Monitored",
+                  value: "18",
+                  change: "Of 25 max",
+                  up: null,
+                },
+                {
+                  label: "Confidence Score",
+                  value: "87%",
+                  change: "Avg. this week",
+                  up: null,
+                },
+              ].map((stat) => (
+                <div
+                  key={stat.label}
+                  className="rounded-[4px] border border-[#E5E5E5] bg-white p-4"
+                >
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-[12px] font-semibold uppercase tracking-[0.5px] text-[#333333]">
+                      {stat.label}
+                    </span>
+                    <span className="rounded-[4px] bg-[#F5F5F5] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.5px] text-[#333333]">
+                      Sample
+                    </span>
+                  </div>
+                  <div className="font-mono text-[24px] font-medium text-[#0B1F33]">
+                    {stat.value}
+                  </div>
+                  <div
+                    className={`text-[12px] font-semibold ${
+                      stat.up === true
+                        ? "text-[#18A999]"
+                        : stat.up === false
+                          ? "text-[#D32F2F]"
+                          : "text-[#333333]"
+                    }`}
+                  >
+                    {stat.change}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Chart area + alert */}
+            <div className="grid gap-4 lg:grid-cols-3">
+              {/* Chart mockup */}
+              <div className="rounded-[4px] border border-[#E5E5E5] bg-white p-4 lg:col-span-2">
+                <div className="mb-4 flex items-center justify-between">
+                  <span className="text-[12px] font-semibold uppercase tracking-[0.5px] text-[#333333]">
+                    Permit Volume Trend
+                  </span>
+                  <span className="rounded-[4px] bg-[#F5F5F5] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.5px] text-[#333333]">
+                    Sample
+                  </span>
+                </div>
+                <div className="h-[140px] w-full">
+                  <svg
+                    viewBox="0 0 400 100"
+                    className="h-full w-full"
+                    preserveAspectRatio="none"
+                  >
+                    <polyline
+                      fill="none"
+                      stroke="#1F5EFF"
+                      strokeWidth="2"
+                      points="0,80 40,70 80,75 120,60 160,55 200,45 240,50 280,35 320,40 360,25 400,20"
+                    />
+                    <polyline
+                      fill="none"
+                      stroke="#18A999"
+                      strokeWidth="2"
+                      strokeDasharray="4,4"
+                      points="0,85 40,78 80,80 120,68 160,62 200,52 240,58 280,42 320,48 360,32 400,28"
+                    />
+                    <circle cx="360" cy="25" r="4" fill="#1F5EFF" />
+                    <circle cx="400" cy="20" r="4" fill="#1F5EFF" />
+                  </svg>
+                </div>
+                <div className="mt-2 flex items-center gap-4">
+                  <div className="flex items-center gap-1.5">
+                    <div className="h-2 w-2 rounded-full bg-[#1F5EFF]" />
+                    <span className="text-[12px] text-[#333333]">Actual</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="h-2 w-2 rounded-full bg-[#18A999]" />
+                    <span className="text-[12px] text-[#333333]">
+                      Predicted
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Alert preview */}
+              <div className="rounded-[4px] border border-[#E5E5E5] bg-white p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <span className="text-[12px] font-semibold uppercase tracking-[0.5px] text-[#333333]">
+                    Latest Alert
+                  </span>
+                  <span className="rounded-[4px] bg-[#F5F5F5] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.5px] text-[#333333]">
+                    Sample
+                  </span>
+                </div>
+                <div className="mb-3 rounded-[4px] bg-[#F4A261]/10 p-3">
+                  <div className="flex items-start gap-2">
+                    <Zap className="h-4 w-4 shrink-0 text-[#F4A261]" />
+                    <div>
+                      <p className="text-[14px] font-semibold text-[#0B1F33]">
+                        Surge Detected
+                      </p>
+                      <p className="text-[12px] text-[#333333]">
+                        Dallas County permit filings up 34% month-over-month.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="rounded-[4px] bg-[#18A999]/10 p-3">
+                  <div className="flex items-start gap-2">
+                    <TrendingUp className="h-4 w-4 shrink-0 text-[#18A999]" />
+                    <div>
+                      <p className="text-[14px] font-semibold text-[#0B1F33]">
+                        Trend Up
+                      </p>
+                      <p className="text-[12px] text-[#333333]">
+                        Travis County commercial permits accelerating.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <Button
+                onClick={() => navigate("/sample-report")}
+                className="cursor-pointer rounded-[4px] bg-[#1F5EFF] px-6 py-3 text-[14px] font-semibold text-white transition-all duration-200 ease-out hover:bg-[#1F5EFF]/90"
+              >
+                See Sample Report
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="h-px bg-[#F5F5F5]" />
+
+      {/* ============================================================= */}
+      {/*  PRICING TIERS                                                */}
+      {/* ============================================================= */}
+      <section className="bg-white py-12 md:py-16">
+        <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
+          <div className="mb-10 space-y-3">
+            <span className="text-[12px] font-semibold uppercase tracking-[0.5px] text-[#333333]">
+              Pricing
+            </span>
+            <h2 className="text-[24px] font-semibold text-[#0B1F33]">
+              Simple Pricing, Powerful Results
+            </h2>
+            <p className="max-w-xl text-[16px] leading-[1.5] text-[#333333]">
+              Start with a 14-day free trial. No credit card required. Upgrade
+              or cancel anytime.
+            </p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-3">
             {plans.map((plan) => (
               <Card
                 key={plan.name}
-                className={`relative flex flex-col ${
+                className={`relative flex flex-col cursor-pointer rounded-[8px] border p-4 transition-all duration-200 ease-out ${
                   plan.highlighted
-                    ? "border-primary shadow-lg ring-1 ring-primary/20"
-                    : "hover:shadow-md transition-shadow"
+                    ? "border-[#1F5EFF] shadow-lg ring-1 ring-[#1F5EFF]/20"
+                    : "border-[#E5E5E5] hover:-translate-y-0.5 hover:shadow-md"
                 }`}
               >
                 {plan.highlighted && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <Badge className="bg-primary text-primary-foreground text-xs">
+                  <div className="absolute -top-3 left-4">
+                    <div className="rounded-[4px] bg-[#1F5EFF] px-3 py-1 text-[12px] font-semibold text-white">
                       Most Popular
-                    </Badge>
+                    </div>
                   </div>
                 )}
-                <CardContent className="p-6 flex flex-col flex-1">
-                  <div className="space-y-2 mb-6">
-                    <h3 className="font-bold text-lg">{plan.name}</h3>
+
+                <CardContent className="flex flex-1 flex-col space-y-6 p-0">
+                  <div className="space-y-2">
+                    <h3 className="text-[18px] font-semibold text-[#0B1F33]">
+                      {plan.name}
+                    </h3>
                     <div className="flex items-baseline gap-1">
-                      <span className="text-3xl font-extrabold">
+                      <span className="font-mono text-[32px] font-bold text-[#0B1F33]">
                         {plan.price}
                       </span>
-                      <span className="text-muted-foreground text-sm">
+                      <span className="text-[14px] text-[#333333]">
                         {plan.period}
                       </span>
                     </div>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-[14px] leading-[1.5] text-[#333333]">
                       {plan.description}
                     </p>
                   </div>
 
-                  <ul className="space-y-3 mb-8 flex-1">
+                  <ul className="flex-1 space-y-3">
                     {plan.features.map((f) => (
-                      <li key={f} className="flex items-start gap-2 text-sm">
-                        <CheckCircle className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                      <li
+                        key={f}
+                        className="flex items-start gap-2 text-[14px] text-[#333333]"
+                      >
+                        <CheckCircle className="h-4 w-4 shrink-0 text-[#18A999]" />
                         <span>{f}</span>
                       </li>
                     ))}
                   </ul>
 
                   <Button
-                    variant={plan.highlighted ? "default" : "outline"}
-                    className="w-full"
-                    onClick={() =>
-                      navigate(
-                        plan.name === "Enterprise" ? "/contact" : "/signup"
-                      )
-                    }
+                    className={`w-full cursor-pointer rounded-[4px] px-6 py-3 text-[14px] font-semibold transition-all duration-200 ease-out ${
+                      plan.highlighted
+                        ? "bg-[#1F5EFF] text-white hover:scale-105 hover:bg-[#1F5EFF]/90 active:scale-95"
+                        : "border border-[#0B1F33] bg-white text-[#0B1F33] hover:bg-[#F5F5F5] active:scale-95"
+                    }`}
+                    onClick={() => navigate("/signup")}
                   >
                     {plan.cta}
                   </Button>
@@ -611,69 +653,148 @@ export function Home() {
             ))}
           </div>
 
-          <div className="text-center mt-10">
-            <Button
-              variant="link"
+          <div className="mt-8">
+            <button
               onClick={() => navigate("/pricing")}
-              className="gap-1 text-base"
+              className="inline-flex cursor-pointer items-center gap-1 text-[14px] font-semibold text-[#1F5EFF] transition-colors duration-200 hover:underline"
             >
               See Full Pricing Details
               <ArrowUpRight className="h-4 w-4" />
-            </Button>
+            </button>
           </div>
         </div>
       </section>
 
-      <Separator />
+      <div className="h-px bg-[#F5F5F5]" />
 
       {/* ============================================================= */}
       {/*  NEWSLETTER SIGNUP                                            */}
       {/* ============================================================= */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
+      <section className="bg-white py-12 md:py-16">
+        <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
           <NewsletterSignup />
         </div>
       </section>
 
-      <Separator />
+      <div className="h-px bg-[#F5F5F5]" />
 
       {/* ============================================================= */}
-      {/*  FINAL CTA                                                    */}
+      {/*  TRUST AND CONTACT                                            */}
       {/* ============================================================= */}
-      <section className="py-20 bg-gradient-to-b from-muted/30 to-background">
-        <div className="container mx-auto px-4 text-center space-y-8">
-          <div className="space-y-4">
-            <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight max-w-3xl mx-auto">
-              Ready to Spot the Next Construction Boom?
+      <section className="bg-[#F5F5F5] py-12 md:py-16">
+        <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
+          <div className="mb-10 space-y-3">
+            <span className="text-[12px] font-semibold uppercase tracking-[0.5px] text-[#333333]">
+              Trust and Contact
+            </span>
+            <h2 className="text-[24px] font-semibold text-[#0B1F33]">
+              Enterprise-Grade Security and Support
             </h2>
-            <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-              Get market intelligence delivered to your inbox. Start your 14-day
-              free trial today.
-            </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
-            <Button
-              size="lg"
-              onClick={() => navigate("/signup")}
-              className="gap-2 text-base px-8 py-6"
-            >
-              Start Your Free Trial
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={() => navigate("/contact")}
-              className="text-base px-8 py-6"
-            >
-              Talk to Sales
-            </Button>
-          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <Card className="rounded-[8px] border border-[#E5E5E5] bg-white p-4">
+              <CardContent className="p-0 space-y-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-[8px] bg-[#F5F5F5]">
+                  <Shield className="h-5 w-5 text-[#0B1F33]" />
+                </div>
+                <h3 className="text-[18px] font-semibold text-[#0B1F33]">
+                  SOC 2 Type II Certified
+                </h3>
+                <p className="text-[16px] leading-[1.5] text-[#333333]">
+                  Independently audited security controls. Your data is
+                  protected by industry-leading compliance standards.
+                </p>
+              </CardContent>
+            </Card>
 
-          <div className="pt-4 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-            <Shield className="h-4 w-4 text-green-500" />
-            <span>SOC 2 Type II Certified · 256-bit Encryption</span>
+            <Card className="rounded-[8px] border border-[#E5E5E5] bg-white p-4">
+              <CardContent className="p-0 space-y-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-[8px] bg-[#F5F5F5]">
+                  <Lock className="h-5 w-5 text-[#0B1F33]" />
+                </div>
+                <h3 className="text-[18px] font-semibold text-[#0B1F33]">
+                  256-bit Encryption
+                </h3>
+                <p className="text-[16px] leading-[1.5] text-[#333333]">
+                  AES-256 encryption at rest and in transit. Your data is never
+                  sold or shared with third parties.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="rounded-[8px] border border-[#E5E5E5] bg-white p-4">
+              <CardContent className="p-0 space-y-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-[8px] bg-[#F5F5F5]">
+                  <Database className="h-5 w-5 text-[#0B1F33]" />
+                </div>
+                <h3 className="text-[18px] font-semibold text-[#0B1F33]">
+                  No Data Selling
+                </h3>
+                <p className="text-[16px] leading-[1.5] text-[#333333]">
+                  We never sell, rent, or share your proprietary data with
+                  external parties. Your intelligence stays yours.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="rounded-[8px] border border-[#E5E5E5] bg-white p-4">
+              <CardContent className="p-0 space-y-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-[8px] bg-[#F5F5F5]">
+                  <Mail className="h-5 w-5 text-[#0B1F33]" />
+                </div>
+                <h3 className="text-[18px] font-semibold text-[#0B1F33]">
+                  Email Support
+                </h3>
+                <p className="text-[16px] leading-[1.5] text-[#333333]">
+                  Reach our team at{" "}
+                  <a
+                    href="mailto:support@buildsignal.net"
+                    className="font-semibold text-[#1F5EFF] hover:underline"
+                  >
+                    support@buildsignal.net
+                  </a>
+                  . We typically respond within one business day.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="rounded-[8px] border border-[#E5E5E5] bg-white p-4">
+              <CardContent className="p-0 space-y-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-[8px] bg-[#F5F5F5]">
+                  <Phone className="h-5 w-5 text-[#0B1F33]" />
+                </div>
+                <h3 className="text-[18px] font-semibold text-[#0B1F33]">
+                  Phone Support
+                </h3>
+                <p className="text-[16px] leading-[1.5] text-[#333333]">
+                  Available for Business plan customers. Contact support to
+                  schedule a call with our team.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="rounded-[8px] border border-[#E5E5E5] bg-white p-4">
+              <CardContent className="p-0 space-y-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-[8px] bg-[#F5F5F5]">
+                  <ArrowRight className="h-5 w-5 text-[#0B1F33]" />
+                </div>
+                <h3 className="text-[18px] font-semibold text-[#0B1F33]">
+                  Contact Page
+                </h3>
+                <p className="text-[16px] leading-[1.5] text-[#333333]">
+                  Visit our contact page for general inquiries, partnership
+                  requests, and media relations.
+                </p>
+                <button
+                  onClick={() => navigate("/contact")}
+                  className="inline-flex cursor-pointer items-center gap-1 text-[14px] font-semibold text-[#1F5EFF] transition-colors duration-200 hover:underline"
+                >
+                  Go to Contact
+                  <ArrowUpRight className="h-4 w-4" />
+                </button>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
