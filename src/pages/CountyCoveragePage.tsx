@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Card,
   CardContent,
@@ -10,168 +10,54 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
+import { trpc } from '@/providers/trpc';
+import {
   MapPin,
   Search,
   TrendingUp,
-  TrendingDown,
-  Minus,
-  Database,
-  FileCheck,
-  Activity,
-  ShieldCheck,
-  Info,
-  ArrowRight,
-  BarChart3,
+  AlertTriangle,
+  CheckCircle2,
   Clock,
+  Filter,
+  ArrowUpDown,
+  ArrowRight,
+  Info,
 } from 'lucide-react';
 
 /* ------------------------------------------------------------------ */
-/*  Sample Data — clearly marked                                      */
+/*  Types                                                             */
 /* ------------------------------------------------------------------ */
 
-interface County {
-  id: string;
-  name: string;
-  state: string;
-  coverage: 'Full' | 'Partial' | 'Limited';
-  permitCount: number;
-  trend: 'up' | 'down' | 'flat';
-  trendValue: string;
-  lastUpdate: string;
-  dataSources: number;
-}
-
-const SAMPLE_COUNTIES: County[] = [
-  {
-    id: 'travis-tx',
-    name: 'Travis County',
-    state: 'TX',
-    coverage: 'Full',
-    permitCount: 1247,
-    trend: 'up',
-    trendValue: '+12%',
-    lastUpdate: 'Jun 12, 2025',
-    dataSources: 6,
-  },
-  {
-    id: 'maricopa-az',
-    name: 'Maricopa County',
-    state: 'AZ',
-    coverage: 'Full',
-    permitCount: 3892,
-    trend: 'up',
-    trendValue: '+8%',
-    lastUpdate: 'Jun 11, 2025',
-    dataSources: 7,
-  },
-  {
-    id: 'dallas-tx',
-    name: 'Dallas County',
-    state: 'TX',
-    coverage: 'Partial',
-    permitCount: 2156,
-    trend: 'down',
-    trendValue: '-3%',
-    lastUpdate: 'Jun 10, 2025',
-    dataSources: 5,
-  },
-  {
-    id: 'hillsborough-fl',
-    name: 'Hillsborough County',
-    state: 'FL',
-    coverage: 'Full',
-    permitCount: 1678,
-    trend: 'up',
-    trendValue: '+5%',
-    lastUpdate: 'Jun 9, 2025',
-    dataSources: 6,
-  },
-  {
-    id: 'king-wa',
-    name: 'King County',
-    state: 'WA',
-    coverage: 'Partial',
-    permitCount: 983,
-    trend: 'flat',
-    trendValue: '0%',
-    lastUpdate: 'Jun 8, 2025',
-    dataSources: 4,
-  },
-  {
-    id: 'orange-ca',
-    name: 'Orange County',
-    state: 'CA',
-    coverage: 'Limited',
-    permitCount: 754,
-    trend: 'down',
-    trendValue: '-7%',
-    lastUpdate: 'Jun 5, 2025',
-    dataSources: 3,
-  },
-  {
-    id: 'wake-nc',
-    name: 'Wake County',
-    state: 'NC',
-    coverage: 'Full',
-    permitCount: 1421,
-    trend: 'up',
-    trendValue: '+15%',
-    lastUpdate: 'Jun 12, 2025',
-    dataSources: 5,
-  },
-  {
-    id: 'denver-co',
-    name: 'Denver County',
-    state: 'CO',
-    coverage: 'Partial',
-    permitCount: 1102,
-    trend: 'up',
-    trendValue: '+2%',
-    lastUpdate: 'Jun 7, 2025',
-    dataSources: 4,
-  },
-];
+type HealthStatus = 'active' | 'partial' | 'limited' | 'planned';
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                           */
 /* ------------------------------------------------------------------ */
 
-function coverageBadge(coverage: County['coverage']) {
-  switch (coverage) {
-    case 'Full':
+function healthStatusBadge(healthStatus: HealthStatus) {
+  switch (healthStatus) {
+    case 'active':
       return 'bg-emerald-50 text-emerald-600 border-emerald-200';
-    case 'Partial':
+    case 'partial':
       return 'bg-accent-amber/10 text-accent-amber border-accent-amber/20';
-    case 'Limited':
+    case 'limited':
       return 'bg-rose-50 text-rose-600 border-rose-200';
+    case 'planned':
+      return 'bg-slate-100 text-slate-600 border-slate-200';
     default:
       return 'bg-slate-100 text-slate-600 border-slate-200';
   }
 }
 
-function TrendIcon({ trend, value }: { trend: County['trend']; value: string }) {
-  if (trend === 'up') {
-    return (
-      <span className="flex items-center gap-1 text-emerald-600 text-sm font-medium">
-        <TrendingUp className="w-4 h-4" />
-        {value}
-      </span>
-    );
-  }
-  if (trend === 'down') {
-    return (
-      <span className="flex items-center gap-1 text-rose-600 text-sm font-medium">
-        <TrendingDown className="w-4 h-4" />
-        {value}
-      </span>
-    );
-  }
-  return (
-    <span className="flex items-center gap-1 text-ink-tertiary text-sm font-medium">
-      <Minus className="w-4 h-4" />
-      {value}
-    </span>
-  );
+function healthStatusLabel(healthStatus: HealthStatus) {
+  return healthStatus.charAt(0).toUpperCase() + healthStatus.slice(1);
 }
 
 /* ------------------------------------------------------------------ */
@@ -180,22 +66,48 @@ function TrendIcon({ trend, value }: { trend: County['trend']; value: string }) 
 
 export default function CountyCoveragePage() {
   const [search, setSearch] = useState('');
-  const [coverageFilter, setCoverageFilter] = useState<'All' | 'Full' | 'Partial' | 'Limited'>('All');
+  const [healthStatusFilter, setHealthStatusFilter] = useState<HealthStatus | 'all'>('all');
+  const [sortBy, setSortBy] = useState<'coverage' | 'population' | 'priority' | 'events'>('coverage');
 
-  const countiesMonitored = SAMPLE_COUNTIES.length;
-  const dataSources = 8;
-  const avgPermits = Math.round(
-    SAMPLE_COUNTIES.reduce((sum, c) => sum + c.permitCount, 0) / SAMPLE_COUNTIES.length
+  const {
+    data: summaryData,
+    isLoading: summaryLoading,
+    isError: summaryError,
+    refetch: refetchSummary,
+  } = trpc.county.summary.useQuery();
+
+  const {
+    data: listData,
+    isLoading: listLoading,
+    isError: listError,
+    refetch: refetchList,
+  } = trpc.county.list.useQuery(
+    {
+      ...(healthStatusFilter !== 'all' ? { healthStatus: healthStatusFilter } : {}),
+      sortBy,
+    },
+    { enabled: !summaryError }
   );
-  const coverageScore = 87;
 
-  const filtered = SAMPLE_COUNTIES.filter((c) => {
-    const matchesSearch =
-      c.name.toLowerCase().includes(search.toLowerCase()) ||
-      c.state.toLowerCase().includes(search.toLowerCase());
-    const matchesCoverage = coverageFilter === 'All' || c.coverage === coverageFilter;
-    return matchesSearch && matchesCoverage;
-  });
+  const isLoading = summaryLoading || listLoading;
+  const isError = summaryError || listError;
+
+  const refetch = () => {
+    refetchSummary();
+    refetchList();
+  };
+
+  const counties = listData?.counties ?? [];
+
+  const filtered = useMemo(() => {
+    if (!search.trim()) return counties;
+    const q = search.toLowerCase();
+    return counties.filter(
+      (c) =>
+        c.county.toLowerCase().includes(q) ||
+        c.state.toLowerCase().includes(q)
+    );
+  }, [counties, search]);
 
   return (
     <div className="bg-canvas min-h-screen pb-12">
@@ -218,6 +130,27 @@ export default function CountyCoveragePage() {
           </p>
         </div>
 
+        {/* Error State */}
+        {isError && (
+          <div className="mb-8 p-6 rounded-lg bg-rose-50 border border-rose-200 flex flex-col items-center gap-3 text-center">
+            <AlertTriangle className="w-8 h-8 text-rose-600" />
+            <div>
+              <p className="text-sm font-medium text-rose-700">Failed to load county data</p>
+              <p className="text-xs text-rose-600 mt-1">
+                Something went wrong while fetching county coverage information.
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={refetch}
+              className="border-rose-300 text-rose-700 hover:bg-rose-100"
+            >
+              Retry
+            </Button>
+          </div>
+        )}
+
         {/* Stats Row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <Card className="bg-surface border-border hover:shadow-md transition-shadow">
@@ -225,7 +158,13 @@ export default function CountyCoveragePage() {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm text-ink-tertiary mb-1">Counties Monitored</p>
-                  <p className="text-3xl font-bold text-ink-primary">{countiesMonitored}</p>
+                  {summaryLoading ? (
+                    <Skeleton className="h-8 w-20" />
+                  ) : (
+                    <p className="text-3xl font-bold text-ink-primary">
+                      {summaryData?.total ?? 0}
+                    </p>
+                  )}
                 </div>
                 <div className="p-2.5 rounded-lg bg-accent-indigo/10">
                   <MapPin className="w-5 h-5 text-accent-indigo" />
@@ -238,39 +177,57 @@ export default function CountyCoveragePage() {
             <CardContent className="p-5">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-ink-tertiary mb-1">Data Sources</p>
-                  <p className="text-3xl font-bold text-ink-primary">{dataSources}</p>
-                </div>
-                <div className="p-2.5 rounded-lg bg-accent-teal/10">
-                  <Database className="w-5 h-5 text-accent-teal" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-surface border-border hover:shadow-md transition-shadow">
-            <CardContent className="p-5">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm text-ink-tertiary mb-1">Avg. Permits/Month</p>
-                  <p className="text-3xl font-bold text-ink-primary">{avgPermits.toLocaleString()}</p>
-                </div>
-                <div className="p-2.5 rounded-lg bg-accent-amber/10">
-                  <BarChart3 className="w-5 h-5 text-accent-amber" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-surface border-border hover:shadow-md transition-shadow">
-            <CardContent className="p-5">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm text-ink-tertiary mb-1">Coverage Score</p>
-                  <p className="text-3xl font-bold text-ink-primary">{coverageScore}%</p>
+                  <p className="text-sm text-ink-tertiary mb-1">Active Counties</p>
+                  {summaryLoading ? (
+                    <Skeleton className="h-8 w-20" />
+                  ) : (
+                    <p className="text-3xl font-bold text-ink-primary">
+                      {summaryData?.active ?? 0}
+                    </p>
+                  )}
                 </div>
                 <div className="p-2.5 rounded-lg bg-emerald-50">
-                  <ShieldCheck className="w-5 h-5 text-emerald-600" />
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-surface border-border hover:shadow-md transition-shadow">
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm text-ink-tertiary mb-1">Avg. Coverage</p>
+                  {summaryLoading ? (
+                    <Skeleton className="h-8 w-20" />
+                  ) : (
+                    <p className="text-3xl font-bold text-ink-primary">
+                      {Math.round(summaryData?.avgCoverage ?? 0)}%
+                    </p>
+                  )}
+                </div>
+                <div className="p-2.5 rounded-lg bg-accent-teal/10">
+                  <TrendingUp className="w-5 h-5 text-accent-teal" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-surface border-border hover:shadow-md transition-shadow">
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm text-ink-tertiary mb-1">Total Events</p>
+                  {summaryLoading ? (
+                    <Skeleton className="h-8 w-20" />
+                  ) : (
+                    <p className="text-3xl font-bold text-ink-primary">
+                      {(summaryData?.totalEvents ?? 0).toLocaleString()}
+                    </p>
+                  )}
+                </div>
+                <div className="p-2.5 rounded-lg bg-accent-amber/10">
+                  <AlertTriangle className="w-5 h-5 text-accent-amber" />
                 </div>
               </div>
             </CardContent>
@@ -288,29 +245,81 @@ export default function CountyCoveragePage() {
               className="pl-10 bg-surface border-border text-ink-primary placeholder:text-ink-tertiary"
             />
           </div>
-          <div className="flex gap-2">
-            {(['All', 'Full', 'Partial', 'Limited'] as const).map((level) => (
-              <Button
-                key={level}
-                variant={coverageFilter === level ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setCoverageFilter(level)}
-                className={
-                  coverageFilter === level
-                    ? 'bg-accent-indigo hover:bg-accent-indigo/90 text-white'
-                    : 'border-border text-ink-secondary hover:bg-surface hover:text-ink-primary'
-                }
+          <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+            <div className="flex items-center gap-2">
+              <Filter className="w-4 h-4 text-ink-tertiary" />
+              <div className="flex gap-2">
+                {(['all', 'active', 'partial', 'limited', 'planned'] as const).map((level) => (
+                  <Button
+                    key={level}
+                    variant={healthStatusFilter === level ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setHealthStatusFilter(level)}
+                    className={
+                      healthStatusFilter === level
+                        ? 'bg-accent-indigo hover:bg-accent-indigo/90 text-white'
+                        : 'border-border text-ink-secondary hover:bg-surface hover:text-ink-primary'
+                    }
+                  >
+                    {level === 'all' ? 'All' : healthStatusLabel(level)}
+                  </Button>
+                ))}
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <ArrowUpDown className="w-4 h-4 text-ink-tertiary" />
+              <Select
+                value={sortBy}
+                onValueChange={(v) => setSortBy(v as typeof sortBy)}
               >
-                {level}
-              </Button>
-            ))}
+                <SelectTrigger className="w-[160px] bg-surface border-border text-ink-primary text-sm">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="coverage">Coverage</SelectItem>
+                  <SelectItem value="population">Population</SelectItem>
+                  <SelectItem value="priority">Priority</SelectItem>
+                  <SelectItem value="events">Events</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
 
         <Separator className="mb-6 bg-border" />
 
         {/* County Grid */}
-        {filtered.length > 0 ? (
+        {listLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-10">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Card key={i} className="bg-surface border-border">
+                <CardContent className="p-5 space-y-4">
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-3 w-16" />
+                    </div>
+                    <Skeleton className="h-5 w-16" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 rounded-lg bg-canvas space-y-2">
+                      <Skeleton className="h-3 w-14" />
+                      <Skeleton className="h-6 w-20" />
+                    </div>
+                    <div className="p-3 rounded-lg bg-canvas space-y-2">
+                      <Skeleton className="h-3 w-14" />
+                      <Skeleton className="h-6 w-20" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Skeleton className="h-3 w-20" />
+                    <Skeleton className="h-3 w-20" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : filtered.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-10">
             {filtered.map((county) => (
               <CountyCard key={county.id} county={county} />
@@ -337,17 +346,17 @@ export default function CountyCoveragePage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="flex items-start gap-3 p-3 rounded-lg bg-emerald-50/50 border border-emerald-100">
                 <div className="mt-0.5">
                   <Badge variant="outline" className="bg-emerald-50 text-emerald-600 border-emerald-200">
-                    Full
+                    Active
                   </Badge>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-ink-primary">Full Coverage</p>
+                  <p className="text-sm font-medium text-ink-primary">Active</p>
                   <p className="text-xs text-ink-secondary mt-0.5">
-                    All major data sources are actively monitored with real-time or near real-time ingestion.
+                    Full data coverage with real-time or near real-time ingestion across all major sources.
                   </p>
                 </div>
               </div>
@@ -359,9 +368,9 @@ export default function CountyCoveragePage() {
                   </Badge>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-ink-primary">Partial Coverage</p>
+                  <p className="text-sm font-medium text-ink-primary">Partial</p>
                   <p className="text-xs text-ink-secondary mt-0.5">
-                    Core data sources are connected; some supplementary feeds may be delayed or pending integration.
+                    Core data sources connected; some supplementary feeds may be delayed or pending.
                   </p>
                 </div>
               </div>
@@ -373,9 +382,23 @@ export default function CountyCoveragePage() {
                   </Badge>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-ink-primary">Limited Coverage</p>
+                  <p className="text-sm font-medium text-ink-primary">Limited</p>
                   <p className="text-xs text-ink-secondary mt-0.5">
-                    Only basic data is available. Additional source partnerships are in progress to expand coverage.
+                    Only basic data available. Additional source partnerships are in progress.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-slate-50/50 border border-slate-100">
+                <div className="mt-0.5">
+                  <Badge variant="outline" className="bg-slate-100 text-slate-600 border-slate-200">
+                    Planned
+                  </Badge>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-ink-primary">Planned</p>
+                  <p className="text-xs text-ink-secondary mt-0.5">
+                    County is queued for onboarding. Coverage will begin once integrations are complete.
                   </p>
                 </div>
               </div>
@@ -391,13 +414,36 @@ export default function CountyCoveragePage() {
 /*  Sub-components                                                    */
 /* ------------------------------------------------------------------ */
 
-function CountyCard({ county }: { county: County }) {
+interface CountyCoverage {
+  id: number;
+  county: string;
+  state: string;
+  population: number;
+  parcelCount: number;
+  providerCount: number;
+  availableDataTypes: string;
+  infrastructureSources: string;
+  healthStatus: HealthStatus;
+  coveragePercentage: number;
+  expansionPriority: number;
+  lastDataRefresh: string | null;
+  totalEvents: number;
+  totalPatterns: number;
+  totalRecommendations: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+function CountyCard({ county }: { county: CountyCoverage }) {
   const handleNavigate = () => {
     window.location.href = `/counties/${county.id}`;
   };
 
   return (
-    <Card className="bg-surface border-border hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 group cursor-pointer" onClick={handleNavigate}>
+    <Card
+      className="bg-surface border-border hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 group cursor-pointer"
+      onClick={handleNavigate}
+    >
       <CardContent className="p-5">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-2">
@@ -406,35 +452,57 @@ function CountyCard({ county }: { county: County }) {
             </div>
             <div>
               <h3 className="text-base font-semibold text-ink-primary leading-tight">
-                {county.name}
+                {county.county}
               </h3>
               <p className="text-xs text-ink-tertiary">{county.state}</p>
             </div>
           </div>
-          <Badge variant="outline" className={`text-xs font-medium ${coverageBadge(county.coverage)}`}>
-            {county.coverage}
+          <Badge
+            variant="outline"
+            className={`text-xs font-medium ${healthStatusBadge(county.healthStatus)}`}
+          >
+            {healthStatusLabel(county.healthStatus)}
           </Badge>
         </div>
 
         <div className="grid grid-cols-2 gap-3 mb-4">
           <div className="p-3 rounded-lg bg-canvas">
-            <p className="text-xs text-ink-tertiary mb-1">Permits</p>
-            <p className="text-lg font-bold text-ink-primary">{county.permitCount.toLocaleString()}</p>
+            <p className="text-xs text-ink-tertiary mb-1">Coverage</p>
+            <p className="text-lg font-bold text-ink-primary">{county.coveragePercentage}%</p>
           </div>
           <div className="p-3 rounded-lg bg-canvas">
-            <p className="text-xs text-ink-tertiary mb-1">Trend (MoM)</p>
-            <TrendIcon trend={county.trend} value={county.trendValue} />
+            <p className="text-xs text-ink-tertiary mb-1">Population</p>
+            <p className="text-lg font-bold text-ink-primary">
+              {county.population >= 1_000_000
+                ? `${(county.population / 1_000_000).toFixed(1)}M`
+                : county.population >= 1_000
+                ? `${(county.population / 1_000).toFixed(0)}K`
+                : county.population.toLocaleString()}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          <div className="p-3 rounded-lg bg-canvas">
+            <p className="text-xs text-ink-tertiary mb-1">Events</p>
+            <p className="text-lg font-bold text-ink-primary">{county.totalEvents.toLocaleString()}</p>
+          </div>
+          <div className="p-3 rounded-lg bg-canvas">
+            <p className="text-xs text-ink-tertiary mb-1">Patterns</p>
+            <p className="text-lg font-bold text-ink-primary">{county.totalPatterns.toLocaleString()}</p>
           </div>
         </div>
 
         <div className="flex items-center justify-between text-xs text-ink-tertiary mb-4">
           <span className="flex items-center gap-1">
-            <Database className="w-3.5 h-3.5" />
-            {county.dataSources} sources
+            <TrendingUp className="w-3.5 h-3.5" />
+            Priority {county.expansionPriority}
           </span>
           <span className="flex items-center gap-1">
             <Clock className="w-3.5 h-3.5" />
-            {county.lastUpdate}
+            {county.lastDataRefresh
+              ? new Date(county.lastDataRefresh).toLocaleDateString()
+              : 'Never'}
           </span>
         </div>
 
