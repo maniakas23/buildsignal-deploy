@@ -7,27 +7,92 @@
 
 /* ─── Design Tokens ─── */
 :root {
-  /* Background layers */
-  --canvas:        #0B1117;
-  --surface:       #111820;
-  --surface-hover: #1A2430;
-  --ink-wash:      rgba(255, 255, 255, 0.06);
+  /* BuildSignal Design System v1.0 — Default Palette */
+  --bs-canvas: #F7F9FC;
+  --bs-surface: #FFFFFF;
+  --bs-surface-hover: #F0F4F8;
+  --bs-elevated: #FFFFFF;
+  --bs-primary: #0B1F33;
+  --bs-action: #1F5EFF;
+  --bs-intelligence: #18A999;
+  --bs-opportunity: #F4A261;
+  --bs-text-primary: #2F3A45;
+  --bs-text-secondary: #5E6D7B;
+  --bs-text-tertiary: #9AA5B1;
+  --bs-text-inverse: #FFFFFF;
+  --bs-success: #18A999;
+  --bs-warning: #F4A261;
+  --bs-error: #E74C3C;
+  --bs-info: #1F5EFF;
+  --bs-border: #E2E8F0;
+  --bs-divider: #EDF2F7;
+  --bs-chart-1: #1F5EFF;
+  --bs-chart-2: #18A999;
+  --bs-chart-3: #F4A261;
+  --bs-chart-4: #0B1F33;
+  --bs-chart-5: #6366F1;
+  
+  /* Legacy mapping for backward compatibility */
+  --canvas: var(--bs-canvas);
+  --surface: var(--bs-surface);
+  --surface-hover: var(--bs-surface-hover);
+  --ink-primary: var(--bs-text-primary);
+  --ink-secondary: var(--bs-text-secondary);
+  --ink-tertiary: var(--bs-text-tertiary);
+  --accent-indigo: var(--bs-action);
+  --accent-teal: var(--bs-intelligence);
+  --accent-amber: var(--bs-opportunity);
+  
+  /* Additional legacy variables for backward compatibility */
+  --ink-wash: rgba(47, 58, 69, 0.06);
+  --shadow-modal: 0 8px 32px rgba(0, 0, 0, 0.15);
+  --accent-crimson: var(--bs-error);
+  --accent-olive: #84CC16;
+  
+  /* shadcn/ui HSL variables (light mode) */
+  --background: 210 33% 98%;
+  --foreground: 213 18% 23%;
+  --card: 0 0% 100%;
+  --card-foreground: 213 18% 23%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 213 18% 23%;
+  --primary: 213 66% 12%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 210 20% 94%;
+  --secondary-foreground: 213 18% 23%;
+  --muted: 210 20% 94%;
+  --muted-foreground: 210 10% 50%;
+  --accent: 210 20% 94%;
+  --accent-foreground: 213 18% 23%;
+  --destructive: 6 78% 57%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 222 100% 56%;
+  --radius: 0.75rem;
+}
 
-  /* Text colors */
-  --ink-primary:   #F7FAFC;
-  --ink-secondary: rgba(247, 250, 252, 0.7);
-  --ink-tertiary:  rgba(247, 250, 252, 0.4);
-
-  /* Accent colors (high-saturation for data visualization) */
-  --accent-indigo: #6366F1;
-  --accent-teal:   #14B8A6;
-  --accent-amber:  #F59E0B;
-  --accent-crimson:#F43F5E;
-  --accent-olive:  #84CC16;
-
-  /* Utility */
-  --shadow-modal:  0 8px 32px rgba(0, 0, 0, 0.4);
-  --radius: 4px;
+.dark {
+  /* shadcn/ui HSL variables (dark mode) */
+  --background: 213 66% 8%;
+  --foreground: 210 33% 98%;
+  --card: 213 50% 10%;
+  --card-foreground: 210 33% 98%;
+  --popover: 213 50% 10%;
+  --popover-foreground: 210 33% 98%;
+  --primary: 222 100% 56%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 213 40% 15%;
+  --secondary-foreground: 210 33% 98%;
+  --muted: 213 40% 15%;
+  --muted-foreground: 210 10% 60%;
+  --accent: 213 40% 15%;
+  --accent-foreground: 210 33% 98%;
+  --destructive: 6 78% 45%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 213 40% 18%;
+  --input: 213 40% 18%;
+  --ring: 222 100% 56%;
 }
 
 /* ─── Base Styles ─── */
