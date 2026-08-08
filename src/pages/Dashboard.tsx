@@ -1,22 +1,12 @@
 import { useState } from 'react'
+import { trpc } from '@/providers/trpc'
 import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard'
 import { DashboardTour } from '@/components/tour/DashboardTour'
 import { HelpWidget } from '@/components/help/HelpWidget'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-} from 'recharts'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   RefreshCw,
   ChevronDown,
@@ -26,6 +16,15 @@ import {
   Bell,
   Download,
   Plus,
+  Activity,
+  Zap,
+  Clock,
+  BarChart3,
+  Inbox,
+  RotateCcw,
+  AlertTriangle,
+  MapPin,
+  CheckCircle2,
   Info,
 } from 'lucide-react'
 
@@ -39,143 +38,191 @@ const COLORS = {
   lightGrey: '#F5F5F5',
   darkGrey: '#333333',
   errorRed: '#D32F2F',
-  chartIndigo: '#6366F1',
   borderGrey: '#E2E8F0',
 }
 
-// ─── Mock Data ───────────────────────────────────────────────────────
-const trendData = [
-  { month: 'Jan', opportunities: 980 },
-  { month: 'Feb', opportunities: 1050 },
-  { month: 'Mar', opportunities: 1120 },
-  { month: 'Apr', opportunities: 1180 },
-  { month: 'May', opportunities: 1247 },
-  { month: 'Jun', opportunities: 1398 },
-]
-
-const sectorData = [
-  { name: 'Commercial', value: 487, color: COLORS.signalBlue },
-  { name: 'Residential', value: 356, color: COLORS.insightTeal },
-  { name: 'Infrastructure', value: 284, color: COLORS.opportunityAmber },
-  { name: 'Industrial', value: 120, color: COLORS.deepNavy },
-]
-
-const recentOpportunities = [
-  {
-    id: 1,
-    projectName: 'Austin Metro Rail Extension',
-    location: 'Austin, TX',
-    sector: 'Infrastructure',
-    confidence: 94,
-    date: '2025-01-14',
-  },
-  {
-    id: 2,
-    projectName: 'Denver Tech Center Tower B',
-    location: 'Denver, CO',
-    sector: 'Commercial',
-    confidence: 88,
-    date: '2025-01-13',
-  },
-  {
-    id: 3,
-    projectName: 'Riverside Mixed-Use Development',
-    location: 'Portland, OR',
-    sector: 'Residential',
-    confidence: 91,
-    date: '2025-01-12',
-  },
-  {
-    id: 4,
-    projectName: 'Phoenix Solar Farm Phase 2',
-    location: 'Phoenix, AZ',
-    sector: 'Industrial',
-    confidence: 85,
-    date: '2025-01-11',
-  },
-  {
-    id: 5,
-    projectName: 'Seattle Waterfront Revitalization',
-    location: 'Seattle, WA',
-    sector: 'Infrastructure',
-    confidence: 79,
-    date: '2025-01-10',
-  },
-]
-
-const alerts = [
-  {
-    id: 1,
-    severity: 'critical' as const,
-    message: 'New permit filed in Austin, TX — $42M mixed-use project',
-    time: '2 hours ago',
-  },
-  {
-    id: 2,
-    severity: 'warning' as const,
-    message: 'Zoning change detected in Denver metro area',
-    time: '5 hours ago',
-  },
-  {
-    id: 3,
-    severity: 'info' as const,
-    message: 'Pre-bid meeting scheduled for Portland highway project',
-    time: '1 day ago',
-  },
-]
-
 // ─── Helpers ─────────────────────────────────────────────────────────
-const severityDotStyles = {
-  critical: COLORS.errorRed,
-  warning: COLORS.opportunityAmber,
-  info: COLORS.signalBlue,
-}
-
-const sectorBadgeStyles: Record<string, string> = {
-  Commercial: 'bg-[#1F5EFF]/10 text-[#1F5EFF] border-[#1F5EFF]/20',
-  Residential: 'bg-[#18A999]/10 text-[#18A999] border-[#18A999]/20',
-  Infrastructure: 'bg-[#F4A261]/10 text-[#F4A261] border-[#F4A261]/20',
-  Industrial: 'bg-[#0B1F33]/10 text-[#0B1F33] border-[#0B1F33]/20 dark:bg-white/10 dark:text-white/80',
-}
-
 function formatDate(dateStr: string) {
   const d = new Date(dateStr)
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-// ─── Custom Tooltip for LineChart ───────────────────────────────────
-function TrendTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number }>; label?: string }) {
-  if (!active || !payload?.length) return null
+function relativeTime(dateStr: string): string {
+  const date = new Date(dateStr)
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffSec = Math.floor(diffMs / 1000)
+  const diffMin = Math.floor(diffSec / 60)
+  const diffHr = Math.floor(diffMin / 60)
+  const diffDay = Math.floor(diffHr / 24)
+
+  if (diffSec < 60) return 'just now'
+  if (diffMin < 60) return `${diffMin} min ago`
+  if (diffHr < 24) return `${diffHr} hr ago`
+  if (diffDay < 7) return `${diffDay} day${diffDay > 1 ? 's' : ''} ago`
+  return date.toLocaleDateString()
+}
+
+function getHealthStatusColor(status: string | undefined) {
+  const s = status?.toLowerCase() ?? 'unknown'
+  if (s === 'healthy') return 'bg-accent-teal/10 text-accent-teal border-accent-teal/20'
+  if (s === 'degraded') return 'bg-accent-amber/10 text-accent-amber border-accent-amber/20'
+  return 'bg-accent-crimson/10 text-accent-crimson border-accent-crimson/20'
+}
+
+function getHealthDotColor(status: string | undefined) {
+  const s = status?.toLowerCase() ?? 'unknown'
+  if (s === 'healthy') return 'bg-accent-teal'
+  if (s === 'degraded') return 'bg-accent-amber'
+  return 'bg-accent-crimson'
+}
+
+function getNotificationBorderColor(type: string) {
+  const t = type.toLowerCase()
+  if (t.includes('critical') || t.includes('error')) return 'border-l-4 border-l-accent-crimson'
+  if (t.includes('warn')) return 'border-l-4 border-l-accent-amber'
+  return 'border-l-4 border-l-accent-indigo'
+}
+
+function getNotificationBgColor(type: string) {
+  const t = type.toLowerCase()
+  if (t.includes('critical') || t.includes('error')) return 'bg-red-50/50'
+  if (t.includes('warn')) return 'bg-amber-50/50'
+  return 'bg-blue-50/50'
+}
+
+function getConfidenceColor(confidence: number) {
+  if (confidence >= 90) return COLORS.insightTeal
+  if (confidence >= 80) return COLORS.signalBlue
+  return COLORS.opportunityAmber
+}
+
+// ─── Skeleton Components ─────────────────────────────────────────────
+function StatCardSkeleton() {
   return (
-    <div className="rounded-lg border border-[#E2E8F0] bg-white px-3 py-2 shadow-md">
-      <p className="text-sm font-medium text-[#333333]">{label}</p>
-      <p className="text-sm font-bold" style={{ color: COLORS.signalBlue }}>
-        {payload[0].value.toLocaleString()} opportunities
-      </p>
+    <div className="rounded-lg border border-[#E2E8F0] bg-white p-4">
+      <Skeleton className="h-4 w-28 bg-ink-tertiary/10 mb-2" />
+      <Skeleton className="h-8 w-20 bg-ink-tertiary/10 mb-1" />
+      <Skeleton className="h-3 w-32 bg-ink-tertiary/10 mt-1" />
     </div>
   )
 }
 
-// ─── Custom Tooltip for PieChart ────────────────────────────────────
-function SectorTooltip({ active, payload }: { active?: boolean; payload?: Array<{ payload: { name: string; value: number; color: string } }> }) {
-  if (!active || !payload?.length) return null
-  const data = payload[0].payload
+function ChartPlaceholderSkeleton() {
   return (
-    <div className="rounded-lg border border-[#E2E8F0] bg-white px-3 py-2 shadow-md">
-      <p className="text-sm font-bold" style={{ color: data.color }}>{data.name}</p>
-      <p className="text-sm text-[#333333]">{data.value} opportunities</p>
-      <p className="text-xs text-[#9AA5B1]">
-        {Math.round((data.value / 1247) * 100)}% of total
-      </p>
+    <Card className="rounded-lg border border-[#E2E8F0] bg-white">
+      <CardHeader className="p-4 pb-0">
+        <Skeleton className="h-6 w-32 bg-ink-tertiary/10" />
+      </CardHeader>
+      <CardContent className="p-4">
+        <Skeleton className="h-[200px] w-full bg-ink-tertiary/10 rounded-md" />
+      </CardContent>
+    </Card>
+  )
+}
+
+function OpportunityRowSkeleton() {
+  return (
+    <div className="grid grid-cols-12 gap-4 items-center px-4 py-3 border-b border-[#E2E8F0]">
+      <div className="col-span-4"><Skeleton className="h-4 w-full bg-ink-tertiary/10" /></div>
+      <div className="col-span-3 hidden sm:block"><Skeleton className="h-4 w-20 bg-ink-tertiary/10" /></div>
+      <div className="col-span-2 hidden md:block"><Skeleton className="h-5 w-16 bg-ink-tertiary/10" /></div>
+      <div className="col-span-2"><Skeleton className="h-4 w-16 mx-auto bg-ink-tertiary/10" /></div>
+      <div className="col-span-3 text-right sm:col-span-1"><Skeleton className="h-3 w-14 ml-auto bg-ink-tertiary/10" /></div>
+    </div>
+  )
+}
+
+function AlertItemSkeleton() {
+  return (
+    <div className="rounded-lg border border-[#E2E8F0] p-3">
+      <div className="flex items-start gap-3">
+        <Skeleton className="h-2 w-2 rounded-full mt-1.5 shrink-0 bg-ink-tertiary/10" />
+        <div className="flex-1 space-y-2">
+          <Skeleton className="h-4 w-full bg-ink-tertiary/10" />
+          <Skeleton className="h-3 w-24 bg-ink-tertiary/10" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Error Card ──────────────────────────────────────────────────────
+function ErrorCard({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return (
+    <div className="rounded-lg border border-[#E2E8F0] bg-white p-4 text-center">
+      <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-canvas flex items-center justify-center">
+        <AlertTriangle className="w-5 h-5 text-accent-amber" />
+      </div>
+      <p className="text-sm text-ink-secondary font-medium mb-1">Failed to load data</p>
+      <p className="text-xs text-ink-tertiary mb-3">{message}</p>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={onRetry}
+        className="border-border text-ink-secondary hover:text-accent-indigo hover:border-accent-indigo/40"
+      >
+        <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
+        Retry
+      </Button>
+    </div>
+  )
+}
+
+// ─── Empty Card ──────────────────────────────────────────────────────
+function EmptyCard({
+  icon,
+  title,
+  description,
+}: {
+  icon: React.ReactNode
+  title: string
+  description: string
+}) {
+  return (
+    <div className="rounded-lg border border-[#E2E8F0] bg-white p-6 text-center">
+      <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-canvas flex items-center justify-center">
+        {icon}
+      </div>
+      <p className="text-sm text-ink-secondary font-medium mb-1">{title}</p>
+      <p className="text-xs text-ink-tertiary max-w-xs mx-auto">{description}</p>
     </div>
   )
 }
 
 export function Dashboard() {
-  // ALL hooks must be called BEFORE any conditional return
   const [hoveredOpportunity, setHoveredOpportunity] = useState<number | null>(null)
 
-  // Onboarding check — AFTER all hooks, using IIFE pattern
+  // ─── tRPC Queries ─────────────────────────────────────────────────
+  const {
+    data: countySummary,
+    isLoading: countyLoading,
+    error: countyError,
+    refetch: refetchCounty,
+  } = trpc.county.summary.useQuery()
+
+  const {
+    data: notificationHistory,
+    isLoading: notificationsLoading,
+    error: notificationsError,
+    refetch: refetchNotifications,
+  } = trpc.notification.history.useQuery({ limit: 5 })
+
+  const {
+    data: patternData,
+    isLoading: patternsLoading,
+    error: patternsError,
+    refetch: refetchPatterns,
+  } = trpc.pattern.list.useQuery({ limit: 5 })
+
+  const {
+    data: healthScore,
+    isLoading: healthLoading,
+    error: healthError,
+    refetch: refetchHealth,
+  } = trpc.analytics.healthScore.useQuery()
+
+  // Onboarding check — AFTER all hooks
   const onboardingComplete = (() => {
     try {
       return localStorage.getItem('buildsignal_onboarding_complete')
@@ -188,6 +235,11 @@ export function Dashboard() {
     return <OnboardingWizard />
   }
 
+  // ─── Derived Data ─────────────────────────────────────────────────
+  const notifications = notificationHistory?.items?.slice(0, 3) ?? []
+  const patterns = patternData?.patterns ?? []
+
+  // ─── Render ───────────────────────────────────────────────────────
   return (
     <div className="mx-auto max-w-[1200px] px-4 py-6">
       {/* ─── Page Header ─────────────────────────────────────────────── */}
@@ -218,6 +270,12 @@ export function Dashboard() {
             className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] motion-reduce:transition-none motion-reduce:hover:scale-100"
             style={{ borderColor: COLORS.signalBlue, color: COLORS.signalBlue, backgroundColor: COLORS.white }}
             type="button"
+            onClick={() => {
+              refetchCounty()
+              refetchNotifications()
+              refetchPatterns()
+              refetchHealth()
+            }}
           >
             <RefreshCw className="h-4 w-4" />
             Refresh
@@ -225,102 +283,165 @@ export function Dashboard() {
         </div>
       </div>
 
-      {/* ─── Sample Data Banner ────────────────────────────────────── */}
-      <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:bg-amber-950/30 dark:border-amber-900">
-        <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300">
-          <Info className="h-5 w-5 shrink-0" />
-          <span className="text-sm font-medium">Sample Data — Illustrative Example</span>
+      {/* ─── Data Freshness / Health Banner ─────────────────────────── */}
+      {healthLoading ? (
+        <div className="mb-6 rounded-lg border border-[#E2E8F0] bg-white p-4">
+          <div className="flex items-center gap-4 flex-wrap">
+            <Skeleton className="h-6 w-28 bg-ink-tertiary/10" />
+            <Skeleton className="h-6 w-24 bg-ink-tertiary/10" />
+            <Skeleton className="h-6 w-24 bg-ink-tertiary/10" />
+          </div>
         </div>
-        <p className="ml-7 mt-1 text-xs text-amber-700 dark:text-amber-400">
-          This dashboard shows example data for demonstration purposes. Your actual dashboard will display real opportunities, alerts, and metrics from your subscribed markets after account activation.
-        </p>
-      </div>
+      ) : healthError ? (
+        <div className="mb-6 rounded-lg border border-accent-amber/20 bg-accent-amber/5 p-4">
+          <div className="flex items-center gap-2 text-accent-amber">
+            <AlertTriangle className="h-4 w-4 shrink-0" />
+            <span className="text-sm font-medium">Health check unavailable</span>
+            <button
+              onClick={() => refetchHealth()}
+              className="ml-auto text-xs underline hover:no-underline"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      ) : healthScore ? (
+        <div className="mb-6 rounded-lg border border-[#E2E8F0] bg-white p-4 transition-all duration-200 hover:shadow-sm">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+            <div className="flex items-center gap-2">
+              <Activity className="h-4 w-4 text-accent-indigo" />
+              <span className="text-sm text-ink-secondary">Health Score:</span>
+              <Badge
+                variant="outline"
+                className={`text-xs font-semibold ${getHealthStatusColor(healthScore.status)}`}
+              >
+                <span className={`mr-1.5 h-2 w-2 rounded-full ${getHealthDotColor(healthScore.status)}`} />
+                {healthScore.overall ?? 'N/A'}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-2">
+              <Zap className="h-4 w-4 text-accent-teal" />
+              <span className="text-sm text-ink-secondary">API Latency:</span>
+              <span className="text-sm font-mono font-medium text-ink-primary">
+                {healthScore.apiLatency ? `${healthScore.apiLatency}ms` : 'N/A'}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-accent-amber" />
+              <span className="text-sm text-ink-secondary">Uptime:</span>
+              <span className="text-sm font-mono font-medium text-ink-primary">
+                {healthScore.uptime ? `${healthScore.uptime}%` : 'N/A'}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-accent-teal" />
+              <span className="text-sm text-ink-secondary">Status:</span>
+              <span className="text-sm font-medium capitalize" style={{
+                color: healthScore.status === 'healthy' ? COLORS.insightTeal
+                  : healthScore.status === 'degraded' ? COLORS.opportunityAmber
+                  : COLORS.errorRed
+              }}>
+                {healthScore.status ?? 'Unknown'}
+              </span>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {/* ─── Stats Row ───────────────────────────────────────────────── */}
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Total Opportunities */}
-        <div
-          className="rounded-lg border border-[#E2E8F0] bg-white p-4 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0"
-          style={{ borderLeftWidth: '4px', borderLeftColor: COLORS.signalBlue }}
-        >
-          <p
-            className="text-sm font-semibold uppercase tracking-[0.5px]"
-            style={{ color: COLORS.darkGrey, fontFamily: 'Inter, system-ui, sans-serif' }}
+        {/* Markets Monitored */}
+        {countyLoading ? (
+          <StatCardSkeleton />
+        ) : countyError ? (
+          <ErrorCard
+            message={countyError.message || 'Failed to load county data'}
+            onRetry={() => refetchCounty()}
+          />
+        ) : (
+          <div
+            className="rounded-lg border border-[#E2E8F0] bg-white p-4 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+            style={{ borderLeftWidth: '4px', borderLeftColor: COLORS.signalBlue }}
           >
-            Total Opportunities
-          </p>
-          <div className="mt-2 flex items-baseline justify-between">
             <p
-              className="font-mono text-2xl font-medium md:text-[32px]"
-              style={{ color: COLORS.deepNavy }}
+              className="text-sm font-semibold uppercase tracking-[0.5px]"
+              style={{ color: COLORS.darkGrey, fontFamily: 'Inter, system-ui, sans-serif' }}
             >
-              1,247
+              Markets Monitored
             </p>
-            <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
-              <TrendingUp className="mr-1 h-3 w-3" />
-              +12%
-            </span>
+            <div className="mt-2 flex items-baseline justify-between">
+              <p className="font-mono text-2xl font-medium md:text-[32px]" style={{ color: COLORS.deepNavy }}>
+                {countySummary?.total ?? 0}
+              </p>
+              <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+                <TrendingUp className="mr-1 h-3 w-3" />
+                {countySummary?.active ?? 0} active
+              </span>
+            </div>
+            <p className="mt-1 text-xs text-[#9AA5B1]">counties across all coverage tiers</p>
           </div>
-          <p className="mt-1 text-xs text-[#9AA5B1]">vs. previous 30 days</p>
-          <p className="mt-3 border-t border-[#E2E8F0] pt-2 text-[10px] font-semibold uppercase tracking-wider text-[#9AA5B1]">
-            Sample
-          </p>
-        </div>
+        )}
 
-        {/* Active Alerts */}
-        <div
-          className="rounded-lg border border-[#E2E8F0] bg-white p-4 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0"
-          style={{ borderLeftWidth: '4px', borderLeftColor: COLORS.opportunityAmber }}
-        >
-          <p
-            className="text-sm font-semibold uppercase tracking-[0.5px]"
-            style={{ color: COLORS.darkGrey, fontFamily: 'Inter, system-ui, sans-serif' }}
+        {/* Patterns Detected */}
+        {patternsLoading ? (
+          <StatCardSkeleton />
+        ) : patternsError ? (
+          <ErrorCard
+            message={patternsError.message || 'Failed to load pattern data'}
+            onRetry={() => refetchPatterns()}
+          />
+        ) : (
+          <div
+            className="rounded-lg border border-[#E2E8F0] bg-white p-4 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+            style={{ borderLeftWidth: '4px', borderLeftColor: COLORS.opportunityAmber }}
           >
-            Active Alerts
-          </p>
-          <div className="mt-2 flex items-baseline justify-between">
             <p
-              className="font-mono text-2xl font-medium md:text-[32px]"
-              style={{ color: COLORS.deepNavy }}
+              className="text-sm font-semibold uppercase tracking-[0.5px]"
+              style={{ color: COLORS.darkGrey, fontFamily: 'Inter, system-ui, sans-serif' }}
             >
-              34
+              Patterns Detected
             </p>
-            <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">
-              <AlertCircle className="mr-1 h-3 w-3" />
-              3 critical
-            </span>
+            <div className="mt-2 flex items-baseline justify-between">
+              <p className="font-mono text-2xl font-medium md:text-[32px]" style={{ color: COLORS.deepNavy }}>
+                {patternData?.total ?? 0}
+              </p>
+              <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">
+                <AlertCircle className="mr-1 h-3 w-3" />
+                Intelligence
+              </span>
+            </div>
+            <p className="mt-1 text-xs text-[#9AA5B1]">across all monitored counties</p>
           </div>
-          <p className="mt-1 text-xs text-[#9AA5B1]">across all markets</p>
-          <p className="mt-3 border-t border-[#E2E8F0] pt-2 text-[10px] font-semibold uppercase tracking-wider text-[#9AA5B1]">
-            Sample
-          </p>
-        </div>
+        )}
 
-        {/* Markets Tracked */}
-        <div
-          className="rounded-lg border border-[#E2E8F0] bg-white p-4 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0"
-          style={{ borderLeftWidth: '4px', borderLeftColor: COLORS.insightTeal }}
-        >
-          <p
-            className="text-sm font-semibold uppercase tracking-[0.5px]"
-            style={{ color: COLORS.darkGrey, fontFamily: 'Inter, system-ui, sans-serif' }}
+        {/* Projects Tracked */}
+        {countyLoading ? (
+          <StatCardSkeleton />
+        ) : countyError ? (
+          <ErrorCard
+            message={countyError.message || 'Failed to load project data'}
+            onRetry={() => refetchCounty()}
+          />
+        ) : (
+          <div
+            className="rounded-lg border border-[#E2E8F0] bg-white p-4 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+            style={{ borderLeftWidth: '4px', borderLeftColor: COLORS.insightTeal }}
           >
-            Markets Tracked
-          </p>
-          <div className="mt-2 flex items-baseline justify-between">
             <p
-              className="font-mono text-2xl font-medium md:text-[32px]"
-              style={{ color: COLORS.deepNavy }}
+              className="text-sm font-semibold uppercase tracking-[0.5px]"
+              style={{ color: COLORS.darkGrey, fontFamily: 'Inter, system-ui, sans-serif' }}
             >
-              156
+              Projects Tracked
             </p>
-            <span className="text-xs font-medium text-[#9AA5B1]">counties</span>
+            <div className="mt-2 flex items-baseline justify-between">
+              <p className="font-mono text-2xl font-medium md:text-[32px]" style={{ color: COLORS.deepNavy }}>
+                {countySummary?.totalEvents ?? 0}
+              </p>
+              <span className="text-xs font-medium text-[#9AA5B1]">events</span>
+            </div>
+            <p className="mt-1 text-xs text-[#9AA5B1]">from all active data feeds</p>
           </div>
-          <p className="mt-1 text-xs text-[#9AA5B1]">15 states monitored</p>
-          <p className="mt-3 border-t border-[#E2E8F0] pt-2 text-[10px] font-semibold uppercase tracking-wider text-[#9AA5B1]">
-            Sample
-          </p>
-        </div>
+        )}
 
         {/* Pipeline Value */}
         <div
@@ -334,118 +455,81 @@ export function Dashboard() {
             Pipeline Value
           </p>
           <div className="mt-2 flex items-baseline justify-between">
-            <p
-              className="font-mono text-2xl font-medium md:text-[32px]"
-              style={{ color: COLORS.deepNavy }}
-            >
-              $4.2M
+            <p className="font-mono text-2xl font-medium md:text-[32px]" style={{ color: COLORS.deepNavy }}>
+              N/A
             </p>
-            <span className="text-xs font-medium text-[#9AA5B1]">est.</span>
+            <Badge variant="outline" className="text-[10px] bg-ink-tertiary/5 text-ink-tertiary border-ink-tertiary/10">
+              <Info className="mr-1 h-3 w-3" />
+              Coming soon
+            </Badge>
           </div>
-          <p className="mt-1 text-xs text-[#9AA5B1]">year-to-date potential</p>
-          <p className="mt-3 border-t border-[#E2E8F0] pt-2 text-[10px] font-semibold uppercase tracking-wider text-[#9AA5B1]">
-            Sample
-          </p>
+          <p className="mt-1 text-xs text-[#9AA5B1]">Live financial data incoming</p>
         </div>
       </div>
 
-      {/* ─── Charts Row ──────────────────────────────────────────────── */}
+      {/* ─── Charts Row (Placeholders) ───────────────────────────────── */}
       <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Opportunity Trend */}
-        <Card className="rounded-lg border border-[#E2E8F0] bg-white transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0">
-          <CardHeader className="flex flex-row items-center justify-between p-4 pb-0">
-            <CardTitle
-              className="text-lg font-semibold"
-              style={{ color: COLORS.deepNavy, fontFamily: 'Inter, system-ui, sans-serif' }}
-            >
-              Opportunity Trend
-            </CardTitle>
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-[#9AA5B1]">
-              Sample
-            </span>
-          </CardHeader>
-          <CardContent className="p-4">
-            <ResponsiveContainer width="100%" height={280}>
-              <LineChart data={trendData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-                <XAxis
-                  dataKey="month"
-                  tick={{ fontSize: 12, fill: '#9AA5B1', fontFamily: 'Inter, system-ui, sans-serif' }}
-                  axisLine={{ stroke: '#E2E8F0' }}
-                  tickLine={false}
-                />
-                <YAxis
-                  tick={{ fontSize: 12, fill: '#9AA5B1', fontFamily: 'JetBrains Mono, monospace' }}
-                  axisLine={false}
-                  tickLine={false}
-                  tickFormatter={(v: number) => v.toLocaleString()}
-                />
-                <Tooltip content={<TrendTooltip />} />
-                <Line
-                  type="monotone"
-                  dataKey="opportunities"
-                  stroke={COLORS.signalBlue}
-                  strokeWidth={3}
-                  dot={{ r: 5, fill: COLORS.signalBlue, stroke: '#fff', strokeWidth: 2 }}
-                  activeDot={{ r: 7, fill: COLORS.signalBlue, stroke: '#fff', strokeWidth: 3 }}
-                  animationDuration={1500}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Market Breakdown */}
-        <Card className="rounded-lg border border-[#E2E8F0] bg-white transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0">
-          <CardHeader className="flex flex-row items-center justify-between p-4 pb-0">
-            <CardTitle
-              className="text-lg font-semibold"
-              style={{ color: COLORS.deepNavy, fontFamily: 'Inter, system-ui, sans-serif' }}
-            >
-              Market Breakdown
-            </CardTitle>
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-[#9AA5B1]">
-              Sample
-            </span>
-          </CardHeader>
-          <CardContent className="p-4">
-            <div className="flex items-center">
-              <ResponsiveContainer width="100%" height={280}>
-                <PieChart>
-                  <Pie
-                    data={sectorData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={70}
-                    outerRadius={110}
-                    paddingAngle={3}
-                    dataKey="value"
-                    animationDuration={1500}
-                  >
-                    {sectorData.map((entry) => (
-                      <Cell key={entry.name} fill={entry.color} stroke="none" />
-                    ))}
-                  </Pie>
-                  <Tooltip content={<SectorTooltip />} />
-                </PieChart>
-              </ResponsiveContainer>
-              {/* Legend */}
-              <div className="flex min-w-[140px] flex-col gap-3">
-                {sectorData.map((s) => (
-                  <div key={s.name} className="flex items-center gap-2">
-                    <div className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: s.color }} />
-                    <div>
-                      <p className="text-sm font-medium text-[#333333]" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-                        {s.name}
-                      </p>
-                      <p className="font-mono text-xs text-[#9AA5B1]">{s.value}</p>
-                    </div>
-                  </div>
-                ))}
+        {/* Opportunity Trend Placeholder */}
+        {countyLoading ? (
+          <ChartPlaceholderSkeleton />
+        ) : (
+          <Card className="rounded-lg border border-[#E2E8F0] bg-white transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+            <CardHeader className="flex flex-row items-center justify-between p-4 pb-0">
+              <CardTitle
+                className="text-lg font-semibold"
+                style={{ color: COLORS.deepNavy, fontFamily: 'Inter, system-ui, sans-serif' }}
+              >
+                Opportunity Trend
+              </CardTitle>
+              <Badge variant="outline" className="text-[10px] bg-ink-tertiary/5 text-ink-tertiary border-ink-tertiary/10">
+                <Clock className="mr-1 h-3 w-3" />
+                Pending data
+              </Badge>
+            </CardHeader>
+            <CardContent className="p-4">
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <BarChart3 className="h-10 w-10 text-ink-tertiary/40 mb-3" />
+                <p className="text-sm font-medium text-ink-secondary mb-1">
+                  Monthly trend data will appear as more intelligence is collected.
+                </p>
+                <p className="text-xs text-ink-tertiary max-w-sm">
+                  As counties are activated and events are processed, this chart will visualize opportunity trends over time.
+                </p>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Market Breakdown Placeholder */}
+        {countyLoading ? (
+          <ChartPlaceholderSkeleton />
+        ) : (
+          <Card className="rounded-lg border border-[#E2E8F0] bg-white transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+            <CardHeader className="flex flex-row items-center justify-between p-4 pb-0">
+              <CardTitle
+                className="text-lg font-semibold"
+                style={{ color: COLORS.deepNavy, fontFamily: 'Inter, system-ui, sans-serif' }}
+              >
+                Market Breakdown
+              </CardTitle>
+              <Badge variant="outline" className="text-[10px] bg-ink-tertiary/5 text-ink-tertiary border-ink-tertiary/10">
+                <Clock className="mr-1 h-3 w-3" />
+                Pending data
+              </Badge>
+            </CardHeader>
+            <CardContent className="p-4">
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <PieChartPlaceholder className="h-10 w-10 text-ink-tertiary/40 mb-3" />
+                <p className="text-sm font-medium text-ink-secondary mb-1">
+                  Sector breakdown will appear as coverage expands.
+                </p>
+                <p className="text-xs text-ink-tertiary max-w-sm">
+                  Once enough project data is collected, this chart will show distribution across commercial, residential, infrastructure, and industrial sectors.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* ─── Opportunities + Alerts Row ──────────────────────────────── */}
@@ -459,77 +543,112 @@ export function Dashboard() {
                   className="text-lg font-semibold"
                   style={{ color: COLORS.deepNavy, fontFamily: 'Inter, system-ui, sans-serif' }}
                 >
-                  Recent Opportunities
+                  Recent Patterns
                 </CardTitle>
-                <p className="mt-1 text-xs text-[#9AA5B1]">Example projects for demonstration</p>
+                <p className="mt-1 text-xs text-[#9AA5B1]">Latest intelligence from monitored counties</p>
               </div>
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#9AA5B1]">
-                Sample
-              </span>
+              <Badge
+                variant="outline"
+                className="text-[10px] bg-accent-indigo/5 text-accent-indigo border-accent-indigo/10"
+              >
+                Live
+              </Badge>
             </CardHeader>
             <CardContent className="p-0 pt-2">
               {/* Header row */}
               <div className="grid grid-cols-12 gap-4 border-b border-[#E2E8F0] px-4 pb-2 text-xs font-semibold uppercase tracking-[0.5px] text-[#9AA5B1]">
-                <div className="col-span-4">Project</div>
+                <div className="col-span-4">Pattern</div>
                 <div className="col-span-3 hidden sm:block">Location</div>
-                <div className="col-span-2 hidden md:block">Sector</div>
+                <div className="col-span-2 hidden md:block">Type</div>
                 <div className="col-span-2 text-center">Confidence</div>
-                <div className="col-span-3 text-right sm:col-span-1">Date</div>
+                <div className="col-span-3 text-right sm:col-span-1">ID</div>
               </div>
+
+              {/* Loading */}
+              {patternsLoading && (
+                <div>
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <OpportunityRowSkeleton key={i} />
+                  ))}
+                </div>
+              )}
+
+              {/* Error */}
+              {!patternsLoading && patternsError && (
+                <div className="px-4 py-8">
+                  <ErrorCard
+                    message={patternsError.message || 'Failed to load patterns'}
+                    onRetry={() => refetchPatterns()}
+                  />
+                </div>
+              )}
+
+              {/* Empty */}
+              {!patternsLoading && !patternsError && patterns.length === 0 && (
+                <div className="px-4 py-8">
+                  <EmptyCard
+                    icon={<Inbox className="w-5 h-5 text-ink-tertiary" />}
+                    title="No patterns detected yet"
+                    description="Pattern analysis runs as new data is ingested. Check back after your monitored counties begin receiving updates."
+                  />
+                </div>
+              )}
+
               {/* Data rows */}
-              <div>
-                {recentOpportunities.map((opp) => (
-                  <div
-                    key={opp.id}
-                    className={`grid grid-cols-12 gap-4 items-center px-4 py-3 transition-colors duration-200 ${
-                      hoveredOpportunity === opp.id ? 'bg-[#F5F5F5]' : ''
-                    }`}
-                    style={{ borderBottom: '1px solid #E2E8F0' }}
-                    onMouseEnter={() => setHoveredOpportunity(opp.id)}
-                    onMouseLeave={() => setHoveredOpportunity(null)}
-                  >
-                    <div className="col-span-4">
-                      <p className="truncate text-sm font-semibold text-[#0B1F33]">
-                        {opp.projectName}
-                      </p>
-                    </div>
-                    <div className="col-span-3 hidden sm:block">
-                      <p className="text-sm text-[#9AA5B1]">{opp.location}</p>
-                    </div>
-                    <div className="col-span-2 hidden md:block">
-                      <span
-                        className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${sectorBadgeStyles[opp.sector]}`}
-                      >
-                        {opp.sector}
-                      </span>
-                    </div>
-                    <div className="col-span-2 text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <div className="h-1.5 w-16 overflow-hidden rounded-full bg-[#E2E8F0]">
-                          <div
-                            className="h-full rounded-full transition-all duration-500"
-                            style={{
-                              width: `${opp.confidence}%`,
-                              backgroundColor:
-                                opp.confidence >= 90
-                                  ? COLORS.insightTeal
-                                  : opp.confidence >= 80
-                                    ? COLORS.signalBlue
-                                    : COLORS.opportunityAmber,
-                            }}
-                          />
-                        </div>
-                        <span className="font-mono text-xs font-medium text-[#333333]">
-                          {opp.confidence}%
+              {!patternsLoading && !patternsError && patterns.length > 0 && (
+                <div>
+                  {patterns.map((opp) => (
+                    <div
+                      key={opp.id}
+                      className={`grid grid-cols-12 gap-4 items-center px-4 py-3 transition-colors duration-200 ${
+                        hoveredOpportunity === opp.id ? 'bg-[#F5F5F5]' : ''
+                      }`}
+                      style={{ borderBottom: '1px solid #E2E8F0' }}
+                      onMouseEnter={() => setHoveredOpportunity(opp.id)}
+                      onMouseLeave={() => setHoveredOpportunity(null)}
+                    >
+                      <div className="col-span-4">
+                        <p className="truncate text-sm font-semibold text-[#0B1F33]">
+                          {opp.title}
+                        </p>
+                        <p className="truncate text-xs text-[#9AA5B1] mt-0.5">
+                          {opp.description?.slice(0, 60)}{opp.description && opp.description.length > 60 ? '...' : ''}
+                        </p>
+                      </div>
+                      <div className="col-span-3 hidden sm:block">
+                        <p className="text-sm text-[#9AA5B1] flex items-center gap-1">
+                          <MapPin className="h-3 w-3 shrink-0" />
+                          {opp.county}{opp.state ? `, ${opp.state}` : ''}
+                        </p>
+                      </div>
+                      <div className="col-span-2 hidden md:block">
+                        <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium bg-[#1F5EFF]/10 text-[#1F5EFF] border-[#1F5EFF]/20">
+                          {opp.type ?? 'Pattern'}
                         </span>
                       </div>
+                      <div className="col-span-2 text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          <div className="h-1.5 w-16 overflow-hidden rounded-full bg-[#E2E8F0]">
+                            <div
+                              className="h-full rounded-full transition-all duration-500"
+                              style={{
+                                width: `${Math.min(opp.confidence ?? 0, 100)}%`,
+                                backgroundColor: getConfidenceColor(opp.confidence ?? 0),
+                              }}
+                            />
+                          </div>
+                          <span className="font-mono text-xs font-medium text-[#333333]">
+                            {opp.confidence ?? 0}%
+                          </span>
+                        </div>
+                      </div>
+                      <div className="col-span-3 text-right sm:col-span-1">
+                        <p className="text-xs text-[#9AA5B1] font-mono">#{opp.id}</p>
+                      </div>
                     </div>
-                    <div className="col-span-3 text-right sm:col-span-1">
-                      <p className="text-xs text-[#9AA5B1]">{formatDate(opp.date)}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -544,53 +663,83 @@ export function Dashboard() {
               >
                 Alert Summary
               </CardTitle>
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#9AA5B1]">
-                Sample
-              </span>
+              {notificationsLoading ? (
+                <Skeleton className="h-5 w-12 bg-ink-tertiary/10" />
+              ) : notificationHistory && notificationHistory.unreadCount > 0 ? (
+                <Badge className="bg-accent-indigo text-white text-[10px]">
+                  {notificationHistory.unreadCount} unread
+                </Badge>
+              ) : null}
             </CardHeader>
             <CardContent className="space-y-3 p-4 pt-2">
-              {alerts.map((alert) => (
-                <div
-                  key={alert.id}
-                  className="rounded-lg border p-3 transition-all duration-200 hover:shadow-sm motion-reduce:transition-none"
-                  style={{
-                    borderColor:
-                      alert.severity === 'critical'
-                        ? '#FECACA'
-                        : alert.severity === 'warning'
-                          ? '#FDE68A'
-                          : '#BFDBFE',
-                    backgroundColor:
-                      alert.severity === 'critical'
-                        ? '#FEF2F2'
-                        : alert.severity === 'warning'
-                          ? '#FFFBEB'
-                          : '#EFF6FF',
-                  }}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="mt-1.5 shrink-0">
-                      <div
-                        className="h-2 w-2 rounded-full"
-                        style={{ backgroundColor: severityDotStyles[alert.severity] }}
-                      />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium leading-snug text-[#333333]">
-                        {alert.message}
-                      </p>
-                      <p className="mt-1 text-xs text-[#9AA5B1]">{alert.time}</p>
-                    </div>
-                  </div>
+              {/* Loading */}
+              {notificationsLoading && (
+                <div className="space-y-3">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <AlertItemSkeleton key={i} />
+                  ))}
                 </div>
-              ))}
-              <Button
-                className="mt-2 w-full transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] motion-reduce:transition-none motion-reduce:hover:scale-100"
-                style={{ backgroundColor: COLORS.signalBlue, color: COLORS.white }}
-              >
-                <Bell className="mr-2 h-4 w-4" />
-                Manage Alerts
-              </Button>
+              )}
+
+              {/* Error */}
+              {!notificationsLoading && notificationsError && (
+                <ErrorCard
+                  message={notificationsError.message || 'Failed to load alerts'}
+                  onRetry={() => refetchNotifications()}
+                />
+              )}
+
+              {/* Empty */}
+              {!notificationsLoading && !notificationsError && notifications.length === 0 && (
+                <EmptyCard
+                  icon={<Bell className="w-5 h-5 text-ink-tertiary" />}
+                  title="No alerts yet"
+                  description="You'll be notified when activity is detected in your monitored counties and watchlists."
+                />
+              )}
+
+              {/* Data */}
+              {!notificationsLoading && !notificationsError && notifications.length > 0 && (
+                <>
+                  {notifications.map((alert) => (
+                    <div
+                      key={alert.id}
+                      className={`rounded-lg border p-3 transition-all duration-200 hover:shadow-sm motion-reduce:transition-none ${getNotificationBorderColor(alert.type)} ${getNotificationBgColor(alert.type)}`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="mt-1 shrink-0">
+                          {!alert.read ? (
+                            <div className="h-2.5 w-2.5 rounded-full bg-accent-indigo" />
+                          ) : (
+                            <div className="h-2.5 w-2.5 rounded-full bg-ink-tertiary/30" />
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold text-ink-primary mb-0.5">
+                            {alert.title}
+                          </p>
+                          <p className="text-xs text-ink-secondary leading-snug">
+                            {alert.message}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1.5">
+                            <span className="inline-flex items-center rounded-full border px-1.5 py-0.5 text-[10px] font-medium bg-white/60 text-ink-secondary border-ink-tertiary/10">
+                              {alert.type}
+                            </span>
+                            <p className="text-[10px] text-ink-tertiary">{relativeTime(alert.createdAt)}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  <Button
+                    className="mt-2 w-full transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] motion-reduce:transition-none motion-reduce:hover:scale-100"
+                    style={{ backgroundColor: COLORS.signalBlue, color: COLORS.white }}
+                  >
+                    <Bell className="mr-2 h-4 w-4" />
+                    View All Alerts
+                  </Button>
+                </>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -629,5 +778,23 @@ export function Dashboard() {
       <DashboardTour />
       <HelpWidget />
     </div>
+  )
+}
+
+// ─── Simple Pie Chart Placeholder Icon ──────────────────────────────
+function PieChartPlaceholder({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
+      <path d="M22 12A10 10 0 0 0 12 2v10z" />
+    </svg>
   )
 }
