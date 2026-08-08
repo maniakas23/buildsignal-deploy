@@ -1,0 +1,3 @@
+BuildSignal Final Customer-Data Sprint
+Triggered: 2026-08-08T15:00:00Z
+Changes: Remove all API mock fallbacks, wire Dashboard/Reports/OpportunityDashboard to real tRPC, add data freshness indicators
