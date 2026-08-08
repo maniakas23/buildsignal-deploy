@@ -1,6 +1,7 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { TRPCProvider } from "./providers/trpc";
 import { usePageTracking } from "./hooks/usePageTracking";
+import { useAuth } from "./hooks/useAuth";
 import { Home } from "./pages/Home";
 import { Login } from "./pages/Login";
 import { SignupPage } from "./pages/SignupPage";
@@ -12,6 +13,7 @@ import AlertsPage from "./pages/AlertsPage";
 import { RecommendationsPage } from "./pages/RecommendationsPage";
 import OpportunityDashboard from "./pages/OpportunityDashboard";
 import { CountyDetail } from "./pages/CountyDetail";
+import CountyCoveragePage from "./pages/CountyCoveragePage";
 import { WatchlistPage } from "./pages/WatchlistPage";
 import { ReportsPage } from "./pages/ReportsPage";
 import SettingsPage from "./pages/SettingsPage";
@@ -34,6 +36,14 @@ import AuthLayout from "./components/AuthLayout";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeSwitcher } from "./components/theme/ThemeSwitcher";
 
+function AuthenticatedRedirect({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated } = useAuth();
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return <>{children}</>;
+}
+
 // BuildSignal v1.3.0 — Theme System & Design System
 function App() {
   usePageTracking();
@@ -44,8 +54,22 @@ function App() {
       <Routes>
         {/* Public routes */}
         <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<SignupPage />} />
+        <Route
+          path="/login"
+          element={
+            <AuthenticatedRedirect>
+              <Login />
+            </AuthenticatedRedirect>
+          }
+        />
+        <Route
+          path="/signup"
+          element={
+            <AuthenticatedRedirect>
+              <SignupPage />
+            </AuthenticatedRedirect>
+          }
+        />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/welcome" element={<WelcomePage />} />
         <Route path="/pricing" element={<PricingPage />} />
@@ -66,6 +90,7 @@ function App() {
         <Route element={<AuthLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/opportunities" element={<OpportunityDashboard />} />
+          <Route path="/counties" element={<CountyCoveragePage />} />
           <Route path="/counties/:id" element={<CountyDetail />} />
           <Route path="/watchlist" element={<WatchlistPage />} />
           <Route path="/recommendations" element={<RecommendationsPage />} />
