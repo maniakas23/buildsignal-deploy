@@ -37,19 +37,34 @@ export const passwordResetTokens = sqliteTable("password_reset_tokens", {
   createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
-// ─── Saved Areas ───
+// ─── Saved Areas / Watchlists ───
 export const savedAreas = sqliteTable("saved_areas", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   userId: integer("userId").notNull(),
   name: text("name").notNull(),
-  county: text("county").notNull(),
-  state: text("state").notNull(),
+  // Legacy single-area fields (nullable for backward compatibility)
+  county: text("county"),
+  state: text("state"),
   city: text("city"),
   zipCode: text("zipCode"),
   lat: text("lat"),
   lng: text("lng"),
   alertRadius: integer("alertRadius").default(25),
+  // Watchlist fields (JSON arrays)
+  states: text("states"),
+  counties: text("counties"),
+  eventTypes: text("eventTypes"),
   alertEnabled: integer("alertEnabled", { mode: "boolean" }).default(true),
+  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+// ─── Search History ───
+export const searchHistory = sqliteTable("search_history", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  userId: integer("userId").notNull(),
+  query: text("query").notNull(),
+  filters: text("filters"), // JSON
+  resultCount: integer("resultCount").default(0),
   createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
