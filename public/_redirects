@@ -1,5 +1,13 @@
 # Redirect www to apex domain (SEO)
 www.buildsignal.net/*  buildsignal.net/:splat  301
 
+# Static assets — serve directly, do not redirect to index.html
+/robots.txt  /robots.txt  200
+/sitemap.xml  /sitemap.xml  200
+/_headers  /_headers  200
+/_redirects  /_redirects  200
+/favicon.svg  /favicon.svg  200
+/og-image.svg  /og-image.svg  200
+
 # BuildSignal SPA Routing — redirect all paths to index.html for client-side routing
 /*    /index.html   200
