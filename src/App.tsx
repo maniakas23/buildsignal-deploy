@@ -12,7 +12,6 @@ import { BillingPage } from "./pages/BillingPage";
 import { PricingPage } from "./pages/PricingPage";
 import AlertsPage from "./pages/AlertsPage";
 import { RecommendationsPage } from "./pages/RecommendationsPage";
-import OperationsCenterPage from "./pages/OperationsCenterPage";
 import OpportunityDashboard from "./pages/OpportunityDashboard";
 import { CountyDetail } from "./pages/CountyDetail";
 import { WatchlistPage } from "./pages/WatchlistPage";
@@ -74,7 +73,6 @@ function App() {
             <Route path="/watchlist" element={<WatchlistPage />} />
             <Route path="/recommendations" element={<RecommendationsPage />} />
             <Route path="/alerts" element={<AlertsPage />} />
-            <Route path="/operations" element={<OperationsCenterPage />} />
             <Route path="/reports" element={<ReportsPage />} />
             <Route path="/billing" element={<BillingPage />} />
             <Route path="/settings" element={<SettingsPage />} />
