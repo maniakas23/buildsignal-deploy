@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Card,
   CardContent,
@@ -8,6 +9,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Select,
   SelectContent,
@@ -29,105 +31,57 @@ import {
   FileSpreadsheet,
   FileDigit,
   ChevronRight,
-  Info,
+  RefreshCw,
+  AlertCircle,
+  MapPin,
 } from 'lucide-react';
+import { trpc } from '@/providers/trpc';
 
 /* ------------------------------------------------------------------ */
-/*  Sample Data — clearly marked                                      */
+/*  Types derived from brief API                                      */
 /* ------------------------------------------------------------------ */
+
+type ReportType = 'Market' | 'Pipeline' | 'Zoning' | 'Competitive' | 'Permits' | 'Summary';
 
 interface ReportItem {
   id: string;
   title: string;
   description: string;
-  type: 'Market' | 'Pipeline' | 'Zoning' | 'Competitive' | 'Permits' | 'Summary';
+  type: ReportType;
   lastGenerated: string;
   status: 'available' | 'scheduled' | 'archived';
-  scheduled?: boolean;
+  scheduled: boolean;
+  sectionId: string;
 }
-
-const SAMPLE_REPORTS: ReportItem[] = [
-  {
-    id: 'r-1',
-    title: 'Market Surge Report',
-    description: 'Weekly analysis of market momentum, pricing trends, and demand signals across monitored counties.',
-    type: 'Market',
-    lastGenerated: 'Jun 12, 2025',
-    status: 'available',
-    scheduled: true,
-  },
-  {
-    id: 'r-2',
-    title: 'County Activity Summary',
-    description: 'Aggregated permit, zoning, and development activity grouped by county and region.',
-    type: 'Summary',
-    lastGenerated: 'Jun 10, 2025',
-    status: 'available',
-    scheduled: false,
-  },
-  {
-    id: 'r-3',
-    title: 'Pipeline Forecast',
-    description: 'Forward-looking pipeline projection based on current permits, zoning changes, and historical trends.',
-    type: 'Pipeline',
-    lastGenerated: 'Jun 8, 2025',
-    status: 'available',
-    scheduled: true,
-  },
-  {
-    id: 'r-4',
-    title: 'Zoning Change Alert',
-    description: 'Real-time alert digest of zoning amendments, hearings, and approved map changes.',
-    type: 'Zoning',
-    lastGenerated: 'Jun 5, 2025',
-    status: 'available',
-    scheduled: false,
-  },
-  {
-    id: 'r-5',
-    title: 'Competitive Landscape',
-    description: 'Competitor activity map showing new filings, expansions, and market share shifts.',
-    type: 'Competitive',
-    lastGenerated: 'Jun 1, 2025',
-    status: 'available',
-    scheduled: true,
-  },
-  {
-    id: 'r-6',
-    title: 'Permit Trend Analysis',
-    description: 'Deep-dive into permit issuance patterns, approval velocities, and category breakdowns.',
-    type: 'Permits',
-    lastGenerated: 'May 28, 2025',
-    status: 'available',
-    scheduled: false,
-  },
-  {
-    id: 'r-7',
-    title: 'Q1 Historical Review',
-    description: 'Archived quarterly rollup for Q1 2025 with benchmark comparisons.',
-    type: 'Summary',
-    lastGenerated: 'Mar 31, 2025',
-    status: 'archived',
-    scheduled: false,
-  },
-  {
-    id: 'r-8',
-    title: '2024 Annual Overview',
-    description: 'Year-end archive containing consolidated metrics and coverage score history.',
-    type: 'Summary',
-    lastGenerated: 'Dec 31, 2024',
-    status: 'archived',
-    scheduled: false,
-  },
-];
-
-const TYPE_OPTIONS = ['All Types', 'Market', 'Pipeline', 'Zoning', 'Competitive', 'Permits', 'Summary'];
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                           */
 /* ------------------------------------------------------------------ */
 
-function typeBadgeColor(type: ReportItem['type']) {
+function mapSectionTypeToReportType(sectionType: string): ReportType {
+  switch (sectionType) {
+    case 'executive_summary':
+      return 'Summary';
+    case 'top_opportunities':
+      return 'Market';
+    case 'new_signals':
+      return 'Permits';
+    case 'high_priority_counties':
+      return 'Market';
+    case 'provider_status':
+      return 'Summary';
+    case 'trend_summary':
+      return 'Market';
+    case 'upcoming_meetings':
+      return 'Zoning';
+    case 'watchlist_matches':
+      return 'Competitive';
+    default:
+      return 'Summary';
+  }
+}
+
+function typeBadgeColor(type: ReportType) {
   switch (type) {
     case 'Market':
       return 'bg-accent-indigo/10 text-accent-indigo border-accent-indigo/20';
@@ -146,21 +100,81 @@ function typeBadgeColor(type: ReportItem['type']) {
   }
 }
 
+function formatBriefDate(dateStr: string): string {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr);
+  if (Number.isNaN(d.getTime())) return dateStr;
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
 /* ------------------------------------------------------------------ */
 /*  Component                                                         */
 /* ------------------------------------------------------------------ */
 
 export function ReportsPage() {
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('All Types');
   const [activeTab, setActiveTab] = useState('all');
 
-  const availableCount = SAMPLE_REPORTS.filter((r) => r.status === 'available').length;
-  const scheduledCount = SAMPLE_REPORTS.filter((r) => r.scheduled).length;
-  const lastGenerated = 'Jun 12, 2025';
-  const reportTypes = new Set(SAMPLE_REPORTS.map((r) => r.type)).size;
+  const {
+    data: brief,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = trpc.brief.today.useQuery();
 
-  const filtered = SAMPLE_REPORTS.filter((r) => {
+  /* Derive reports from brief sections */
+  const reports: ReportItem[] = useMemo(() => {
+    if (!brief || !brief.sections || brief.sections.length === 0) return [];
+    const generatedDate = formatBriefDate(brief.date || brief.generatedAt);
+    const items: ReportItem[] = [];
+    brief.sections.forEach((section) => {
+      if (!section.items || section.items.length === 0) {
+        /* Section with no items still counts as a report category */
+        items.push({
+          id: `${section.id}-overview`,
+          title: section.title,
+          description: section.summary || 'Daily intelligence briefing section.',
+          type: mapSectionTypeToReportType(section.type),
+          lastGenerated: generatedDate,
+          status: 'available',
+          scheduled: false,
+          sectionId: section.id,
+        });
+      } else {
+        section.items.forEach((item) => {
+          items.push({
+            id: item.id || `${section.id}-${Math.random().toString(36).slice(2, 8)}`,
+            title: item.title || section.title,
+            description: item.description || section.summary || 'Intelligence report entry.',
+            type: mapSectionTypeToReportType(section.type),
+            lastGenerated: generatedDate,
+            status: 'available',
+            scheduled: false,
+            sectionId: section.id,
+          });
+        });
+      }
+    });
+    return items;
+  }, [brief]);
+
+  /* Dynamic stats */
+  const availableCount = reports.filter((r) => r.status === 'available').length;
+  const scheduledCount = reports.filter((r) => r.scheduled).length;
+  const lastGenerated = brief ? formatBriefDate(brief.date || brief.generatedAt) : '—';
+  const reportTypes = new Set(reports.map((r) => r.type)).size;
+
+  /* Derived type options */
+  const typeOptions = useMemo(() => {
+    const types = Array.from(new Set(reports.map((r) => r.type)));
+    return ['All Types', ...types];
+  }, [reports]);
+
+  /* Filter */
+  const filtered = reports.filter((r) => {
     const matchesSearch =
       r.title.toLowerCase().includes(search.toLowerCase()) ||
       r.description.toLowerCase().includes(search.toLowerCase());
@@ -174,15 +188,38 @@ export function ReportsPage() {
     return matchesSearch && matchesType && matchesTab;
   });
 
+  const isEmpty = !isLoading && !isError && reports.length === 0;
+
   return (
     <div className="bg-canvas min-h-screen pb-12">
-      {/* Top banner indicating sample data */}
-      <div className="bg-accent-indigo/5 border-b border-accent-indigo/10">
+      {/* Data freshness banner */}
+      <div className="bg-accent-teal/5 border-b border-accent-teal/10">
         <div className="max-w-content mx-auto px-6 py-2 flex items-center gap-2">
-          <Info className="w-4 h-4 text-accent-indigo" />
-          <span className="text-sm text-accent-indigo font-medium">
-            Sample Data — All reports shown below are placeholder examples for UI demonstration.
-          </span>
+          {isLoading ? (
+            <>
+              <RefreshCw className="w-4 h-4 text-accent-teal animate-spin" />
+              <span className="text-sm text-accent-teal font-medium">Loading intelligence brief…</span>
+            </>
+          ) : isError ? (
+            <>
+              <AlertCircle className="w-4 h-4 text-accent-crimson" />
+              <span className="text-sm text-accent-crimson font-medium">
+                Unable to load brief — {error?.message || 'Unknown error'}
+              </span>
+            </>
+          ) : (
+            <>
+              <FileText className="w-4 h-4 text-accent-teal" />
+              <span className="text-sm text-accent-teal font-medium">
+                Live Data — Reports sourced from daily intelligence brief
+                {brief?.generatedAt && (
+                  <span className="ml-1 font-normal opacity-80">
+                    (generated {formatBriefDate(brief.generatedAt)})
+                  </span>
+                )}
+              </span>
+            </>
+          )}
         </div>
       </div>
 
@@ -202,7 +239,11 @@ export function ReportsPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm text-ink-tertiary mb-1">Available Reports</p>
-                  <p className="text-3xl font-bold text-ink-primary">{availableCount}</p>
+                  {isLoading ? (
+                    <Skeleton className="h-9 w-16" />
+                  ) : (
+                    <p className="text-3xl font-bold text-ink-primary">{availableCount}</p>
+                  )}
                 </div>
                 <div className="p-2.5 rounded-lg bg-accent-indigo/10">
                   <FileText className="w-5 h-5 text-accent-indigo" />
@@ -216,7 +257,11 @@ export function ReportsPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm text-ink-tertiary mb-1">Scheduled</p>
-                  <p className="text-3xl font-bold text-ink-primary">{scheduledCount}</p>
+                  {isLoading ? (
+                    <Skeleton className="h-9 w-16" />
+                  ) : (
+                    <p className="text-3xl font-bold text-ink-primary">{scheduledCount}</p>
+                  )}
                 </div>
                 <div className="p-2.5 rounded-lg bg-accent-teal/10">
                   <Calendar className="w-5 h-5 text-accent-teal" />
@@ -230,7 +275,11 @@ export function ReportsPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm text-ink-tertiary mb-1">Last Generated</p>
-                  <p className="text-2xl font-bold text-ink-primary">{lastGenerated}</p>
+                  {isLoading ? (
+                    <Skeleton className="h-9 w-24" />
+                  ) : (
+                    <p className="text-2xl font-bold text-ink-primary">{lastGenerated}</p>
+                  )}
                 </div>
                 <div className="p-2.5 rounded-lg bg-accent-amber/10">
                   <Clock className="w-5 h-5 text-accent-amber" />
@@ -244,7 +293,11 @@ export function ReportsPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm text-ink-tertiary mb-1">Report Types</p>
-                  <p className="text-3xl font-bold text-ink-primary">{reportTypes}</p>
+                  {isLoading ? (
+                    <Skeleton className="h-9 w-16" />
+                  ) : (
+                    <p className="text-3xl font-bold text-ink-primary">{reportTypes}</p>
+                  )}
                 </div>
                 <div className="p-2.5 rounded-lg bg-slate-100">
                   <Layers className="w-5 h-5 text-ink-secondary" />
@@ -254,114 +307,174 @@ export function ReportsPage() {
           </Card>
         </div>
 
-        {/* Filters + Export */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          <div className="flex flex-col sm:flex-row gap-3 flex-1">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-tertiary" />
-              <Input
-                placeholder="Search reports..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-10 bg-surface border-border text-ink-primary placeholder:text-ink-tertiary"
-              />
+        {/* Error State */}
+        {isError && (
+          <div className="bg-accent-crimson/5 border border-accent-crimson/20 rounded-xl p-6 mb-8">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <div className="p-2.5 rounded-lg bg-accent-crimson/10">
+                <AlertCircle className="w-6 h-6 text-accent-crimson" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-base font-semibold text-ink-primary mb-1">
+                  Failed to load reports
+                </h3>
+                <p className="text-sm text-ink-secondary">
+                  {error?.message || 'Unable to fetch the daily intelligence brief. Please try again.'}
+                </p>
+              </div>
+              <Button
+                onClick={() => refetch()}
+                variant="outline"
+                className="border-accent-crimson/30 text-accent-crimson hover:bg-accent-crimson/5"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Retry
+              </Button>
             </div>
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-[180px] bg-surface border-border text-ink-primary">
-                <SelectValue placeholder="Filter by type" />
-              </SelectTrigger>
-              <SelectContent>
-                {TYPE_OPTIONS.map((opt) => (
-                  <SelectItem key={opt} value={opt}>
-                    {opt}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
+        )}
 
-          <div className="flex gap-2">
+        {/* Honest Empty State */}
+        {isEmpty && (
+          <div className="bg-surface border border-border rounded-xl p-10 mb-8 text-center">
+            <div className="w-16 h-16 rounded-full bg-canvas flex items-center justify-center mx-auto mb-4">
+              <FileText className="w-8 h-8 text-ink-tertiary" />
+            </div>
+            <h3 className="text-lg font-semibold text-ink-primary mb-2">
+              No reports generated yet
+            </h3>
+            <p className="text-sm text-ink-secondary max-w-md mx-auto mb-6">
+              Reports are created from daily intelligence briefings as data is collected.
+              Once your monitored counties begin generating signals, reports will appear here automatically.
+            </p>
             <Button
-              variant="outline"
-              className="border-border text-ink-secondary hover:bg-surface hover:text-ink-primary"
+              onClick={() => navigate('/counties')}
+              className="bg-accent-indigo hover:bg-accent-indigo/90 text-white"
             >
-              <FileDigit className="w-4 h-4 mr-2" />
-              Export PDF
-            </Button>
-            <Button
-              variant="outline"
-              className="border-border text-ink-secondary hover:bg-surface hover:text-ink-primary"
-            >
-              <FileSpreadsheet className="w-4 h-4 mr-2" />
-              Export CSV
+              <MapPin className="w-4 h-4 mr-2" />
+              Check County Coverage
             </Button>
           </div>
-        </div>
+        )}
 
-        <Separator className="mb-6 bg-border" />
-
-        {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="bg-surface border border-border mb-6">
-            <TabsTrigger
-              value="all"
-              className="data-[state=active]:bg-accent-indigo data-[state=active]:text-white"
-            >
-              <FileBarChart className="w-4 h-4 mr-2" />
-              All Reports
-            </TabsTrigger>
-            <TabsTrigger
-              value="scheduled"
-              className="data-[state=active]:bg-accent-indigo data-[state=active]:text-white"
-            >
-              <Calendar className="w-4 h-4 mr-2" />
-              Scheduled
-            </TabsTrigger>
-            <TabsTrigger
-              value="archived"
-              className="data-[state=active]:bg-accent-indigo data-[state=active]:text-white"
-            >
-              <Archive className="w-4 h-4 mr-2" />
-              Archived
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="all" className="mt-0">
-            {filtered.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {filtered.map((report) => (
-                  <ReportCard key={report.id} report={report} />
-                ))}
+        {/* Filters + Export (hide when empty or loading initial) */}
+        {!isEmpty && !isError && (
+          <>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+              <div className="flex flex-col sm:flex-row gap-3 flex-1">
+                <div className="relative flex-1 max-w-md">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-tertiary" />
+                  <Input
+                    placeholder="Search reports..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-10 bg-surface border-border text-ink-primary placeholder:text-ink-tertiary"
+                  />
+                </div>
+                <Select value={typeFilter} onValueChange={setTypeFilter}>
+                  <SelectTrigger className="w-[180px] bg-surface border-border text-ink-primary">
+                    <SelectValue placeholder="Filter by type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {typeOptions.map((opt) => (
+                      <SelectItem key={opt} value={opt}>
+                        {opt}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            ) : (
-              <EmptyState message="No reports match your filters." />
-            )}
-          </TabsContent>
 
-          <TabsContent value="scheduled" className="mt-0">
-            {filtered.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {filtered.map((report) => (
-                  <ReportCard key={report.id} report={report} />
-                ))}
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="border-border text-ink-secondary hover:bg-surface hover:text-ink-primary"
+                >
+                  <FileDigit className="w-4 h-4 mr-2" />
+                  Export PDF
+                </Button>
+                <Button
+                  variant="outline"
+                  className="border-border text-ink-secondary hover:bg-surface hover:text-ink-primary"
+                >
+                  <FileSpreadsheet className="w-4 h-4 mr-2" />
+                  Export CSV
+                </Button>
               </div>
-            ) : (
-              <EmptyState message="No scheduled reports found." />
-            )}
-          </TabsContent>
+            </div>
 
-          <TabsContent value="archived" className="mt-0">
-            {filtered.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {filtered.map((report) => (
-                  <ReportCard key={report.id} report={report} />
-                ))}
-              </div>
-            ) : (
-              <EmptyState message="No archived reports found." />
-            )}
-          </TabsContent>
-        </Tabs>
+            <Separator className="mb-6 bg-border" />
+
+            {/* Tabs */}
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="bg-surface border border-border mb-6">
+                <TabsTrigger
+                  value="all"
+                  className="data-[state=active]:bg-accent-indigo data-[state=active]:text-white"
+                >
+                  <FileBarChart className="w-4 h-4 mr-2" />
+                  All Reports
+                </TabsTrigger>
+                <TabsTrigger
+                  value="scheduled"
+                  className="data-[state=active]:bg-accent-indigo data-[state=active]:text-white"
+                >
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Scheduled
+                </TabsTrigger>
+                <TabsTrigger
+                  value="archived"
+                  className="data-[state=active]:bg-accent-indigo data-[state=active]:text-white"
+                >
+                  <Archive className="w-4 h-4 mr-2" />
+                  Archived
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="all" className="mt-0">
+                {isLoading ? (
+                  <ReportGridSkeleton />
+                ) : filtered.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {filtered.map((report) => (
+                      <ReportCard key={report.id} report={report} />
+                    ))}
+                  </div>
+                ) : (
+                  <EmptyState message="No reports match your filters." />
+                )}
+              </TabsContent>
+
+              <TabsContent value="scheduled" className="mt-0">
+                {isLoading ? (
+                  <ReportGridSkeleton />
+                ) : filtered.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {filtered.map((report) => (
+                      <ReportCard key={report.id} report={report} />
+                    ))}
+                  </div>
+                ) : (
+                  <EmptyState message="No scheduled reports found." />
+                )}
+              </TabsContent>
+
+              <TabsContent value="archived" className="mt-0">
+                {isLoading ? (
+                  <ReportGridSkeleton />
+                ) : filtered.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {filtered.map((report) => (
+                      <ReportCard key={report.id} report={report} />
+                    ))}
+                  </div>
+                ) : (
+                  <EmptyState message="No archived reports found." />
+                )}
+              </TabsContent>
+            </Tabs>
+          </>
+        )}
       </div>
     </div>
   );
@@ -431,6 +544,35 @@ function EmptyState({ message }: { message: string }) {
       <p className="text-sm text-ink-secondary max-w-sm">
         Try adjusting your search or filter criteria to find what you are looking for.
       </p>
+    </div>
+  );
+}
+
+function ReportGridSkeleton() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <Card key={i} className="bg-surface border-border">
+          <CardHeader className="pb-3">
+            <div className="flex items-start justify-between gap-3">
+              <Skeleton className="h-6 w-3/4" />
+              <Skeleton className="h-5 w-16" />
+            </div>
+          </CardHeader>
+          <CardContent className="pt-0 space-y-3">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-2/3" />
+            <div className="flex items-center justify-between pt-2">
+              <Skeleton className="h-3.5 w-20" />
+              <Skeleton className="h-3.5 w-16" />
+            </div>
+            <div className="flex items-center gap-2 pt-2">
+              <Skeleton className="h-9 flex-1" />
+              <Skeleton className="h-9 w-10" />
+            </div>
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 }
