@@ -47,6 +47,7 @@ import { warehouseRouter } from "./warehouse-router";
 import { expansionRouter } from "./expansion-router";
 import { qualityRouter } from "./quality-router";
 import { briefingRouter } from "./briefing-router";
+import { usageRouter } from "./usage-router";
 
 export const appRouter = createRouter({
   health: publicQuery.query(() => ({ status: "ok", service: "buildsignal", version: "1.0.0" })),
@@ -96,6 +97,7 @@ export const appRouter = createRouter({
   expansion: expansionRouter,
   quality: qualityRouter,
   briefing: briefingRouter,
+  usage: usageRouter,
 });
 
 export type AppRouter = typeof appRouter;
