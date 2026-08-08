@@ -11,8 +11,8 @@ export async function onRequest(context) {
     return context.next();
   }
   
-  const path = url.pathname.replace(/^\/api/, "");
-  const target = new URL(path + url.search, "https://api.buildsignal.net");
+  // Forward the FULL path including /api prefix to the backend
+  const target = new URL(url.pathname + url.search, "https://api.buildsignal.net");
 
   const headers = new Headers(request.headers);
   headers.set("Host", "api.buildsignal.net");
