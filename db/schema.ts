@@ -14,6 +14,11 @@ export const users = sqliteTable("users", {
   avatar: text("avatar"),
   plan: text("plan").notNull().default("starter"),
   isAdmin: integer("isAdmin", { mode: "boolean" }).default(false),
+  stripeCustomerId: text("stripeCustomerId"),
+  stripeSubscriptionId: text("stripeSubscriptionId"),
+  subscriptionStatus: text("subscriptionStatus").default("inactive"),
+  subscriptionCurrentPeriodEnd: integer("subscriptionCurrentPeriodEnd", { mode: "timestamp" }),
+  cancelAtPeriodEnd: integer("cancelAtPeriodEnd", { mode: "boolean" }).default(false),
   createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
 }, (t) => [uniqueIndex("users_union_idx").on(t.unionId)]);
 
