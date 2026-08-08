@@ -30,18 +30,21 @@ import { TermsPage } from "./pages/TermsPage";
 import { SampleReportPage } from "./pages/SampleReportPage";
 import { RoadmapPage } from "./pages/RoadmapPage";
 import EmailPreviewPage from "./pages/EmailPreviewPage";
+import { PaletteShowcasePage } from "./pages/PaletteShowcasePage";
 import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
 import NotFound from "./pages/NotFound";
 import AuthLayout from "./components/AuthLayout";
 import { Toaster } from "@/components/ui/toaster";
+import { ThemeSwitcher } from "./components/theme/ThemeSwitcher";
 
-// BuildSignal v1.2.0 - Customer Acquisition & Onboarding
+// BuildSignal v1.3.0 — Theme System & Design System
 function App() {
   usePageTracking();
 
   return (
     <QueryClientProvider client={queryClient}>
       <TRPCProvider>
+        <ThemeSwitcher />
         <Routes>
           {/* Public routes */}
           <Route path="/" element={<Home />} />
@@ -61,6 +64,7 @@ function App() {
           <Route path="/sample-report" element={<SampleReportPage />} />
           <Route path="/roadmap" element={<RoadmapPage />} />
           <Route path="/email-preview" element={<EmailPreviewPage />} />
+          <Route path="/palettes" element={<PaletteShowcasePage />} />
 
           {/* Auth-gated routes */}
           <Route element={<AuthLayout />}>
