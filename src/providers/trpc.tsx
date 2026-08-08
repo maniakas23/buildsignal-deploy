@@ -6,12 +6,27 @@ import type { ReactNode } from "react";
 
 export const trpc = createTRPCReact<AppRouter>();
 
-const queryClient = new QueryClient({
+export const TOKEN_KEY = "buildsignal_auth_token";
+
+const handleAuthError = (error: any) => {
+  if (error?.data?.code === "UNAUTHORIZED") {
+    localStorage.removeItem(TOKEN_KEY);
+    window.location.href = "/login";
+  }
+};
+
+export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 30000,
       retry: 2,
       refetchOnWindowFocus: false,
+      meta: {
+        onError: handleAuthError,
+      },
+    },
+    mutations: {
+      onError: handleAuthError,
     },
   },
 });
@@ -22,7 +37,7 @@ export const trpcClient = trpc.createClient({
       url: "/api/trpc",
       transformer: superjson,
       headers() {
-        const token = localStorage.getItem("auth_token");
+        const token = localStorage.getItem(TOKEN_KEY);
         return token ? { Authorization: `Bearer ${token}` } : {};
       },
       fetch(input, init) {

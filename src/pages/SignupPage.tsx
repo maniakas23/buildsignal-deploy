@@ -85,30 +85,29 @@ const defaultPlans: Plan[] = [
 const steps = [
   { label: "Account", description: "Create your account" },
   { label: "Plan", description: "Choose your plan" },
-  { label: "Payment", description: "Start your trial" },
+  { label: "Get Started", description: "Start building intelligence" },
 ];
 
 export function SignupPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { login } = useAuth();
+  const { register, registerError, registerIsPending } = useAuth();
   const config = trpc.billing.config.useQuery();
 
   const preselectedPlan = searchParams.get("plan");
   const preselectedCycle = searchParams.get("cycle") as "monthly" | "annual" | null;
 
   const [step, setStep] = useState(preselectedPlan ? 2 : 1);
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [company, setCompany] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(preselectedPlan);
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">(
     preselectedCycle || "monthly"
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const plans = (config.data?.plans?.length ? config.data.plans : defaultPlans) as Plan[];
 
@@ -119,23 +118,30 @@ export function SignupPage() {
     }
   }, [preselectedPlan]);
 
+  const validatePassword = (pwd: string): string | null => {
+    if (pwd.length < 8) return "Password must be at least 8 characters";
+    if (!/[A-Z]/.test(pwd)) return "Password must contain at least one uppercase letter";
+    if (!/[a-z]/.test(pwd)) return "Password must contain at least one lowercase letter";
+    if (!/[0-9]/.test(pwd)) return "Password must contain at least one number";
+    return null;
+  };
+
   const validateStep1 = () => {
     const newErrors: Record<string, string> = {};
+    if (!name.trim()) {
+      newErrors.name = "Name is required";
+    }
     if (!email.trim()) {
       newErrors.email = "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       newErrors.email = "Please enter a valid email address";
     }
-    if (!password) {
-      newErrors.password = "Password is required";
-    } else if (password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters";
+    const pwdError = validatePassword(password);
+    if (pwdError) {
+      newErrors.password = pwdError;
     }
     if (password !== confirmPassword) {
       newErrors.confirmPassword = "Passwords do not match";
-    }
-    if (!company.trim()) {
-      newErrors.company = "Company name is required";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -163,20 +169,17 @@ export function SignupPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (step === 3) {
-      setIsSubmitting(true);
       try {
-        await login(email, password);
+        await register({ name, email, password });
         trackEvent("sign_up", {
           method: "email",
           plan: selectedPlan || "unknown",
           billing_cycle: billingCycle,
-          company: company,
         });
-        navigate("/welcome");
-      } catch {
-        setErrors({ submit: "Something went wrong. Please try again." });
-      } finally {
-        setIsSubmitting(false);
+        navigate("/dashboard");
+      } catch (err: any) {
+        const message = err?.message || "Something went wrong. Please try again.";
+        setErrors({ submit: message });
       }
     }
   };
@@ -188,14 +191,14 @@ export function SignupPage() {
   const selectedPlanData = getPlanById(selectedPlan);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#F7F9FC]">
       <div className="container mx-auto py-8 px-4">
         <div className="max-w-5xl mx-auto">
           {/* Back to home */}
           <Button
             variant="ghost"
             onClick={() => navigate("/")}
-            className="mb-6 gap-2"
+            className="mb-6 gap-2 text-[#0B1F33]"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Home
@@ -204,12 +207,12 @@ export function SignupPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main Form */}
             <div className="lg:col-span-2">
-              <Card>
+              <Card className="border-[#F5F5F5] shadow-sm">
                 <CardHeader>
-                  <CardTitle className="text-2xl">
+                  <CardTitle className="text-2xl text-[#0B1F33]">
                     {step === 1 && "Create Your Account"}
                     {step === 2 && "Choose Your Plan"}
-                    {step === 3 && "Start Your Free Trial"}
+                    {step === 3 && "Get Started with BuildSignal"}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -222,10 +225,10 @@ export function SignupPage() {
                             className={cn(
                               "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium mb-1",
                               step > idx + 1
-                                ? "bg-green-500 text-white"
+                                ? "bg-[#18A999] text-white"
                                 : step === idx + 1
-                                ? "bg-primary text-primary-foreground"
-                                : "bg-muted text-muted-foreground"
+                                ? "bg-[#1F5EFF] text-white"
+                                : "bg-[#F5F5F5] text-[#6B7B8F]"
                             )}
                           >
                             {step > idx + 1 ? (
@@ -238,8 +241,8 @@ export function SignupPage() {
                             className={cn(
                               "text-xs font-medium",
                               step >= idx + 1
-                                ? "text-foreground"
-                                : "text-muted-foreground"
+                                ? "text-[#0B1F33]"
+                                : "text-[#6B7B8F]"
                             )}
                           >
                             {s.label}
@@ -247,7 +250,7 @@ export function SignupPage() {
                         </div>
                       ))}
                     </div>
-                    <Progress value={(step / 3) * 100} className="h-2" />
+                    <Progress value={(step / 3) * 100} className="h-2 bg-[#F5F5F5]" />
                   </div>
 
                   <form onSubmit={handleSubmit} className="space-y-5">
@@ -255,7 +258,34 @@ export function SignupPage() {
                     {step === 1 && (
                       <>
                         <div className="space-y-2">
-                          <Label htmlFor="email">Work Email</Label>
+                          <Label htmlFor="name" className="text-[#0B1F33]">Full Name</Label>
+                          <Input
+                            id="name"
+                            type="text"
+                            value={name}
+                            onChange={(e) => {
+                              setName(e.target.value);
+                              if (errors.name) {
+                                setErrors((prev) => {
+                                  const next = { ...prev };
+                                  delete next.name;
+                                  return next;
+                                });
+                              }
+                            }}
+                            placeholder="John Doe"
+                            className={cn(errors.name && "border-red-400 focus:ring-red-200")}
+                          />
+                          {errors.name && (
+                            <p className="text-xs text-red-600 flex items-center gap-1">
+                              <AlertCircle className="h-3 w-3" />
+                              {errors.name}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="email" className="text-[#0B1F33]">Work Email</Label>
                           <Input
                             id="email"
                             type="email"
@@ -271,10 +301,10 @@ export function SignupPage() {
                               }
                             }}
                             placeholder="you@company.com"
-                            className={cn(errors.email && "border-destructive")}
+                            className={cn(errors.email && "border-red-400 focus:ring-red-200")}
                           />
                           {errors.email && (
-                            <p className="text-xs text-destructive flex items-center gap-1">
+                            <p className="text-xs text-red-600 flex items-center gap-1">
                               <AlertCircle className="h-3 w-3" />
                               {errors.email}
                             </p>
@@ -282,34 +312,7 @@ export function SignupPage() {
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="company">Company Name</Label>
-                          <Input
-                            id="company"
-                            type="text"
-                            value={company}
-                            onChange={(e) => {
-                              setCompany(e.target.value);
-                              if (errors.company) {
-                                setErrors((prev) => {
-                                  const next = { ...prev };
-                                  delete next.company;
-                                  return next;
-                                });
-                              }
-                            }}
-                            placeholder="Acme Inc."
-                            className={cn(errors.company && "border-destructive")}
-                          />
-                          {errors.company && (
-                            <p className="text-xs text-destructive flex items-center gap-1">
-                              <AlertCircle className="h-3 w-3" />
-                              {errors.company}
-                            </p>
-                          )}
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="password">Password</Label>
+                          <Label htmlFor="password" className="text-[#0B1F33]">Password</Label>
                           <div className="relative">
                             <Input
                               id="password"
@@ -325,16 +328,16 @@ export function SignupPage() {
                                   });
                                 }
                               }}
-                              placeholder="At least 8 characters"
+                              placeholder="At least 8 characters with uppercase, lowercase, and number"
                               className={cn(
-                                errors.password && "border-destructive",
+                                errors.password && "border-red-400 focus:ring-red-200",
                                 "pr-10"
                               )}
                             />
                             <button
                               type="button"
                               onClick={() => setShowPassword(!showPassword)}
-                              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B7B8F] hover:text-[#0B1F33] transition-colors"
                             >
                               {showPassword ? (
                                 <EyeOff className="h-4 w-4" />
@@ -344,7 +347,7 @@ export function SignupPage() {
                             </button>
                           </div>
                           {errors.password && (
-                            <p className="text-xs text-destructive flex items-center gap-1">
+                            <p className="text-xs text-red-600 flex items-center gap-1">
                               <AlertCircle className="h-3 w-3" />
                               {errors.password}
                             </p>
@@ -352,7 +355,7 @@ export function SignupPage() {
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="confirmPassword">Confirm Password</Label>
+                          <Label htmlFor="confirmPassword" className="text-[#0B1F33]">Confirm Password</Label>
                           <Input
                             id="confirmPassword"
                             type="password"
@@ -368,12 +371,10 @@ export function SignupPage() {
                               }
                             }}
                             placeholder="Repeat your password"
-                            className={cn(
-                              errors.confirmPassword && "border-destructive"
-                            )}
+                            className={cn(errors.confirmPassword && "border-red-400 focus:ring-red-200")}
                           />
                           {errors.confirmPassword && (
-                            <p className="text-xs text-destructive flex items-center gap-1">
+                            <p className="text-xs text-red-600 flex items-center gap-1">
                               <AlertCircle className="h-3 w-3" />
                               {errors.confirmPassword}
                             </p>
@@ -386,7 +387,7 @@ export function SignupPage() {
                     {step === 2 && (
                       <div className="space-y-4">
                         {errors.plan && (
-                          <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 p-3 rounded-lg">
+                          <div className="flex items-center gap-2 text-sm text-red-700 bg-red-50 p-3 rounded-lg border border-red-100">
                             <AlertCircle className="h-4 w-4" />
                             {errors.plan}
                           </div>
@@ -395,25 +396,22 @@ export function SignupPage() {
                         <div className="flex items-center justify-center gap-2 mb-4">
                           <Button
                             type="button"
-                            variant={
-                              billingCycle === "monthly" ? "default" : "outline"
-                            }
+                            variant={billingCycle === "monthly" ? "default" : "outline"}
                             size="sm"
                             onClick={() => setBillingCycle("monthly")}
+                            className={billingCycle === "monthly" ? "bg-[#1F5EFF]" : ""}
                           >
                             Monthly
                           </Button>
                           <Button
                             type="button"
-                            variant={
-                              billingCycle === "annual" ? "default" : "outline"
-                            }
+                            variant={billingCycle === "annual" ? "default" : "outline"}
                             size="sm"
                             onClick={() => setBillingCycle("annual")}
-                            className="relative"
+                            className={billingCycle === "annual" ? "bg-[#1F5EFF]" : ""}
                           >
                             Annual
-                            <Badge className="absolute -top-2 -right-2 bg-green-500 text-white text-[10px]">
+                            <Badge className="ml-1.5 bg-[#18A999] text-white text-[10px] hover:bg-[#18A999]">
                               Save 20%
                             </Badge>
                           </Button>
@@ -433,40 +431,39 @@ export function SignupPage() {
                                 });
                               }}
                               className={cn(
-                                "relative p-4 border rounded-lg text-left transition-all hover:shadow-md",
+                                "relative p-4 border rounded-lg text-left transition-all hover:shadow-md bg-white",
                                 selectedPlan === plan.id
-                                  ? "border-primary ring-2 ring-primary bg-primary/5"
-                                  : "border-border bg-card"
+                                  ? "border-[#1F5EFF] ring-2 ring-[#1F5EFF] bg-[rgba(31,94,255,0.04)]"
+                                  : "border-[#E5E5E5]"
                               )}
                             >
                               {plan.highlighted && (
-                                <Badge className="absolute top-2 right-2 text-[10px] px-1.5">
+                                <Badge className="absolute top-2 right-2 text-[10px] px-1.5 bg-[#1F5EFF] text-white hover:bg-[#1F5EFF]">
                                   Popular
                                 </Badge>
                               )}
-                              <div className="font-semibold">{plan.name}</div>
-                              <div className="text-lg font-bold mt-1">
+                              <div className="font-semibold text-[#0B1F33]">{plan.name}</div>
+                              <div className="text-lg font-bold mt-1 text-[#0B1F33]">
                                 {plan.price === 0
                                   ? "Custom"
                                   : `$${plan.price}`}
                                 {plan.price > 0 && (
-                                  <span className="text-sm font-normal text-muted-foreground">
+                                  <span className="text-sm font-normal text-[#6B7B8F]">
                                     /{plan.interval}
                                   </span>
                                 )}
                               </div>
                               {billingCycle === "annual" && plan.price > 0 && (
-                                <p className="text-xs text-green-600 mt-1">
-                                  ${Math.round(plan.price * 12 * 0.8)} billed
-                                  annually
+                                <p className="text-xs text-[#18A999] mt-1 font-medium">
+                                  ${Math.round(plan.price * 12 * 0.8)} billed annually
                                 </p>
                               )}
-                              <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                              <p className="text-xs text-[#6B7B8F] mt-1 line-clamp-2">
                                 {plan.description}
                               </p>
                               {selectedPlan === plan.id && (
                                 <div className="absolute bottom-2 right-2">
-                                  <Check className="h-5 w-5 text-primary" />
+                                  <Check className="h-5 w-5 text-[#1F5EFF]" />
                                 </div>
                               )}
                             </button>
@@ -474,17 +471,17 @@ export function SignupPage() {
                         </div>
 
                         {selectedPlanData && (
-                          <div className="bg-muted/50 rounded-lg p-4 mt-4">
-                            <h4 className="font-medium mb-2">
+                          <div className="bg-[#F7F9FC] rounded-lg p-4 mt-4 border border-[#F5F5F5]">
+                            <h4 className="font-medium mb-2 text-[#0B1F33]">
                               {selectedPlanData.name} includes:
                             </h4>
                             <ul className="space-y-1">
                               {selectedPlanData.features.map((f: string) => (
                                 <li
                                   key={f}
-                                  className="flex items-center gap-2 text-sm"
+                                  className="flex items-center gap-2 text-sm text-[#0B1F33]"
                                 >
-                                  <Check className="h-3.5 w-3.5 text-green-500" />
+                                  <Check className="h-3.5 w-3.5 text-[#18A999]" />
                                   {f}
                                 </li>
                               ))}
@@ -494,41 +491,41 @@ export function SignupPage() {
                       </div>
                     )}
 
-                    {/* Step 3: Payment */}
+                    {/* Step 3: Finalize */}
                     {step === 3 && (
                       <div className="space-y-6 text-center">
-                        <div className="bg-muted/50 rounded-lg p-6">
-                          <Building2 className="h-10 w-10 text-primary mx-auto mb-3" />
-                          <h3 className="text-lg font-semibold mb-1">
+                        <div className="bg-[#F7F9FC] rounded-lg p-6 border border-[#F5F5F5]">
+                          <Building2 className="h-10 w-10 text-[#1F5EFF] mx-auto mb-3" />
+                          <h3 className="text-lg font-semibold mb-1 text-[#0B1F33]">
                             You&apos;re almost there!
                           </h3>
-                          <p className="text-muted-foreground text-sm mb-4">
-                            Start your 14-day free trial. No credit card required.
+                          <p className="text-[#6B7B8F] text-sm mb-4">
+                            Create your account and start exploring construction market intelligence.
                           </p>
 
                           {selectedPlanData && (
-                            <div className="bg-card border border-border rounded-lg p-4 mb-4 text-left">
+                            <div className="bg-white border border-[#E5E5E5] rounded-lg p-4 mb-4 text-left">
                               <div className="flex items-center justify-between mb-2">
-                                <span className="font-medium">
+                                <span className="font-medium text-[#0B1F33]">
                                   {selectedPlanData.name}
                                 </span>
-                                <Badge variant="secondary">
+                                <Badge variant="secondary" className="bg-[#F5F5F5] text-[#0B1F33]">
                                   {billingCycle === "annual" ? "Annual" : "Monthly"}
                                 </Badge>
                               </div>
-                              <div className="text-2xl font-bold">
+                              <div className="text-2xl font-bold text-[#0B1F33]">
                                 {selectedPlanData.price === 0
                                   ? "Custom"
                                   : `$${selectedPlanData.price}`}
                                 {selectedPlanData.price > 0 && (
-                                  <span className="text-sm font-normal text-muted-foreground">
+                                  <span className="text-sm font-normal text-[#6B7B8F]">
                                     /{selectedPlanData.interval}
                                   </span>
                                 )}
                               </div>
                               {billingCycle === "annual" &&
                                 selectedPlanData.price > 0 && (
-                                  <p className="text-xs text-green-600 mt-1">
+                                  <p className="text-xs text-[#18A999] mt-1 font-medium">
                                     ${Math.round(selectedPlanData.price * 12 * 0.8)}{" "}
                                     billed annually (Save 20%)
                                   </p>
@@ -536,7 +533,7 @@ export function SignupPage() {
                             </div>
                           )}
 
-                          <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
+                          <div className="flex items-center justify-center gap-4 text-xs text-[#6B7B8F]">
                             <span className="flex items-center gap-1">
                               <Lock className="h-3 w-3" />
                               256-bit SSL
@@ -548,9 +545,9 @@ export function SignupPage() {
                           </div>
                         </div>
 
-                        {errors.submit && (
-                          <p className="text-sm text-destructive">
-                            {errors.submit}
+                        {(errors.submit || registerError) && (
+                          <p className="text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-100">
+                            {errors.submit || registerError.message}
                           </p>
                         )}
                       </div>
@@ -563,7 +560,7 @@ export function SignupPage() {
                           type="button"
                           variant="outline"
                           onClick={handleBack}
-                          className="gap-2"
+                          className="gap-2 border-[#E5E5E5] text-[#0B1F33]"
                         >
                           <ArrowLeft className="h-4 w-4" />
                           Back
@@ -576,7 +573,7 @@ export function SignupPage() {
                         <Button
                           type="button"
                           onClick={handleNext}
-                          className="gap-2"
+                          className="gap-2 bg-[#1F5EFF] hover:bg-[#1F5EFF]/90"
                         >
                           Continue
                           <ArrowRight className="h-4 w-4" />
@@ -584,17 +581,17 @@ export function SignupPage() {
                       ) : (
                         <Button
                           type="submit"
-                          disabled={isSubmitting}
-                          className="gap-2"
+                          disabled={registerIsPending}
+                          className="gap-2 bg-[#1F5EFF] hover:bg-[#1F5EFF]/90"
                         >
-                          {isSubmitting ? (
+                          {registerIsPending ? (
                             <>
                               <Zap className="h-4 w-4 animate-spin" />
                               Creating Account...
                             </>
                           ) : (
                             <>
-                              Start Free Trial
+                              Create Account
                               <ArrowRight className="h-4 w-4" />
                             </>
                           )}
@@ -604,11 +601,11 @@ export function SignupPage() {
                   </form>
 
                   {/* Login link */}
-                  <div className="mt-6 text-center text-sm text-muted-foreground">
+                  <div className="mt-6 text-center text-sm text-[#6B7B8F]">
                     Already have an account?{" "}
                     <button
                       onClick={() => navigate("/login")}
-                      className="text-primary hover:underline font-medium"
+                      className="text-[#1F5EFF] hover:underline font-medium"
                     >
                       Log in
                     </button>
@@ -621,90 +618,86 @@ export function SignupPage() {
             <div className="hidden lg:block">
               <div className="sticky top-8 space-y-6">
                 {/* Value Proposition */}
-                <div className="bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-xl p-5">
+                <div className="bg-gradient-to-br from-[rgba(31,94,255,0.08)] to-[rgba(31,94,255,0.04)] border border-[rgba(31,94,255,0.15)] rounded-xl p-5">
                   <div className="flex items-center gap-2 mb-3">
-                    <Sparkles className="h-5 w-5 text-primary" />
-                    <span className="font-semibold">Why BuildSignal?</span>
+                    <Sparkles className="h-5 w-5 text-[#1F5EFF]" />
+                    <span className="font-semibold text-[#0B1F33]">Why BuildSignal?</span>
                   </div>
-                  <ul className="space-y-2 text-sm text-muted-foreground">
+                  <ul className="space-y-2 text-sm text-[#6B7B8F]">
                     <li className="flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4 text-green-500 shrink-0" />
+                      <TrendingUp className="h-4 w-4 text-[#18A999] shrink-0" />
                       AI-powered trend analysis across construction markets
                     </li>
                     <li className="flex items-center gap-2">
-                      <Zap className="h-4 w-4 text-green-500 shrink-0" />
+                      <Zap className="h-4 w-4 text-[#18A999] shrink-0" />
                       Streamline market research with automated intelligence gathering
                     </li>
                     <li className="flex items-center gap-2">
-                      <Shield className="h-4 w-4 text-green-500 shrink-0" />
+                      <Shield className="h-4 w-4 text-[#18A999] shrink-0" />
                       Bank-grade security &amp; SOC 2 certified
                     </li>
                   </ul>
                 </div>
 
                 {/* Free Trial Box */}
-                <div className="bg-primary/5 border border-primary/10 rounded-xl p-5">
+                <div className="bg-[rgba(31,94,255,0.04)] border border-[rgba(31,94,255,0.10)] rounded-xl p-5">
                   <div className="flex items-center gap-2 mb-3">
-                    <Sparkles className="h-5 w-5 text-primary" />
-                    <span className="font-semibold">Start with a 14-Day Free Trial</span>
+                    <Sparkles className="h-5 w-5 text-[#1F5EFF]" />
+                    <span className="font-semibold text-[#0B1F33]">Start with a 14-Day Free Trial</span>
                   </div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-[#6B7B8F]">
                     Full access to all features. No credit card required. Cancel anytime.
                     Get actionable intelligence for your markets within minutes.
                   </p>
                 </div>
 
-                {/* Platform Trust Signals — Evidence Based */}
+                {/* Platform Trust Signals */}
                 <div className="space-y-4">
-                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                  <h3 className="text-sm font-semibold text-[#6B7B8F] uppercase tracking-wide">
                     Why professionals trust BuildSignal
                   </h3>
 
-                  {/* Data Coverage */}
-                  <div className="bg-card border border-border rounded-lg p-4">
+                  <div className="bg-white border border-[#F5F5F5] rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <Database className="h-4 w-4 text-primary" />
-                      <span className="font-medium text-sm">Real-time data coverage</span>
+                      <Database className="h-4 w-4 text-[#1F5EFF]" />
+                      <span className="font-medium text-sm text-[#0B1F33]">Real-time data coverage</span>
                     </div>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-[#6B7B8F]">
                       Multi-county permit monitoring from municipal sources. Daily updates on construction activity across target markets.
                     </p>
                   </div>
 
-                  {/* AI Methodology */}
-                  <div className="bg-card border border-border rounded-lg p-4">
+                  <div className="bg-white border border-[#F5F5F5] rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <BrainCircuit className="h-4 w-4 text-primary" />
-                      <span className="font-medium text-sm">Transparent AI methodology</span>
+                      <BrainCircuit className="h-4 w-4 text-[#1F5EFF]" />
+                      <span className="font-medium text-sm text-[#0B1F33]">Transparent AI methodology</span>
                     </div>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-[#6B7B8F]">
                       Confidence scores on every prediction. Model performance published monthly. No black boxes.
                     </p>
                   </div>
 
-                  {/* Security */}
-                  <div className="bg-card border border-border rounded-lg p-4">
+                  <div className="bg-white border border-[#F5F5F5] rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <Shield className="h-4 w-4 text-green-500" />
-                      <span className="font-medium text-sm">Enterprise-grade security</span>
+                      <Shield className="h-4 w-4 text-[#18A999]" />
+                      <span className="font-medium text-sm text-[#0B1F33]">Enterprise-grade security</span>
                     </div>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-[#6B7B8F]">
                       SOC 2 Type II certified. 256-bit AES encryption. SSO & SAML 2.0 ready. Data never sold.
                     </p>
                   </div>
 
-                  {/* Sample Report */}
-                  <div className="bg-card border border-border rounded-lg p-4">
+                  <div className="bg-white border border-[#F5F5F5] rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <FileText className="h-4 w-4 text-primary" />
-                      <span className="font-medium text-sm">See a sample report</span>
+                      <FileText className="h-4 w-4 text-[#1F5EFF]" />
+                      <span className="font-medium text-sm text-[#0B1F33]">See a sample report</span>
                     </div>
-                    <p className="text-xs text-muted-foreground mb-2">
+                    <p className="text-xs text-[#6B7B8F] mb-2">
                       Preview the intelligence BuildSignal delivers — real opportunity analysis, confidence scores, and market trends.
                     </p>
                     <button
-                      onClick={() => window.open('/reports-hub', '_blank')}
-                      className="text-xs text-primary hover:underline font-medium"
+                      onClick={() => window.open("/reports-hub", "_blank")}
+                      className="text-xs text-[#1F5EFF] hover:underline font-medium"
                     >
                       View sample report →
                     </button>
@@ -712,19 +705,19 @@ export function SignupPage() {
                 </div>
 
                 {/* Security Badges */}
-                <div className="bg-muted/50 rounded-xl p-4">
-                  <h3 className="text-sm font-semibold mb-3">Your data is safe</h3>
+                <div className="bg-[#F7F9FC] rounded-xl p-4 border border-[#F5F5F5]">
+                  <h3 className="text-sm font-semibold text-[#0B1F33] mb-3">Your data is safe</h3>
                   <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Lock className="h-4 w-4 text-green-500" />
+                    <div className="flex items-center gap-2 text-sm text-[#6B7B8F]">
+                      <Lock className="h-4 w-4 text-[#18A999]" />
                       256-bit SSL encryption
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Shield className="h-4 w-4 text-green-500" />
+                    <div className="flex items-center gap-2 text-sm text-[#6B7B8F]">
+                      <Shield className="h-4 w-4 text-[#18A999]" />
                       Your data is never sold
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Check className="h-4 w-4 text-green-500" />
+                    <div className="flex items-center gap-2 text-sm text-[#6B7B8F]">
+                      <Check className="h-4 w-4 text-[#18A999]" />
                       SOC 2 Type II certified
                     </div>
                   </div>

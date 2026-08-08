@@ -1,23 +1,13 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, Navigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { Menu } from "lucide-react";
+import { Menu, Loader2 } from "lucide-react";
 import AppSidebar from "./AppSidebar";
+import { useAuth } from "@/hooks/useAuth";
 
-/**
- * AuthLayout — Shell for all authenticated routes.
- *
- * In a production implementation this would:
- * 1. Check authentication state (token validity, session expiry)
- * 2. Show a loading skeleton while auth state is resolving
- * 3. Redirect unauthenticated users to /login (with ?redirect= for return-after-login)
- * 4. Redirect unverified users to /verify-email
- * 5. Potentially show a persistent nav/sidebar for authenticated app views
- *
- * For BuildSignal, the protected routes share this layout wrapper so that
- * auth logic can be added in one place without duplicating it per-route.
- */
 export default function AuthLayout() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const location = useLocation();
+  const { isAuthenticated, isLoading } = useAuth();
 
   const openMobile = () => setIsMobileOpen(true);
   const closeMobile = () => setIsMobileOpen(false);
@@ -42,6 +32,21 @@ export default function AuthLayout() {
       document.body.style.overflow = "";
     };
   }, [isMobileOpen]);
+
+  // Show loading state while auth is resolving
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#F7F9FC]">
+        <Loader2 className="h-8 w-8 animate-spin text-[#1F5EFF]" />
+      </div>
+    );
+  }
+
+  // Redirect unauthenticated users to login with return URL
+  if (!isAuthenticated) {
+    const returnUrl = encodeURIComponent(location.pathname + location.search);
+    return <Navigate to={`/login?redirect=${returnUrl}`} replace />;
+  }
 
   return (
     <div className="flex min-h-screen bg-[#F7F9FC]">

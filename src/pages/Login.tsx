@@ -6,42 +6,31 @@ import { cn } from "@/lib/utils";
 
 export function Login() {
   const navigate = useNavigate();
-  const { login } = useAuth();
-  const [domain, setDomain] = useState("");
+  const { login, loginError, loginIsPending } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [mode, setMode] = useState<"sso" | "password">("password");
-
-  const handleSso = () => {
-    if (domain.includes("@")) {
-      window.location.href = `https://api.buildsignal.net/auth/sso?email=${encodeURIComponent(domain)}`;
-    }
-  };
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setIsLoading(true);
     try {
-      await login(email, password);
+      await login({ email, password });
       navigate("/dashboard");
-    } catch {
-      setError("Invalid email or password. Please try again.");
-    } finally {
-      setIsLoading(false);
+    } catch (err: any) {
+      const message = err?.message || "Invalid email or password. Please try again.";
+      setError(message);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-[#F7F9FC]">
       {/* Back to home */}
       <div className="p-4">
         <button
           onClick={() => navigate("/")}
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          className="inline-flex items-center gap-2 text-sm text-[#6B7B8F] hover:text-[#0B1F33] transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Home
@@ -49,33 +38,35 @@ export function Login() {
       </div>
 
       <div className="flex-1 flex items-center justify-center">
-        <div className="w-full max-w-md space-y-8 p-8">
+        <div className="w-full max-w-md space-y-8 p-8 bg-white rounded-2xl shadow-sm border border-[#F5F5F5]">
           {/* Branding */}
           <div className="text-center">
-            <div className="mx-auto h-14 w-14 bg-primary/10 rounded-xl flex items-center justify-center mb-4">
-              <Building2 className="h-8 w-8 text-primary" />
+            <div className="mx-auto h-14 w-14 bg-[rgba(31,94,255,0.08)] rounded-xl flex items-center justify-center mb-4">
+              <Building2 className="h-8 w-8 text-[#1F5EFF]" />
             </div>
-            <h2 className="text-3xl font-bold tracking-tight">Welcome back</h2>
-            <p className="mt-2 text-sm text-muted-foreground">
+            <h2 className="text-3xl font-bold tracking-tight text-[#0B1F33]">
+              Welcome back
+            </h2>
+            <p className="mt-2 text-sm text-[#6B7B8F]">
               Sign in to your BuildSignal account
             </p>
           </div>
 
           {/* Error Message */}
-          {error && (
-            <div className="bg-destructive/10 border border-destructive/20 text-destructive text-sm rounded-lg p-3 flex items-center gap-2">
-              <span className="font-medium">{error}</span>
+          {(error || loginError) && (
+            <div className="bg-red-50 border border-red-100 text-red-700 text-sm rounded-lg p-3 flex items-center gap-2">
+              <span className="font-medium">{error || loginError.message}</span>
             </div>
           )}
 
           {/* Email/Password Form */}
           <form onSubmit={handleEmailLogin} className="space-y-4">
             <div className="space-y-2">
-              <label htmlFor="login-email" className="text-sm font-medium">
+              <label htmlFor="login-email" className="text-sm font-medium text-[#0B1F33]">
                 Email
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B7B8F]" />
                 <input
                   id="login-email"
                   type="email"
@@ -85,7 +76,7 @@ export function Login() {
                     setError("");
                   }}
                   placeholder="you@company.com"
-                  className="w-full rounded-lg border border-input bg-background pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full rounded-lg border border-[#E5E5E5] bg-white pl-10 pr-4 py-3 text-sm text-[#0B1F33] focus:outline-none focus:ring-2 focus:ring-[#1F5EFF] focus:border-transparent transition-all"
                   required
                 />
               </div>
@@ -93,18 +84,18 @@ export function Login() {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label htmlFor="login-password" className="text-sm font-medium">
+                <label htmlFor="login-password" className="text-sm font-medium text-[#0B1F33]">
                   Password
                 </label>
                 <Link
                   to="/forgot-password"
-                  className="text-xs text-primary hover:underline"
+                  className="text-xs text-[#1F5EFF] hover:underline font-medium"
                 >
                   Forgot password?
                 </Link>
               </div>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B7B8F]" />
                 <input
                   id="login-password"
                   type={showPassword ? "text" : "password"}
@@ -114,13 +105,13 @@ export function Login() {
                     setError("");
                   }}
                   placeholder="Enter your password"
-                  className="w-full rounded-lg border border-input bg-background pl-10 pr-10 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full rounded-lg border border-[#E5E5E5] bg-white pl-10 pr-10 py-3 text-sm text-[#0B1F33] focus:outline-none focus:ring-2 focus:ring-[#1F5EFF] focus:border-transparent transition-all"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B7B8F] hover:text-[#0B1F33] transition-colors"
                 >
                   {showPassword ? (
                     <EyeOff className="h-4 w-4" />
@@ -133,15 +124,15 @@ export function Login() {
 
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={loginIsPending}
               className={cn(
-                "w-full flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors",
-                isLoading && "opacity-70 cursor-not-allowed"
+                "w-full flex items-center justify-center gap-2 rounded-lg bg-[#1F5EFF] px-4 py-3 text-sm font-medium text-white hover:bg-[#1F5EFF]/90 transition-colors shadow-sm",
+                loginIsPending && "opacity-70 cursor-not-allowed"
               )}
             >
-              {isLoading ? (
+              {loginIsPending ? (
                 <>
-                  <div className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                  <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   Signing in...
                 </>
               ) : (
@@ -153,60 +144,22 @@ export function Login() {
             </button>
           </form>
 
-          {/* Enterprise SSO */}
-          <div className="space-y-3">
-            <button
-              onClick={() => setMode(mode === "sso" ? "password" : "sso")}
-              className="w-full flex items-center justify-center gap-2 rounded-lg border border-input bg-background px-4 py-3 text-sm font-medium hover:bg-accent transition-colors"
-            >
-              <Building2 className="h-4 w-4" />
-              {mode === "sso" ? "Hide Enterprise SSO" : "Enterprise SSO"}
-              <ArrowRight
-                className={cn(
-                  "h-4 w-4 transition-transform",
-                  mode === "sso" && "rotate-90"
-                )}
-              />
-            </button>
-
-            {mode === "sso" && (
-              <div className="space-y-2 pt-2">
-                <input
-                  type="text"
-                  placeholder="yourname@company.com"
-                  value={domain}
-                  onChange={(e) => setDomain(e.target.value)}
-                  className="w-full rounded-lg border border-input bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                />
-                <button
-                  onClick={handleSso}
-                  disabled={!domain.includes("@")}
-                  className="w-full flex items-center justify-center gap-2 rounded-lg border border-input bg-background px-4 py-3 text-sm font-medium hover:bg-accent disabled:opacity-50 transition-colors"
-                >
-                  <Building2 className="h-4 w-4" />
-                  Continue with SSO
-                  <ArrowRight className="h-4 w-4" />
-                </button>
-              </div>
-            )}
-          </div>
-
           {/* Sign up link */}
-          <div className="text-center text-sm text-muted-foreground pt-4 border-t border-border">
+          <div className="text-center text-sm text-[#6B7B8F] pt-4 border-t border-[#F5F5F5]">
             <div className="flex items-center justify-center gap-2">
               <UserPlus className="h-4 w-4" />
-              <span>Don't have an account?</span>
-              <button
-                onClick={() => navigate("/signup")}
-                className="text-primary hover:underline font-medium"
+              <span>Don&apos;t have an account?</span>
+              <Link
+                to="/signup"
+                className="text-[#1F5EFF] hover:underline font-medium"
               >
                 Sign up
-              </button>
+              </Link>
             </div>
           </div>
 
           {/* Trust footer */}
-          <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
+          <div className="flex items-center justify-center gap-4 text-xs text-[#6B7B8F]">
             <span className="flex items-center gap-1">
               <Lock className="h-3 w-3" />
               SSL Secure
