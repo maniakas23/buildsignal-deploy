@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { trpc } from "@/lib/trpc";
+import { trpc } from "@/providers/trpc";
 
 type NotificationItem = {
   id: number;
