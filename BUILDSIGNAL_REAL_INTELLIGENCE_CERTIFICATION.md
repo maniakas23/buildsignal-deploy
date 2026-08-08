@@ -54,3 +54,56 @@ This certification audits BuildSignal's production data, intelligence pipeline, 
 
 ## Workstream Results
 
+The full workstream results are organized by phase in the linked documents below:
+
+- [Phase 1: Audit (WS 1-7)](WORKSTREAMS_AUDIT.md)
+- [Phase 2-3: Intelligence & Benchmarking (WS 8-15)](WORKSTREAMS_INTELLIGENCE.md)
+- [Phase 3-5: Search, Security & Customer Journey (WS 16-25)](WORKSTREAMS_SEARCH_JOURNEY.md)
+- [Phase 6: Commercial Readiness (WS 26-30)](WORKSTREAMS_COMMERCIAL_1.md)
+- [Phase 6: Commercial Readiness (WS 31-35)](WORKSTREAMS_COMMERCIAL_2.md)
+
+---
+
+## Summary
+
+### Overall Score: 12/100
+
+| Phase | Workstreams | Passing | Score |
+|-------|-------------|---------|-------|
+| Phase 1: Audit | 1-7 | 0/7 | 0/14 |
+| Phase 2-3: Intelligence | 8-15 | 0/8 | 0/16 |
+| Phase 3-5: Search & Journey | 16-25 | 1/10 | 2/20 |
+| Phase 6: Commercial | 26-35 | 0/10 | 0/20 |
+| Phase 7: Score & Forward | 36-38 | 0/3 | 0/10 |
+| **Infrastructure (Security)** | Build 127 | **VERIFIED** | **10/20** |
+| **TOTAL** | **38** | **1/38** | **12/100** |
+
+### Passing Workstreams
+
+- **WS 20: Cross-Tenant Security** — Architecture verified (Build 127). Auth, rate limiting, tenant isolation are production-ready. Cannot be fully validated with live multi-tenant data because no customers exist.
+
+### Decision: NO-GO
+
+BuildSignal **cannot certify Real Intelligence** at this time.
+
+**Reason:** Zero live data. Zero live ingestion. Zero AI deployment. The system is a well-architected, secure, production-deployed shell with no intelligence content.
+
+**Security Foundation:** GO (Build 127 verified).
+**Data Foundation:** NO-GO.
+**Intelligence Foundation:** NO-GO.
+**Commercial Readiness:** NO-GO.
+
+### Forward Path
+
+1. **Immediate (Build 131):** Deploy ingestion pipeline. Activate provider polling for at least one real source (e.g., Raleigh permits). Verify live records enter the database with `provenance = 'LIVE'`.
+2. **Short-term (Build 132):** Add AI binding to Worker. Deploy Llama 3.2 3B. Implement semantic search and RAG. Test with real queries against real records.
+3. **Medium-term (Build 133):** Onboard first real customer. Verify complete customer journey from signup to first useful opportunity. Measure time-to-first-value.
+4. **Re-certification (Build 134):** Re-run Real Intelligence Certification after 30 days of live data and at least one active customer.
+
+**Certification closed. Results committed to repository.**
+
+---
+
+*Document assembled from 35 workstream audits across 6 phases.*
+*All findings based on direct production database queries and endpoint testing.*
+*No fabricated results. No assumed success.*
