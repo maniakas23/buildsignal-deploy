@@ -12,6 +12,10 @@ export const users = sqliteTable("users", {
   name: text("name"),
   email: text("email"),
   avatar: text("avatar"),
+  passwordHash: text("passwordHash"),
+  organizationId: integer("organizationId"),
+  emailVerified: integer("emailVerified", { mode: "boolean" }).default(false),
+  lastLoginAt: integer("lastLoginAt", { mode: "timestamp" }),
   plan: text("plan").notNull().default("starter"),
   isAdmin: integer("isAdmin", { mode: "boolean" }).default(false),
   stripeCustomerId: text("stripeCustomerId"),
@@ -23,6 +27,15 @@ export const users = sqliteTable("users", {
 }, (t) => [uniqueIndex("users_union_idx").on(t.unionId)]);
 
 export type InsertUser = typeof users.$inferInsert;
+
+export const passwordResetTokens = sqliteTable("password_reset_tokens", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  userId: integer("userId").notNull(),
+  token: text("token").notNull().unique(),
+  expiresAt: integer("expiresAt", { mode: "timestamp" }).notNull(),
+  used: integer("used", { mode: "boolean" }).default(false),
+  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
 
 // ─── Saved Areas ───
 export const savedAreas = sqliteTable("saved_areas", {
