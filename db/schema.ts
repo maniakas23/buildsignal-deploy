@@ -72,22 +72,38 @@ export const searchHistory = sqliteTable("search_history", {
 export const notifications = sqliteTable("notifications", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   userId: integer("userId").notNull(),
-  type: text("type").notNull(),
   title: text("title").notNull(),
   message: text("message").notNull(),
+  type: text("type").notNull(), // "opportunity", "alert", "system", "billing"
+  link: text("link"),
   read: integer("read", { mode: "boolean" }).default(false),
-  actionUrl: text("actionUrl"),
   createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+// ─── Notification Preferences ───
+export const notificationPrefs = sqliteTable("notification_prefs", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  userId: integer("userId").notNull().unique(),
+  emailEnabled: integer("emailEnabled", { mode: "boolean" }).default(true),
+  inAppEnabled: integer("inAppEnabled", { mode: "boolean" }).default(true),
+  alertFrequency: text("alertFrequency").default("daily"), // realtime, daily, weekly
+  alertTypes: text("alertTypes").default("[\"opportunities\",\"system\"]"), // JSON array
+  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  updatedAt: integer("updatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
 // ─── Feedback ───
 export const feedback = sqliteTable("feedback", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  userId: integer("userId"),
-  type: text("type").notNull(),
+  userId: integer("userId").notNull(),
+  type: text("type").notNull(), // feature_request, bug, general, praise, complaint, nps
+  category: text("category").notNull(),
   message: text("message").notNull(),
-  rating: integer("rating"),
-  page: text("page"),
+  rating: integer("rating"), // 1-5 or 0-10 for NPS
+  page: text("page"), // Which page the feedback came from
+  status: text("status").default("new"), // new, reviewing, planned, completed, declined
+  upvotes: integer("upvotes").default(0),
+  adminNotes: text("adminNotes"),
   createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
