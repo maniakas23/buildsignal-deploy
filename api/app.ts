@@ -5,6 +5,8 @@ import { secureHeaders } from "hono/secure-headers";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { appRouter } from "./router";
 import { createContext } from "./context";
+import { handleStripeWebhook } from "./stripe-router";
+import { getDbFromContext } from "./queries/connection";
 
 const app = new Hono();
 
@@ -13,6 +15,12 @@ app.use(cors({ origin: "*", credentials: true }));
 app.use(bodyLimit({ maxSize: 50 * 1024 * 1024 }));
 
 app.get("/health", (c) => c.json({ status: "ok", service: "buildsignal", version: "1.0.0" }));
+
+// Stripe webhook handler — must receive raw body for signature verification
+app.post("/api/webhooks/stripe", async (c) => {
+  const db = getDbFromContext(c.env);
+  return handleStripeWebhook(c.req.raw, c.env, db);
+});
 
 app.use("/api/trpc/*", async (c) => {
   return fetchRequestHandler({
