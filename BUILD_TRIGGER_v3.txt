@@ -1,11 +1,3 @@
-BuildSignal v1.1 Production Build
-Trigger: v3 - All psychology fixes + Kestovar rebrand
-Changes:
-- Simplified navbar (5 primary items + More dropdown)
-- Friendly error states (no red triangles)
-- Beta gate social proof (200+ CRE professionals)
-- Kestovar branding throughout
-- Footer with "Powered by Kestovar"
-- Deleted old /functions directory
-- Fixed vite.config.ts for production
-Timestamp: 2026-07-20T16:00:00Z
+BuildSignal v1.5.0 Phase C — Frontend-Backend Integration
+Triggered: 2026-08-08T14:30:00Z
+Changes: _redirects API proxy, CountyCoveragePage tRPC, SearchPage tRPC, WatchlistsPage tRPC, AlertsPage tRPC
