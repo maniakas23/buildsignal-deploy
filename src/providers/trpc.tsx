@@ -8,6 +8,10 @@ export const trpc = createTRPCReact<AppRouter>();
 
 export const TOKEN_KEY = "buildsignal_auth_token";
 
+const TRPC_URL = import.meta.env.PROD
+  ? "https://api.buildsignal.net/api/trpc"
+  : "/api/trpc";
+
 const handleAuthError = (error: any) => {
   if (error?.data?.code === "UNAUTHORIZED") {
     localStorage.removeItem(TOKEN_KEY);
@@ -34,7 +38,7 @@ export const queryClient = new QueryClient({
 export const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
-      url: "/api/trpc",
+      url: TRPC_URL,
       transformer: superjson,
       headers() {
         const token = localStorage.getItem(TOKEN_KEY);
