@@ -29,7 +29,7 @@ import { PrivacyPage } from "./pages/PrivacyPage";
 import { TermsPage } from "./pages/TermsPage";
 import { SampleReportPage } from "./pages/SampleReportPage";
 import { RoadmapPage } from "./pages/RoadmapPage";
-import { EmailPreviewPage } from "./pages/EmailPreviewPage";
+import EmailPreviewPage from "./pages/EmailPreviewPage";
 import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
 import NotFound from "./pages/NotFound";
 import AuthLayout from "./components/AuthLayout";
