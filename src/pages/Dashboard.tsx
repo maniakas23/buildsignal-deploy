@@ -17,6 +17,17 @@ import {
   Pie,
   Cell,
 } from 'recharts'
+import {
+  RefreshCw,
+  ChevronDown,
+  TrendingUp,
+  AlertCircle,
+  ClipboardList,
+  Bell,
+  Download,
+  Plus,
+  Info,
+} from 'lucide-react'
 
 // ─── Color Palette ───────────────────────────────────────────────────
 const COLORS = {
@@ -24,6 +35,12 @@ const COLORS = {
   signalBlue: '#1F5EFF',
   insightTeal: '#18A999',
   opportunityAmber: '#F4A261',
+  white: '#FFFFFF',
+  lightGrey: '#F5F5F5',
+  darkGrey: '#333333',
+  errorRed: '#D32F2F',
+  chartIndigo: '#6366F1',
+  borderGrey: '#E2E8F0',
 }
 
 // ─── Mock Data ───────────────────────────────────────────────────────
@@ -108,13 +125,10 @@ const alerts = [
 ]
 
 // ─── Helpers ─────────────────────────────────────────────────────────
-const severityStyles = {
-  critical:
-    'bg-red-100 text-red-700 border-red-200 dark:bg-red-950 dark:text-red-300 dark:border-red-800',
-  warning:
-    'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800',
-  info:
-    'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800',
+const severityDotStyles = {
+  critical: COLORS.errorRed,
+  warning: COLORS.opportunityAmber,
+  info: COLORS.signalBlue,
 }
 
 const sectorBadgeStyles: Record<string, string> = {
@@ -130,12 +144,12 @@ function formatDate(dateStr: string) {
 }
 
 // ─── Custom Tooltip for LineChart ───────────────────────────────────
-function TrendTooltip({ active, payload, label }: any) {
+function TrendTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number }>; label?: string }) {
   if (!active || !payload?.length) return null
   return (
-    <div className='rounded-lg border bg-white px-3 py-2 shadow-md dark:bg-slate-900 dark:border-slate-700'>
-      <p className='text-sm font-medium text-slate-700 dark:text-slate-200'>{label}</p>
-      <p className='text-sm font-bold' style={{ color: COLORS.signalBlue }}>
+    <div className="rounded-lg border border-[#E2E8F0] bg-white px-3 py-2 shadow-md">
+      <p className="text-sm font-medium text-[#333333]">{label}</p>
+      <p className="text-sm font-bold" style={{ color: COLORS.signalBlue }}>
         {payload[0].value.toLocaleString()} opportunities
       </p>
     </div>
@@ -143,14 +157,14 @@ function TrendTooltip({ active, payload, label }: any) {
 }
 
 // ─── Custom Tooltip for PieChart ────────────────────────────────────
-function SectorTooltip({ active, payload }: any) {
+function SectorTooltip({ active, payload }: { active?: boolean; payload?: Array<{ payload: { name: string; value: number; color: string } }> }) {
   if (!active || !payload?.length) return null
   const data = payload[0].payload
   return (
-    <div className='rounded-lg border bg-white px-3 py-2 shadow-md dark:bg-slate-900 dark:border-slate-700'>
-      <p className='text-sm font-bold' style={{ color: data.color }}>{data.name}</p>
-      <p className='text-sm text-slate-600 dark:text-slate-300'>{data.value} opportunities</p>
-      <p className='text-xs text-slate-400'>
+    <div className="rounded-lg border border-[#E2E8F0] bg-white px-3 py-2 shadow-md">
+      <p className="text-sm font-bold" style={{ color: data.color }}>{data.name}</p>
+      <p className="text-sm text-[#333333]">{data.value} opportunities</p>
+      <p className="text-xs text-[#9AA5B1]">
         {Math.round((data.value / 1247) * 100)}% of total
       </p>
     </div>
@@ -158,10 +172,10 @@ function SectorTooltip({ active, payload }: any) {
 }
 
 export function Dashboard() {
-  // ALL hooks must be called before any conditional returns
+  // ALL hooks must be called BEFORE any conditional return
   const [hoveredOpportunity, setHoveredOpportunity] = useState<number | null>(null)
 
-  // Onboarding check — AFTER all hooks
+  // Onboarding check — AFTER all hooks, using IIFE pattern
   const onboardingComplete = (() => {
     try {
       return localStorage.getItem('buildsignal_onboarding_complete')
@@ -175,157 +189,201 @@ export function Dashboard() {
   }
 
   return (
-    <div className='container mx-auto py-8 px-4 max-w-7xl'>
-      {/* Header */}
-      <div className='dashboard-header mb-8'>
-        <h1 className='text-3xl font-bold tracking-tight' style={{ color: COLORS.deepNavy }}>
-          Dashboard
-        </h1>
-        <p className='text-muted-foreground mt-1'>
-          AI-powered infrastructure intelligence overview
-        </p>
+    <div className="mx-auto max-w-[1200px] px-4 py-6">
+      {/* ─── Page Header ─────────────────────────────────────────────── */}
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1
+            className="text-[32px] font-bold leading-tight tracking-[-0.5px]"
+            style={{ color: COLORS.deepNavy, fontFamily: 'Inter, system-ui, sans-serif' }}
+          >
+            Dashboard
+          </h1>
+          <p
+            className="mt-1 text-[15px] leading-relaxed"
+            style={{ color: COLORS.darkGrey, fontFamily: 'Inter, system-ui, sans-serif' }}
+          >
+            Infrastructure intelligence overview
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            className="inline-flex items-center gap-2 rounded-md border border-[#E2E8F0] bg-white px-3 py-2 text-sm font-medium text-[#333333] transition-all duration-200 hover:bg-[#F5F5F5] motion-reduce:transition-none"
+            type="button"
+          >
+            Last 30 days
+            <ChevronDown className="h-4 w-4 text-[#9AA5B1]" />
+          </button>
+          <button
+            className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] motion-reduce:transition-none motion-reduce:hover:scale-100"
+            style={{ borderColor: COLORS.signalBlue, color: COLORS.signalBlue, backgroundColor: COLORS.white }}
+            type="button"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Refresh
+          </button>
+        </div>
       </div>
 
-      {/* Sample Data Banner */}
-      <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg dark:bg-amber-950/30 dark:border-amber-900">
+      {/* ─── Sample Data Banner ────────────────────────────────────── */}
+      <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:bg-amber-950/30 dark:border-amber-900">
         <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300">
-          <svg className="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <span className="font-medium text-sm">Sample Data — Illustrative Example</span>
+          <Info className="h-5 w-5 shrink-0" />
+          <span className="text-sm font-medium">Sample Data — Illustrative Example</span>
         </div>
-        <p className="text-xs text-amber-700 dark:text-amber-400 mt-1 ml-7">
+        <p className="ml-7 mt-1 text-xs text-amber-700 dark:text-amber-400">
           This dashboard shows example data for demonstration purposes. Your actual dashboard will display real opportunities, alerts, and metrics from your subscribed markets after account activation.
         </p>
       </div>
 
-      {/* ─── Stats Row ─────────────────────────────────────────────────── */}
-      <div className='stats-row grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8'>
+      {/* ─── Stats Row ───────────────────────────────────────────────── */}
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* Total Opportunities */}
-        <Card
-          className='relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 border-l-4'
-          style={{ borderLeftColor: COLORS.signalBlue }}
+        <div
+          className="rounded-lg border border-[#E2E8F0] bg-white p-4 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+          style={{ borderLeftWidth: '4px', borderLeftColor: COLORS.signalBlue }}
         >
-          <CardHeader className='pb-2'>
-            <CardTitle className='text-sm font-medium text-muted-foreground'>
-              Total Opportunities
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className='flex items-baseline justify-between'>
-              <p className='text-3xl font-bold' style={{ color: COLORS.deepNavy }}>
-                1,247
-              </p>
-              <span className='text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700'>
-                +12%
-              </span>
-            </div>
-            <p className='text-xs text-muted-foreground mt-2'>vs. previous 30 days</p>
-            <p className="text-[10px] text-muted-foreground/60 mt-3 pt-2 border-t border-border/30 uppercase tracking-wider">Sample</p>
-          </CardContent>
-        </Card>
+          <p
+            className="text-sm font-semibold uppercase tracking-[0.5px]"
+            style={{ color: COLORS.darkGrey, fontFamily: 'Inter, system-ui, sans-serif' }}
+          >
+            Total Opportunities
+          </p>
+          <div className="mt-2 flex items-baseline justify-between">
+            <p
+              className="font-mono text-2xl font-medium md:text-[32px]"
+              style={{ color: COLORS.deepNavy }}
+            >
+              1,247
+            </p>
+            <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+              <TrendingUp className="mr-1 h-3 w-3" />
+              +12%
+            </span>
+          </div>
+          <p className="mt-1 text-xs text-[#9AA5B1]">vs. previous 30 days</p>
+          <p className="mt-3 border-t border-[#E2E8F0] pt-2 text-[10px] font-semibold uppercase tracking-wider text-[#9AA5B1]">
+            Sample
+          </p>
+        </div>
 
         {/* Active Alerts */}
-        <Card
-          className='relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 border-l-4'
-          style={{ borderLeftColor: COLORS.opportunityAmber }}
+        <div
+          className="rounded-lg border border-[#E2E8F0] bg-white p-4 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+          style={{ borderLeftWidth: '4px', borderLeftColor: COLORS.opportunityAmber }}
         >
-          <CardHeader className='pb-2'>
-            <CardTitle className='text-sm font-medium text-muted-foreground'>
-              Active Alerts
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className='flex items-baseline justify-between'>
-              <p className='text-3xl font-bold' style={{ color: COLORS.deepNavy }}>
-                34
-              </p>
-              <Badge className='text-xs font-semibold bg-red-100 text-red-700 border-transparent hover:bg-red-100'>
-                3 critical
-              </Badge>
-            </div>
-            <p className='text-xs text-muted-foreground mt-2'>across all markets</p>
-            <p className="text-[10px] text-muted-foreground/60 mt-3 pt-2 border-t border-border/30 uppercase tracking-wider">Sample</p>
-          </CardContent>
-        </Card>
+          <p
+            className="text-sm font-semibold uppercase tracking-[0.5px]"
+            style={{ color: COLORS.darkGrey, fontFamily: 'Inter, system-ui, sans-serif' }}
+          >
+            Active Alerts
+          </p>
+          <div className="mt-2 flex items-baseline justify-between">
+            <p
+              className="font-mono text-2xl font-medium md:text-[32px]"
+              style={{ color: COLORS.deepNavy }}
+            >
+              34
+            </p>
+            <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">
+              <AlertCircle className="mr-1 h-3 w-3" />
+              3 critical
+            </span>
+          </div>
+          <p className="mt-1 text-xs text-[#9AA5B1]">across all markets</p>
+          <p className="mt-3 border-t border-[#E2E8F0] pt-2 text-[10px] font-semibold uppercase tracking-wider text-[#9AA5B1]">
+            Sample
+          </p>
+        </div>
 
         {/* Markets Tracked */}
-        <Card
-          className='relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 border-l-4'
-          style={{ borderLeftColor: COLORS.insightTeal }}
+        <div
+          className="rounded-lg border border-[#E2E8F0] bg-white p-4 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+          style={{ borderLeftWidth: '4px', borderLeftColor: COLORS.insightTeal }}
         >
-          <CardHeader className='pb-2'>
-            <CardTitle className='text-sm font-medium text-muted-foreground'>
-              Markets Tracked
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className='flex items-baseline justify-between'>
-              <p className='text-3xl font-bold' style={{ color: COLORS.deepNavy }}>
-                156
-              </p>
-              <span className='text-xs text-muted-foreground font-medium'>counties</span>
-            </div>
-            <p className='text-xs text-muted-foreground mt-2'>15 states monitored</p>
-            <p className="text-[10px] text-muted-foreground/60 mt-3 pt-2 border-t border-border/30 uppercase tracking-wider">Sample</p>
-          </CardContent>
-        </Card>
+          <p
+            className="text-sm font-semibold uppercase tracking-[0.5px]"
+            style={{ color: COLORS.darkGrey, fontFamily: 'Inter, system-ui, sans-serif' }}
+          >
+            Markets Tracked
+          </p>
+          <div className="mt-2 flex items-baseline justify-between">
+            <p
+              className="font-mono text-2xl font-medium md:text-[32px]"
+              style={{ color: COLORS.deepNavy }}
+            >
+              156
+            </p>
+            <span className="text-xs font-medium text-[#9AA5B1]">counties</span>
+          </div>
+          <p className="mt-1 text-xs text-[#9AA5B1]">15 states monitored</p>
+          <p className="mt-3 border-t border-[#E2E8F0] pt-2 text-[10px] font-semibold uppercase tracking-wider text-[#9AA5B1]">
+            Sample
+          </p>
+        </div>
 
         {/* Pipeline Value */}
-        <Card
-          className='relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 border-l-4'
-          style={{ borderLeftColor: COLORS.deepNavy }}
+        <div
+          className="rounded-lg border border-[#E2E8F0] bg-white p-4 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+          style={{ borderLeftWidth: '4px', borderLeftColor: COLORS.deepNavy }}
         >
-          <CardHeader className='pb-2'>
-            <CardTitle className='text-sm font-medium text-muted-foreground'>
-              Pipeline Value
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className='flex items-baseline justify-between'>
-              <p className='text-3xl font-bold' style={{ color: COLORS.deepNavy }}>
-                $4.2M
-              </p>
-              <span className='text-xs text-muted-foreground font-medium'>est.</span>
-            </div>
-            <p className='text-xs text-muted-foreground mt-2'>year-to-date potential</p>
-            <p className="text-[10px] text-muted-foreground/60 mt-3 pt-2 border-t border-border/30 uppercase tracking-wider">Sample</p>
-          </CardContent>
-        </Card>
+          <p
+            className="text-sm font-semibold uppercase tracking-[0.5px]"
+            style={{ color: COLORS.darkGrey, fontFamily: 'Inter, system-ui, sans-serif' }}
+          >
+            Pipeline Value
+          </p>
+          <div className="mt-2 flex items-baseline justify-between">
+            <p
+              className="font-mono text-2xl font-medium md:text-[32px]"
+              style={{ color: COLORS.deepNavy }}
+            >
+              $4.2M
+            </p>
+            <span className="text-xs font-medium text-[#9AA5B1]">est.</span>
+          </div>
+          <p className="mt-1 text-xs text-[#9AA5B1]">year-to-date potential</p>
+          <p className="mt-3 border-t border-[#E2E8F0] pt-2 text-[10px] font-semibold uppercase tracking-wider text-[#9AA5B1]">
+            Sample
+          </p>
+        </div>
       </div>
 
-      {/* ─── Charts Section ─────────────────────────────────────────────── */}
-      <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8'>
+      {/* ─── Charts Row ──────────────────────────────────────────────── */}
+      <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Opportunity Trend */}
-        <Card className='opportunity-trend-chart transition-all duration-300 hover:shadow-md'>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className='text-base font-semibold' style={{ color: COLORS.deepNavy }}>
-                Opportunity Trend
-              </CardTitle>
-              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Sample</span>
-            </div>
+        <Card className="rounded-lg border border-[#E2E8F0] bg-white transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+          <CardHeader className="flex flex-row items-center justify-between p-4 pb-0">
+            <CardTitle
+              className="text-lg font-semibold"
+              style={{ color: COLORS.deepNavy, fontFamily: 'Inter, system-ui, sans-serif' }}
+            >
+              Opportunity Trend
+            </CardTitle>
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-[#9AA5B1]">
+              Sample
+            </span>
           </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width='100%' height={280}>
+          <CardContent className="p-4">
+            <ResponsiveContainer width="100%" height={280}>
               <LineChart data={trendData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                <CartesianGrid strokeDasharray='3 3' stroke='#e2e8f0' />
+                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
                 <XAxis
-                  dataKey='month'
-                  tick={{ fontSize: 12, fill: '#64748b' }}
-                  axisLine={{ stroke: '#cbd5e1' }}
+                  dataKey="month"
+                  tick={{ fontSize: 12, fill: '#9AA5B1', fontFamily: 'Inter, system-ui, sans-serif' }}
+                  axisLine={{ stroke: '#E2E8F0' }}
                   tickLine={false}
                 />
                 <YAxis
-                  tick={{ fontSize: 12, fill: '#64748b' }}
+                  tick={{ fontSize: 12, fill: '#9AA5B1', fontFamily: 'JetBrains Mono, monospace' }}
                   axisLine={false}
                   tickLine={false}
-                  tickFormatter={(v) => v.toLocaleString()}
+                  tickFormatter={(v: number) => v.toLocaleString()}
                 />
                 <Tooltip content={<TrendTooltip />} />
                 <Line
-                  type='monotone'
-                  dataKey='opportunities'
+                  type="monotone"
+                  dataKey="opportunities"
                   stroke={COLORS.signalBlue}
                   strokeWidth={3}
                   dot={{ r: 5, fill: COLORS.signalBlue, stroke: '#fff', strokeWidth: 2 }}
@@ -338,46 +396,49 @@ export function Dashboard() {
         </Card>
 
         {/* Market Breakdown */}
-        <Card className='market-breakdown-chart transition-all duration-300 hover:shadow-md'>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className='text-base font-semibold' style={{ color: COLORS.deepNavy }}>
-                Market Breakdown
-              </CardTitle>
-              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Sample</span>
-            </div>
+        <Card className="rounded-lg border border-[#E2E8F0] bg-white transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+          <CardHeader className="flex flex-row items-center justify-between p-4 pb-0">
+            <CardTitle
+              className="text-lg font-semibold"
+              style={{ color: COLORS.deepNavy, fontFamily: 'Inter, system-ui, sans-serif' }}
+            >
+              Market Breakdown
+            </CardTitle>
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-[#9AA5B1]">
+              Sample
+            </span>
           </CardHeader>
-          <CardContent>
-            <div className='flex items-center'>
-              <ResponsiveContainer width='100%' height={280}>
+          <CardContent className="p-4">
+            <div className="flex items-center">
+              <ResponsiveContainer width="100%" height={280}>
                 <PieChart>
                   <Pie
                     data={sectorData}
-                    cx='50%'
-                    cy='50%'
+                    cx="50%"
+                    cy="50%"
                     innerRadius={70}
                     outerRadius={110}
                     paddingAngle={3}
-                    dataKey='value'
+                    dataKey="value"
                     animationDuration={1500}
                   >
                     {sectorData.map((entry) => (
-                      <Cell key={entry.name} fill={entry.color} stroke='none' />
+                      <Cell key={entry.name} fill={entry.color} stroke="none" />
                     ))}
                   </Pie>
                   <Tooltip content={<SectorTooltip />} />
                 </PieChart>
               </ResponsiveContainer>
               {/* Legend */}
-              <div className='flex flex-col gap-3 min-w-[140px] -ml-4'>
+              <div className="flex min-w-[140px] flex-col gap-3">
                 {sectorData.map((s) => (
-                  <div key={s.name} className='flex items-center gap-2'>
-                    <div className='w-3 h-3 rounded-full' style={{ backgroundColor: s.color }} />
+                  <div key={s.name} className="flex items-center gap-2">
+                    <div className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: s.color }} />
                     <div>
-                      <p className='text-sm font-medium text-slate-700 dark:text-slate-200'>
+                      <p className="text-sm font-medium text-[#333333]" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
                         {s.name}
                       </p>
-                      <p className='text-xs text-muted-foreground'>{s.value}</p>
+                      <p className="font-mono text-xs text-[#9AA5B1]">{s.value}</p>
                     </div>
                   </div>
                 ))}
@@ -387,62 +448,66 @@ export function Dashboard() {
         </Card>
       </div>
 
-      {/* ─── Recent Opportunities + Alerts Row ─────────────────────────── */}
-      <div className='grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8'>
+      {/* ─── Opportunities + Alerts Row ──────────────────────────────── */}
+      <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Recent Opportunities Feed */}
-        <div className='recent-opportunities lg:col-span-2'>
-          <Card className='transition-all duration-300 hover:shadow-md'>
-            <CardHeader className="flex flex-row items-center justify-between">
+        <div className="lg:col-span-2">
+          <Card className="rounded-lg border border-[#E2E8F0] bg-white transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+            <CardHeader className="flex flex-row items-center justify-between p-4 pb-2">
               <div>
-                <CardTitle className='text-base font-semibold' style={{ color: COLORS.deepNavy }}>
+                <CardTitle
+                  className="text-lg font-semibold"
+                  style={{ color: COLORS.deepNavy, fontFamily: 'Inter, system-ui, sans-serif' }}
+                >
                   Recent Opportunities
                 </CardTitle>
-                <p className="text-xs text-muted-foreground mt-1">Example projects for demonstration</p>
+                <p className="mt-1 text-xs text-[#9AA5B1]">Example projects for demonstration</p>
               </div>
-              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Sample</span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#9AA5B1]">
+                Sample
+              </span>
             </CardHeader>
-            <CardContent className='px-0'>
+            <CardContent className="p-0 pt-2">
               {/* Header row */}
-              <div className='grid grid-cols-12 gap-4 px-6 pb-3 text-xs font-medium text-muted-foreground uppercase tracking-wider border-b'>
-                <div className='col-span-4'>Project</div>
-                <div className='col-span-3 hidden sm:block'>Location</div>
-                <div className='col-span-2 hidden md:block'>Sector</div>
-                <div className='col-span-2 text-center'>Confidence</div>
-                <div className='col-span-3 sm:col-span-1 text-right'>Date</div>
+              <div className="grid grid-cols-12 gap-4 border-b border-[#E2E8F0] px-4 pb-2 text-xs font-semibold uppercase tracking-[0.5px] text-[#9AA5B1]">
+                <div className="col-span-4">Project</div>
+                <div className="col-span-3 hidden sm:block">Location</div>
+                <div className="col-span-2 hidden md:block">Sector</div>
+                <div className="col-span-2 text-center">Confidence</div>
+                <div className="col-span-3 text-right sm:col-span-1">Date</div>
               </div>
               {/* Data rows */}
-              <div className='divide-y'>
+              <div>
                 {recentOpportunities.map((opp) => (
                   <div
                     key={opp.id}
-                    className={`grid grid-cols-12 gap-4 px-6 py-4 items-center cursor-pointer transition-colors duration-200 ${
-                      hoveredOpportunity === opp.id
-                        ? 'bg-slate-50 dark:bg-slate-800/50'
-                        : ''
+                    className={`grid grid-cols-12 gap-4 items-center px-4 py-3 transition-colors duration-200 ${
+                      hoveredOpportunity === opp.id ? 'bg-[#F5F5F5]' : ''
                     }`}
+                    style={{ borderBottom: '1px solid #E2E8F0' }}
                     onMouseEnter={() => setHoveredOpportunity(opp.id)}
                     onMouseLeave={() => setHoveredOpportunity(null)}
                   >
-                    <div className='col-span-4'>
-                      <p className='text-sm font-semibold text-slate-800 dark:text-slate-100 truncate'>
+                    <div className="col-span-4">
+                      <p className="truncate text-sm font-semibold text-[#0B1F33]">
                         {opp.projectName}
                       </p>
                     </div>
-                    <div className='col-span-3 hidden sm:block'>
-                      <p className='text-sm text-muted-foreground'>{opp.location}</p>
+                    <div className="col-span-3 hidden sm:block">
+                      <p className="text-sm text-[#9AA5B1]">{opp.location}</p>
                     </div>
-                    <div className='col-span-2 hidden md:block'>
+                    <div className="col-span-2 hidden md:block">
                       <span
                         className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${sectorBadgeStyles[opp.sector]}`}
                       >
                         {opp.sector}
                       </span>
                     </div>
-                    <div className='col-span-2 text-center'>
-                      <div className='flex items-center justify-center gap-2'>
-                        <div className='w-16 h-1.5 bg-slate-200 rounded-full overflow-hidden dark:bg-slate-700'>
+                    <div className="col-span-2 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="h-1.5 w-16 overflow-hidden rounded-full bg-[#E2E8F0]">
                           <div
-                            className='h-full rounded-full transition-all duration-500'
+                            className="h-full rounded-full transition-all duration-500"
                             style={{
                               width: `${opp.confidence}%`,
                               backgroundColor:
@@ -454,13 +519,13 @@ export function Dashboard() {
                             }}
                           />
                         </div>
-                        <span className='text-xs font-semibold text-slate-700 dark:text-slate-300'>
+                        <span className="font-mono text-xs font-medium text-[#333333]">
                           {opp.confidence}%
                         </span>
                       </div>
                     </div>
-                    <div className='col-span-3 sm:col-span-1 text-right'>
-                      <p className='text-xs text-muted-foreground'>{formatDate(opp.date)}</p>
+                    <div className="col-span-3 text-right sm:col-span-1">
+                      <p className="text-xs text-[#9AA5B1]">{formatDate(opp.date)}</p>
                     </div>
                   </div>
                 ))}
@@ -470,44 +535,60 @@ export function Dashboard() {
         </div>
 
         {/* Alert Summary */}
-        <div className='alert-summary'>
-          <Card className='transition-all duration-300 hover:shadow-md h-full'>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className='text-base font-semibold' style={{ color: COLORS.deepNavy }}>
-                  Alert Summary
-                </CardTitle>
-                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Sample</span>
-              </div>
+        <div>
+          <Card className="h-full rounded-lg border border-[#E2E8F0] bg-white transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+            <CardHeader className="flex flex-row items-center justify-between p-4 pb-2">
+              <CardTitle
+                className="text-lg font-semibold"
+                style={{ color: COLORS.deepNavy, fontFamily: 'Inter, system-ui, sans-serif' }}
+              >
+                Alert Summary
+              </CardTitle>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#9AA5B1]">
+                Sample
+              </span>
             </CardHeader>
-            <CardContent className='space-y-4'>
+            <CardContent className="space-y-3 p-4 pt-2">
               {alerts.map((alert) => (
                 <div
                   key={alert.id}
-                  className={`rounded-lg border p-4 transition-all duration-200 hover:shadow-sm ${severityStyles[alert.severity]}`}
+                  className="rounded-lg border p-3 transition-all duration-200 hover:shadow-sm motion-reduce:transition-none"
+                  style={{
+                    borderColor:
+                      alert.severity === 'critical'
+                        ? '#FECACA'
+                        : alert.severity === 'warning'
+                          ? '#FDE68A'
+                          : '#BFDBFE',
+                    backgroundColor:
+                      alert.severity === 'critical'
+                        ? '#FEF2F2'
+                        : alert.severity === 'warning'
+                          ? '#FFFBEB'
+                          : '#EFF6FF',
+                  }}
                 >
-                  <div className='flex items-start gap-3'>
-                    <div className='mt-1 min-w-[8px]'>
+                  <div className="flex items-start gap-3">
+                    <div className="mt-1.5 shrink-0">
                       <div
-                        className='w-2 h-2 rounded-full'
-                        style={{
-                          backgroundColor:
-                            alert.severity === 'critical'
-                              ? '#dc2626'
-                              : alert.severity === 'warning'
-                                ? '#d97706'
-                                : COLORS.signalBlue,
-                        }}
+                        className="h-2 w-2 rounded-full"
+                        style={{ backgroundColor: severityDotStyles[alert.severity] }}
                       />
                     </div>
-                    <div className='flex-1 min-w-0'>
-                      <p className='text-sm font-medium leading-snug'>{alert.message}</p>
-                      <p className='text-xs mt-1 opacity-70'>{alert.time}</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium leading-snug text-[#333333]">
+                        {alert.message}
+                      </p>
+                      <p className="mt-1 text-xs text-[#9AA5B1]">{alert.time}</p>
                     </div>
                   </div>
                 </div>
               ))}
-              <Button className='w-full mt-2' style={{ backgroundColor: COLORS.deepNavy }}>
+              <Button
+                className="mt-2 w-full transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] motion-reduce:transition-none motion-reduce:hover:scale-100"
+                style={{ backgroundColor: COLORS.signalBlue, color: COLORS.white }}
+              >
+                <Bell className="mr-2 h-4 w-4" />
                 Manage Alerts
               </Button>
             </CardContent>
@@ -515,65 +596,36 @@ export function Dashboard() {
         </div>
       </div>
 
-      {/* ─── Quick Actions ──────────────────────────────────────────────── */}
-      <div className='quick-actions flex flex-wrap gap-3'>
+      {/* ─── Quick Actions Row ──────────────────────────────────────── */}
+      <div className="mb-8 flex flex-wrap gap-3">
         <Button
-          className='transition-all duration-200 hover:shadow-md'
-          style={{ backgroundColor: COLORS.signalBlue }}
+          className="transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] motion-reduce:transition-none motion-reduce:hover:scale-100"
+          style={{ backgroundColor: COLORS.signalBlue, color: COLORS.white }}
         >
-          <svg className='w-4 h-4 mr-2' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-            <path
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeWidth={2}
-              d='M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'
-            />
-          </svg>
+          <ClipboardList className="mr-2 h-4 w-4" />
           View All Opportunities
         </Button>
         <Button
-          variant='outline'
-          className='transition-all duration-200 hover:shadow-md hover:bg-slate-50 dark:hover:bg-slate-800'
-          style={{ borderColor: COLORS.opportunityAmber, color: COLORS.deepNavy }}
+          className="border border-[#0B1F33] bg-white text-[#0B1F33] transition-all duration-200 hover:scale-[1.02] hover:bg-[#F5F5F5] active:scale-[0.98] motion-reduce:transition-none motion-reduce:hover:scale-100"
         >
-          <svg className='w-4 h-4 mr-2' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-            <path
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeWidth={2}
-              d='M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9'
-            />
-          </svg>
+          <Bell className="mr-2 h-4 w-4" />
           Manage Alerts
         </Button>
         <Button
-          variant='outline'
-          className='transition-all duration-200 hover:shadow-md hover:bg-slate-50 dark:hover:bg-slate-800'
-          style={{ borderColor: COLORS.insightTeal, color: COLORS.deepNavy }}
+          className="border border-[#0B1F33] bg-white text-[#0B1F33] transition-all duration-200 hover:scale-[1.02] hover:bg-[#F5F5F5] active:scale-[0.98] motion-reduce:transition-none motion-reduce:hover:scale-100"
         >
-          <svg className='w-4 h-4 mr-2' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-            <path
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeWidth={2}
-              d='M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4'
-            />
-          </svg>
+          <Download className="mr-2 h-4 w-4" />
           Export Report
         </Button>
         <Button
-          variant='outline'
-          className='transition-all duration-200 hover:shadow-md hover:bg-slate-50 dark:hover:bg-slate-800'
-          style={{ borderColor: COLORS.deepNavy, color: COLORS.deepNavy }}
+          className="border border-[#0B1F33] bg-white text-[#0B1F33] transition-all duration-200 hover:scale-[1.02] hover:bg-[#F5F5F5] active:scale-[0.98] motion-reduce:transition-none motion-reduce:hover:scale-100"
         >
-          <svg className='w-4 h-4 mr-2' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 4v16m8-8H4' />
-          </svg>
+          <Plus className="mr-2 h-4 w-4" />
           Add to Watchlist
         </Button>
       </div>
 
-      {/* ─── Tour & Help Widget ────────────────────────────────────────── */}
+      {/* ─── Tour & Help Widget ────────────────────────────────────── */}
       <DashboardTour />
       <HelpWidget />
     </div>
