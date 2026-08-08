@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
+import { ThemeProvider } from '@/themes'
 import './index.css'
 const __BUILD_TIMESTAMP = Date.now();
 import { TRPCProvider } from "@/providers/trpc"
@@ -12,10 +13,12 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary>
       <BrowserRouter>
-        <TRPCProvider>
-          <AccessibilityInit />
-          <App />
-        </TRPCProvider>
+        <ThemeProvider>
+          <TRPCProvider>
+            <AccessibilityInit />
+            <App />
+          </TRPCProvider>
+        </ThemeProvider>
       </BrowserRouter>
     </ErrorBoundary>
   </StrictMode>,
