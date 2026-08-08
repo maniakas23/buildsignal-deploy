@@ -365,72 +365,88 @@ export const historicalValidation = sqliteTable("historical_validation", {
   predictedOutcome: text("predicted_outcome"),
   accuracy: integer("accuracy"),
   deviation: text("deviation"),
-  validatedAt: integer("validated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
-});
-
-// ─── AI Governance Audit ───
-export const aiGovernanceAudit = sqliteTable("ai_governance_audit", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  modelVersion: text("model_version").notNull(),
-  decisionType: text("decision_type").notNull(),
-  inputFeatures: text("input_features"),
-  outputDecision: text("output_decision"),
-  confidence: integer("confidence"),
-  humanReviewed: integer("human_reviewed", { mode: "boolean" }).default(false),
-  reviewerId: integer("reviewer_id"),
-  reviewNotes: text("review_notes"),
+  validatedAt: integer("validated_at", { mode: "timestamp" }),
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
-// ─── Data Audit Log ───
-export const dataAuditLog = sqliteTable("data_audit_log", {
+// ─── Batch Jobs ───
+export const batchJobs = sqliteTable("batch_jobs", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  tableName: text("table_name").notNull(),
-  recordId: text("record_id").notNull(),
-  action: text("action").notNull(),
-  oldValues: text("old_values"),
-  newValues: text("new_values"),
-  actorId: text("actor_id"),
-  actorType: text("actor_type").default("system"),
+  jobType: text("job_type").notNull(),
+  status: text("status").default("pending"),
+  progress: integer("progress").default(0),
+  totalItems: integer("total_items").default(0),
+  processedItems: integer("processed_items").default(0),
+  errorItems: integer("error_items").default(0),
+  errorMessage: text("error_message"),
+  result: text("result"),
+  startedAt: integer("started_at", { mode: "timestamp" }),
+  completedAt: integer("completed_at", { mode: "timestamp" }),
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
-// ─── Security Events ───
-export const securityEvents = sqliteTable("security_events", {
+// ─── Batch Job Items ───
+export const batchJobItems = sqliteTable("batch_job_items", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  eventType: text("event_type").notNull(),
-  severity: text("severity").default("low"),
-  description: text("description"),
-  sourceIp: text("source_ip"),
-  userAgent: text("user_agent"),
-  actorId: text("actor_id"),
-  metadata: text("metadata"),
-  resolvedAt: integer("resolved_at", { mode: "timestamp" }),
+  batchJobId: integer("batch_job_id").notNull(),
+  itemType: text("item_type").notNull(),
+  itemId: text("item_id").notNull(),
+  status: text("status").default("pending"),
+  errorMessage: text("error_message"),
+  result: text("result"),
+  processedAt: integer("processed_at", { mode: "timestamp" }),
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
-// ─── Live Intelligence ───
-export const liveIntelligence = sqliteTable("live_intelligence", {
+// ─── Entity Merges ───
+export const entityMerges = sqliteTable("entity_merges", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  signalId: text("signal_id").notNull(),
-  signalType: text("signal_type").notNull(),
-  county: text("county").notNull(),
-  state: text("state").notNull(),
-  description: text("description"),
+  mergeType: text("merge_type").notNull(),
+  primaryEntityId: text("primary_entity_id").notNull(),
+  duplicateEntityId: text("duplicate_entity_id").notNull(),
+  status: text("status").default("pending"),
   confidence: integer("confidence").default(50),
-  status: text("status").default("active"),
-  expiresAt: integer("expires_at", { mode: "timestamp" }),
+  mergedFields: text("merged_fields"),
+  mergedBy: integer("merged_by"),
+  mergedAt: integer("merged_at", { mode: "timestamp" }),
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
-// ─── Daily Ops ───
-export const dailyOps = sqliteTable("daily_ops", {
+// ─── Change Log ───
+export const changeLog = sqliteTable("change_log", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  reportDate: text("report_date").notNull(),
+  entityType: text("entity_type").notNull(),
+  entityId: text("entity_id").notNull(),
+  changeType: text("change_type").notNull(),
+  oldValue: text("old_value"),
+  newValue: text("new_value"),
+  changedBy: integer("changed_by"),
+  reason: text("reason"),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+// ─── Pipeline Stage Transitions ───
+export const pipelineStageTransitions = sqliteTable("pipeline_stage_transitions", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  pipelineEventId: text("pipeline_event_id").notNull(),
+  fromStage: text("from_stage").notNull(),
+  toStage: text("to_stage").notNull(),
+  transitionedBy: integer("transitioned_by"),
+  reason: text("reason"),
+  metadata: text("metadata"),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+// ─── Provider Health Metrics ───
+export const providerHealthMetrics = sqliteTable("provider_health_metrics", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  providerName: text("provider_name").notNull(),
+  metricDate: text("metric_date").notNull(),
+  uptimePercent: real("uptime_percent").default(0),
+  avgResponseTimeMs: integer("avg_response_time_ms").default(0),
+  errorRate: real("error_rate").default(0),
   recordsProcessed: integer("records_processed").default(0),
-  eventsIdentified: integer("events_identified").default(0),
-  countiesScanned: integer("counties_scanned").default(0),
-  newProviders: integer("new_providers").default(0),
+  recordsFailed: integer("records_failed").default(0),
   alertsTriggered: integer("alerts_triggered").default(0),
   avgProcessingLatencyMs: integer("avg_processing_latency_ms").default(0),
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
@@ -757,5 +773,17 @@ export const betaFeedbackEvents = sqliteTable("beta_feedback_events", {
   entityId: text("entityId"),
   entityType: text("entityType"),
   metadata: text("metadata"),
+  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+// ─── Usage Tracking ───
+export const usageTracking = sqliteTable("usage_tracking", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  userId: integer("userId").notNull(),
+  organizationId: integer("organizationId"),
+  feature: text("feature").notNull(), // e.g., "search", "report", "county_view"
+  count: integer("count").default(1),
+  period: text("period").notNull(), // "daily", "monthly"
+  periodDate: text("periodDate").notNull(), // "2026-08-08"
   createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
