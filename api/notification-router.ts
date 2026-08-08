@@ -1,66 +1,188 @@
-/**
- * Notification Router — Gate 13 Section 3
- */
-
 import { z } from "zod";
-import { createRouter, publicQuery } from "./middleware";
-
-function getD1(ctx: any): D1Database | null {
-  return (ctx.env?.DB as D1Database) || null;
-}
-
-function bool(v?: boolean): number | null {
-  return v === undefined ? null : (v ? 1 : 0);
-}
-
-function getDefaultPrefs(userId: number) {
-  return { userId, emailEnabled: 1, inAppEnabled: 1, dailyDigest: 0, weeklyDigest: 1, watchlistAlerts: 1, infraAlerts: 1, recAlerts: 1 };
-}
+import { createRouter, authedQuery } from "./middleware";
+import { notifications, notificationPrefs } from "../db/schema";
+import { eq, and, desc, sql } from "drizzle-orm";
 
 export const notificationRouter = createRouter({
-  getPrefs: publicQuery.input(z.object({ userId: z.number() })).query(async ({ input, ctx }) => {
-    const d1 = getD1(ctx);
-    if (!d1) return { prefs: getDefaultPrefs(input.userId) };
-    try {
-      const row = await d1.prepare(`SELECT * FROM notification_prefs WHERE userId = ?`).bind(input.userId).first();
-      return { prefs: row || getDefaultPrefs(input.userId) };
-    } catch { return { prefs: getDefaultPrefs(input.userId) }; }
+  // Get notification preferences
+  getPrefs: authedQuery.query(async ({ ctx }) => {
+    const prefs = await ctx.db
+      .select()
+      .from(notificationPrefs)
+      .where(eq(notificationPrefs.userId, ctx.user.id))
+      .get();
+
+    return (
+      prefs || {
+        userId: ctx.user.id,
+        emailEnabled: true,
+        inAppEnabled: true,
+        alertFrequency: "daily",
+        alertTypes: '["opportunities","system"]',
+      }
+    );
   }),
 
-  updatePrefs: publicQuery.input(z.object({
-    userId: z.number(), emailEnabled: z.boolean().optional(), inAppEnabled: z.boolean().optional(),
-    dailyDigest: z.boolean().optional(), weeklyDigest: z.boolean().optional(),
-    watchlistAlerts: z.boolean().optional(), infraAlerts: z.boolean().optional(), recAlerts: z.boolean().optional(),
-  })).mutation(async ({ input, ctx }) => {
-    const d1 = getD1(ctx);
-    if (!d1) return { success: false };
-    try {
-      await d1.prepare(`INSERT INTO notification_prefs (userId, emailEnabled, inAppEnabled, dailyDigest, weeklyDigest, watchlistAlerts, infraAlerts, recAlerts) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(userId) DO UPDATE SET emailEnabled = COALESCE(?, emailEnabled), inAppEnabled = COALESCE(?, inAppEnabled), dailyDigest = COALESCE(?, dailyDigest), weeklyDigest = COALESCE(?, weeklyDigest), watchlistAlerts = COALESCE(?, watchlistAlerts), infraAlerts = COALESCE(?, infraAlerts), recAlerts = COALESCE(?, recAlerts), updatedAt = datetime('now')`)
-        .bind(input.userId, bool(input.emailEnabled), bool(input.inAppEnabled), bool(input.dailyDigest), bool(input.weeklyDigest), bool(input.watchlistAlerts), bool(input.infraAlerts), bool(input.recAlerts), bool(input.emailEnabled), bool(input.inAppEnabled), bool(input.dailyDigest), bool(input.weeklyDigest), bool(input.watchlistAlerts), bool(input.infraAlerts), bool(input.recAlerts)).run();
+  // Update notification preferences
+  updatePrefs: authedQuery
+    .input(
+      z.object({
+        emailEnabled: z.boolean().optional(),
+        inAppEnabled: z.boolean().optional(),
+        alertFrequency: z.enum(["realtime", "daily", "weekly"]).optional(),
+        alertTypes: z.array(z.string()).optional(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const existing = await ctx.db
+        .select()
+        .from(notificationPrefs)
+        .where(eq(notificationPrefs.userId, ctx.user.id))
+        .get();
+
+      const updateData: Record<string, unknown> = {};
+      if (input.emailEnabled !== undefined)
+        updateData.emailEnabled = input.emailEnabled;
+      if (input.inAppEnabled !== undefined)
+        updateData.inAppEnabled = input.inAppEnabled;
+      if (input.alertFrequency) updateData.alertFrequency = input.alertFrequency;
+      if (input.alertTypes) updateData.alertTypes = JSON.stringify(input.alertTypes);
+
+      if (existing) {
+        await ctx.db
+          .update(notificationPrefs)
+          .set({ ...updateData, updatedAt: new Date() })
+          .where(eq(notificationPrefs.userId, ctx.user.id))
+          .run();
+      } else {
+        await ctx.db
+          .insert(notificationPrefs)
+          .values({
+            userId: ctx.user.id,
+            emailEnabled: updateData.emailEnabled ?? true,
+            inAppEnabled: updateData.inAppEnabled ?? true,
+            alertFrequency: (updateData.alertFrequency as string) ?? "daily",
+            alertTypes: (updateData.alertTypes as string) ?? '["opportunities","system"]',
+          })
+          .run();
+      }
+
       return { success: true };
-    } catch { return { success: false }; }
+    }),
+
+  // Get notification history with unread count
+  history: authedQuery
+    .input(
+      z.object({
+        limit: z.number().min(1).max(100).default(20),
+        offset: z.number().min(0).default(0),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const items = await ctx.db
+        .select()
+        .from(notifications)
+        .where(eq(notifications.userId, ctx.user.id))
+        .orderBy(desc(notifications.createdAt))
+        .limit(input.limit)
+        .offset(input.offset)
+        .all();
+
+      const totalResult = await ctx.db
+        .select({ count: sql<number>`count(*)` })
+        .from(notifications)
+        .where(eq(notifications.userId, ctx.user.id))
+        .get();
+
+      const unreadResult = await ctx.db
+        .select({ count: sql<number>`count(*)` })
+        .from(notifications)
+        .where(
+          and(
+            eq(notifications.userId, ctx.user.id),
+            eq(notifications.read, false)
+          )
+        )
+        .get();
+
+      return {
+        items,
+        unreadCount: unreadResult?.count ?? 0,
+        total: totalResult?.count ?? 0,
+      };
+    }),
+
+  // Mark a single notification as read
+  markRead: authedQuery
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      await ctx.db
+        .update(notifications)
+        .set({ read: true })
+        .where(
+          and(
+            eq(notifications.id, input.id),
+            eq(notifications.userId, ctx.user.id)
+          )
+        )
+        .run();
+
+      return { success: true };
+    }),
+
+  // Mark all notifications as read
+  markAllRead: authedQuery.mutation(async ({ ctx }) => {
+    await ctx.db
+      .update(notifications)
+      .set({ read: true })
+      .where(
+        and(
+          eq(notifications.userId, ctx.user.id),
+          eq(notifications.read, false)
+        )
+      )
+      .run();
+
+    return { success: true };
   }),
 
-  history: publicQuery.input(z.object({ userId: z.number(), limit: z.number().default(20) })).query(async ({ input, ctx }) => {
-    const d1 = getD1(ctx);
-    if (!d1) return { notifications: generateMockNotifications(input.userId, input.limit) };
-    try {
-      const { results } = await d1.prepare(`SELECT id, action as type, details as message, resource, resourceId, createdAt, 'read' as status FROM audit_logs WHERE userId = ? ORDER BY createdAt DESC LIMIT ?`).bind(input.userId, input.limit).all();
-      if (!results || results.length === 0) return { notifications: generateMockNotifications(input.userId, input.limit) };
-      return { notifications: results };
-    } catch { return { notifications: generateMockNotifications(input.userId, input.limit) }; }
-  }),
+  // Delete a notification
+  delete: authedQuery
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      await ctx.db
+        .delete(notifications)
+        .where(
+          and(
+            eq(notifications.id, input.id),
+            eq(notifications.userId, ctx.user.id)
+          )
+        )
+        .run();
+
+      return { success: true };
+    }),
 });
 
-function generateMockNotifications(userId: number, limit: number) {
-  const types = [
-    { type: 'recommendation', message: 'New high-confidence opportunity: Wake County commercial corridor expansion (92%)' },
-    { type: 'watchlist', message: 'New permit filing in Wake County matches your watchlist "Triangle Growth"' },
-    { type: 'infrastructure', message: 'DOT project update: I-40 widening phase 2 approved in Johnston County' },
-    { type: 'alert', message: 'Daily digest: 3 new opportunities, 2 pattern matches, 1 provider status change' },
-    { type: 'report', message: 'Your weekly report is ready for download' },
-    { type: 'system', message: 'Welcome to BuildSignal Pro — your plan is now active' },
-  ];
-  const now = Date.now();
-  return types.slice(0, limit).map((t, i) => ({ id: userId * 100 + i, type: t.type, message: t.message, status: i < 2 ? 'unread' : 'read', createdAt: new Date(now - i * 3600000).toISOString() }));
+// Helper to create notifications (called by watchlist alerts, system events, etc.)
+export async function createNotification(
+  db: unknown,
+  userId: number,
+  title: string,
+  message: string,
+  type: string,
+  link?: string
+) {
+  const drizzleDb = db as ReturnType<typeof import("../db/drizzle").getDrizzle>;
+  return drizzleDb
+    .insert(notifications)
+    .values({
+      userId,
+      title,
+      message,
+      type,
+      link,
+      read: false,
+    })
+    .run();
 }
