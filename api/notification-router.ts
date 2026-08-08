@@ -143,8 +143,8 @@ export const notificationRouter = createRouter({
       )
       .run();
 
-    return { success: true };
-  }),
+      return { success: true };
+    }),
 
   // Delete a notification
   delete: authedQuery
@@ -166,15 +166,14 @@ export const notificationRouter = createRouter({
 
 // Helper to create notifications (called by watchlist alerts, system events, etc.)
 export async function createNotification(
-  db: unknown,
+  db: any,
   userId: number,
   title: string,
   message: string,
   type: string,
   link?: string
 ) {
-  const drizzleDb = db as ReturnType<typeof import("../db/drizzle").getDrizzle>;
-  return drizzleDb
+  return db
     .insert(notifications)
     .values({
       userId,
