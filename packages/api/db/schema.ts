@@ -12,6 +12,11 @@ export const users = sqliteTable("users", {
   name: text("name"),
   plan: text("plan", { enum: ["starter", "pro", "enterprise"] }).default("starter"),
   role: text("role", { enum: ["admin", "user"] }).default("user"),
+  stripeCustomerId: text("stripe_customer_id"),
+  stripeSubscriptionId: text("stripe_subscription_id"),
+  subscriptionStatus: text("subscription_status").default("inactive"),
+  subscriptionCurrentPeriodEnd: integer("subscription_current_period_end", { mode: "timestamp" }),
+  cancelAtPeriodEnd: integer("cancel_at_period_end", { mode: "boolean" }).default(false),
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
@@ -149,7 +154,8 @@ export const subscriptionEvents = sqliteTable("subscription_events", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   userId: integer("user_id").notNull(),
   event: text("event").notNull(),
-  plan: text("plan"),
+  plan: text("plan").notNull(),
+  amount: integer("amount"),
   stripeEventId: text("stripe_event_id"),
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
