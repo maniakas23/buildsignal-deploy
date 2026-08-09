@@ -1,68 +1,50 @@
-import { useCallback, useState } from "react";
-import { trpc } from "@/providers/trpc";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-const TOKEN_KEY = "buildsignal_auth_token";
+interface User {
+  id: number;
+  email: string;
+  name?: string;
+  role: string;
+  plan: string;
+  organizationId?: number;
+  isAdmin: boolean;
+}
 
 export function useAuth() {
-  const [token, setTokenState] = useState<string | null>(() =>
-    localStorage.getItem(TOKEN_KEY)
-  );
-  const utils = trpc.useContext();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-  const {
-    data: user,
-    isLoading,
-    error,
-  } = trpc.auth.me.useQuery(undefined, {
-    enabled: !!token,
-    retry: false,
-    refetchOnWindowFocus: false,
-  });
+  useEffect(() => {
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      setLoading(false);
+      return;
+    }
 
-  // Auto-clear token if auth.me returns null (invalid token)
-  if (error?.data?.code === "UNAUTHORIZED" && token) {
-    localStorage.removeItem(TOKEN_KEY);
-    setTokenState(null);
-    window.location.href = "/login";
-  }
+    fetch("/api/auth.me", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.user) {
+          setUser(data.user);
+        } else {
+          localStorage.removeItem("auth_token");
+        }
+      })
+      .catch(() => {
+        localStorage.removeItem("auth_token");
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
-  const loginMutation = trpc.auth.login.useMutation({
-    onSuccess: (data) => {
-      localStorage.setItem(TOKEN_KEY, data.token);
-      setTokenState(data.token);
-      utils.invalidate();
-    },
-  });
-
-  const registerMutation = trpc.auth.register.useMutation({
-    onSuccess: (data) => {
-      localStorage.setItem(TOKEN_KEY, data.token);
-      setTokenState(data.token);
-      utils.invalidate();
-    },
-  });
-
-  const logout = useCallback(() => {
-    localStorage.removeItem(TOKEN_KEY);
-    setTokenState(null);
-    utils.invalidate();
-    window.location.href = "/login";
-  }, [utils]);
-
-  const isAuthenticated = !!token && !!user;
-  const isAdmin = user?.isAdmin || false;
-
-  return {
-    user,
-    isLoading,
-    isAuthenticated,
-    isAdmin,
-    login: loginMutation.mutateAsync,
-    loginError: loginMutation.error,
-    loginIsPending: loginMutation.isPending,
-    register: registerMutation.mutateAsync,
-    registerError: registerMutation.error,
-    registerIsPending: registerMutation.isPending,
-    logout,
+  const logout = () => {
+    localStorage.removeItem("auth_token");
+    setUser(null);
+    navigate("/login");
   };
+
+  return { user, loading, isAuthenticated: !!user, logout };
 }
