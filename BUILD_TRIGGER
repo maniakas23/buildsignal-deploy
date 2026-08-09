@@ -1,0 +1,9 @@
+# BuildSignal Production Deployment Trigger
+# This file is used to force a new Cloudflare Pages deployment.
+# Last triggered: 2026-08-09T17:59:00Z
+# Commit: end-to-end production deploy v1.5.0
+# Changes in this deploy:
+#   - public/_redirects: API proxy routes /api/* directly to Worker
+#   - functions/api/[[path]].js: Preserve /api prefix when proxying
+#   - Certification docs: Current Intelligence, Canonical Trace, Cohort Delta
+#   - CI tests: 22-gate automated truth test suite
