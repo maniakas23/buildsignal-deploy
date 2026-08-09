@@ -1,6 +1,6 @@
 // BuildSignal API Proxy + Ingestion Handler — Pages Function
-// Proxies all /api/* requests to the production API Worker
-// Handles /api/ingestion/* directly for real data ingestion
+// Handles /api/ingestion/* directly for real data ingestion (D1 access)
+// Proxies all other /api/* requests to the production API Worker
 
 const API_BASE = "https://api.buildsignal.net";
 
@@ -153,7 +153,6 @@ async function handleIngestionFetch(context) {
 
       const sourceRecordId = getAttr(attrs, "permitnum", "permitnumber", "id", "objectid") || String(attrs["OBJECTID"] || attrs["objectid"] || "");
 
-      // Defensive: ensure no undefined values reach D1
       const insertParams = [
         providerId,
         sourceRecordId ?? null,
@@ -171,10 +170,9 @@ async function handleIngestionFetch(context) {
         "LIVE",
       ];
 
-      // Validate no undefined values
       for (let i = 0; i < insertParams.length; i++) {
         if (insertParams[i] === undefined) {
-          throw new Error(`Parameter ${i} is undefined: rawTitle=${rawTitle}, rawDescription=${rawDescription}, rawLocation=${rawLocation}, rawStatus=${rawStatus}, rawDates=${rawDates}, rawMetadata=${rawMetadata}, sourceRecordId=${sourceRecordId}, runId=${runId}`);
+          throw new Error(`Parameter ${i} is undefined`);
         }
       }
 
@@ -386,7 +384,7 @@ async function handleIngestionRun(context) {
 
       for (let i = 0; i < insertParams.length; i++) {
         if (insertParams[i] === undefined) {
-          throw new Error(`Parameter ${i} is undefined: rawTitle=${rawTitle}, rawDescription=${rawDescription}, rawLocation=${rawLocation}, rawStatus=${rawStatus}, rawDates=${rawDates}, rawMetadata=${rawMetadata}, sourceRecordId=${sourceRecordId}, runId=${runId}`);
+          throw new Error(`Parameter ${i} is undefined`);
         }
       }
 
@@ -547,7 +545,7 @@ export async function onRequest(context) {
     return jsonResponse({ debug: true, pathname: url.pathname, url: request.url });
   }
 
-  // Handle ingestion endpoints directly
+  // Handle ingestion endpoints directly (D1 access required)
   if (url.pathname.startsWith("/api/ingestion")) {
     if (method === "OPTIONS") {
       return new Response(null, {
@@ -578,12 +576,8 @@ export async function onRequest(context) {
   }
 
   // Proxy everything else to the API Worker
-  // Worker expects /api/trpc/* but /health, /version, /ready, /stripe/webhook without /api prefix
-  let workerPath = url.pathname;
-  if (!workerPath.startsWith("/api/trpc/")) {
-    workerPath = workerPath.replace(/^\/api/, "") || "/";
-  }
-  const targetUrl = API_BASE + workerPath + url.search;
+  // CRITICAL: Preserve /api prefix — Worker routes on /api/v1/* and /api/trpc/*
+  const targetUrl = API_BASE + url.pathname + url.search;
   const modifiedRequest = new Request(targetUrl, {
     method: request.method,
     headers: request.headers,
