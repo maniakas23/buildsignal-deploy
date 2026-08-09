@@ -180,9 +180,9 @@ async function test(name, fn) {
 
   // ─── Gate 17: Alert generation produces verifiable alerts ───
   await test("Alert generation produces verifiable alerts", async () => {
-    const gen = await apiPost("/api/v1/alerts/generate", { opportunityId: "opp-8", userId: 1, organizationId: 1 });
+    const gen = await apiPost("/api/v1/alerts/generate", { opportunityId: "opp-8", userId: 29, organizationId: 15 });
     if (!gen.alertId) return { pass: false, message: "No alertId returned" };
-    const alerts = await apiGet("/api/v1/alerts?userId=1");
+    const alerts = await apiGet("/api/v1/alerts?userId=29");
     const found = (alerts.alerts || []).some(a => a.alertId === gen.alertId);
     if (!found) return { pass: false, message: `Alert ${gen.alertId} not retrievable` };
     return { pass: true };
@@ -190,7 +190,7 @@ async function test(name, fn) {
 
   // ─── Gate 18: Reports contain evidence but no forecasts ───
   await test("Reports contain evidence but no forecasts", async () => {
-    const reports = await apiGet("/api/v1/reports?userId=1");
+    const reports = await apiGet("/api/v1/reports?userId=29");
     const reps = reports.reports || [];
     if (reps.length === 0) return { pass: false, message: "No reports found", critical: false };
     for (const r of reps) {
