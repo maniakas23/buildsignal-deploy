@@ -153,9 +153,34 @@ async function handleIngestionFetch(context) {
 
       const sourceRecordId = getAttr(attrs, "permitnum", "permitnumber", "id", "objectid") || String(attrs["OBJECTID"] || attrs["objectid"] || "");
 
+      // Defensive: ensure no undefined values reach D1
+      const insertParams = [
+        providerId,
+        sourceRecordId ?? null,
+        endpoint,
+        now,
+        now,
+        rawPayload,
+        rawTitle ?? null,
+        rawDescription ?? null,
+        rawLocation ?? null,
+        rawStatus ?? null,
+        rawDates ?? null,
+        rawMetadata ?? null,
+        runId ?? null,
+        "LIVE",
+      ];
+
+      // Validate no undefined values
+      for (let i = 0; i < insertParams.length; i++) {
+        if (insertParams[i] === undefined) {
+          throw new Error(`Parameter ${i} is undefined: rawTitle=${rawTitle}, rawDescription=${rawDescription}, rawLocation=${rawLocation}, rawStatus=${rawStatus}, rawDates=${rawDates}, rawMetadata=${rawMetadata}, sourceRecordId=${sourceRecordId}, runId=${runId}`);
+        }
+      }
+
       await d1Run(db,
         `INSERT INTO raw_records (providerId, sourceRecordId, sourceUrl, observedAt, ingestedAt, rawPayload, rawTitle, rawDescription, rawLocation, rawStatus, rawDates, rawMetadata, ingestionRunId, provenance) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [providerId, sourceRecordId, endpoint, now, now, rawPayload, rawTitle, rawDescription, rawLocation, rawStatus, rawDates, rawMetadata, runId, "LIVE"]
+        insertParams
       );
       recordsCreated++;
     }
@@ -342,9 +367,32 @@ async function handleIngestionRun(context) {
 
       const sourceRecordId = getAttr(attrs, "permitnum", "permitnumber", "id", "objectid") || String(attrs["OBJECTID"] || attrs["objectid"] || "");
 
+      const insertParams = [
+        providerId,
+        sourceRecordId ?? null,
+        endpoint,
+        now,
+        now,
+        rawPayload,
+        rawTitle ?? null,
+        rawDescription ?? null,
+        rawLocation ?? null,
+        rawStatus ?? null,
+        rawDates ?? null,
+        rawMetadata ?? null,
+        runId ?? null,
+        "LIVE",
+      ];
+
+      for (let i = 0; i < insertParams.length; i++) {
+        if (insertParams[i] === undefined) {
+          throw new Error(`Parameter ${i} is undefined: rawTitle=${rawTitle}, rawDescription=${rawDescription}, rawLocation=${rawLocation}, rawStatus=${rawStatus}, rawDates=${rawDates}, rawMetadata=${rawMetadata}, sourceRecordId=${sourceRecordId}, runId=${runId}`);
+        }
+      }
+
       await d1Run(db,
         `INSERT INTO raw_records (providerId, sourceRecordId, sourceUrl, observedAt, ingestedAt, rawPayload, rawTitle, rawDescription, rawLocation, rawStatus, rawDates, rawMetadata, ingestionRunId, provenance) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [providerId, sourceRecordId, endpoint, now, now, rawPayload, rawTitle, rawDescription, rawLocation, rawStatus, rawDates, rawMetadata, runId, "LIVE"]
+        insertParams
       );
       recordsCreated++;
     }
