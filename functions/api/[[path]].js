@@ -508,6 +508,11 @@ export async function onRequest(context) {
   const url = new URL(request.url);
   const method = request.method;
 
+  // DEBUG: Echo back what we see
+  if (url.pathname === "/api/debug") {
+    return jsonResponse({ debug: true, pathname: url.pathname, url: request.url });
+  }
+
   // Handle ingestion endpoints directly
   if (url.pathname.startsWith("/api/ingestion")) {
     // CORS preflight
