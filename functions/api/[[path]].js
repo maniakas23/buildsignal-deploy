@@ -47,7 +47,7 @@ function getAttr(attrs, ...keys) {
       return String(v);
     }
   }
-  return undefined;
+  return null;
 }
 
 function msToDate(ms) {
@@ -146,7 +146,7 @@ async function handleIngestionFetch(context) {
         continue;
       }
 
-      let rawMetadata;
+      let rawMetadata = null;
       if (feature.geometry) {
         rawMetadata = JSON.stringify({ geometry: feature.geometry });
       }
@@ -155,7 +155,7 @@ async function handleIngestionFetch(context) {
 
       await d1Run(db,
         `INSERT INTO raw_records (providerId, sourceRecordId, sourceUrl, observedAt, ingestedAt, rawPayload, rawTitle, rawDescription, rawLocation, rawStatus, rawDates, rawMetadata, ingestionRunId, provenance) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [providerId, sourceRecordId, endpoint, now, now, rawPayload, rawTitle, rawDescription, rawLocation, rawStatus, rawDates, rawMetadata || null, runId, "LIVE"]
+        [providerId, sourceRecordId, endpoint, now, now, rawPayload, rawTitle, rawDescription, rawLocation, rawStatus, rawDates, rawMetadata, runId, "LIVE"]
       );
       recordsCreated++;
     }
@@ -335,7 +335,7 @@ async function handleIngestionRun(context) {
         continue;
       }
 
-      let rawMetadata;
+      let rawMetadata = null;
       if (feature.geometry) {
         rawMetadata = JSON.stringify({ geometry: feature.geometry });
       }
@@ -344,7 +344,7 @@ async function handleIngestionRun(context) {
 
       await d1Run(db,
         `INSERT INTO raw_records (providerId, sourceRecordId, sourceUrl, observedAt, ingestedAt, rawPayload, rawTitle, rawDescription, rawLocation, rawStatus, rawDates, rawMetadata, ingestionRunId, provenance) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [providerId, sourceRecordId, endpoint, now, now, rawPayload, rawTitle, rawDescription, rawLocation, rawStatus, rawDates, rawMetadata || null, runId, "LIVE"]
+        [providerId, sourceRecordId, endpoint, now, now, rawPayload, rawTitle, rawDescription, rawLocation, rawStatus, rawDates, rawMetadata, runId, "LIVE"]
       );
       recordsCreated++;
     }
