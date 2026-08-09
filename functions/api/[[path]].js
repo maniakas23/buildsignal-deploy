@@ -97,13 +97,11 @@ async function handleIngestionFetch(context) {
   let errorMsg;
 
   try {
-    // Resolve endpoint
     const endpoint = resolveEndpoint(providerId);
     if (!endpoint) {
       throw new Error(`No endpoint configured for providerId: ${providerId}`);
     }
 
-    // Create ingestion run
     const now = Math.floor(Date.now() / 1000);
     const runResult = await d1Run(db,
       `INSERT INTO ingestion_runs (providerId, startedAt, status, triggerType) VALUES (?, ?, ?, ?)`,
@@ -111,14 +109,12 @@ async function handleIngestionFetch(context) {
     );
     runId = runResult.meta?.last_row_id || runResult.lastRowId;
 
-    // Fetch from ArcGIS
     const fetchStart = Date.now();
     const data = await fetchArcGIS(endpoint, limit);
     const fetchLatency = Date.now() - fetchStart;
     const features = data.features || [];
     recordsObserved = features.length;
 
-    // Parse and store raw records
     const parseStart = Date.now();
     for (const feature of features) {
       const attrs = feature.attributes || {};
@@ -138,7 +134,6 @@ async function handleIngestionFetch(context) {
         expires: getAttr(attrs, "expirationdate", "expiration_date", "expires"),
       });
 
-      // Check for duplicates
       const existing = await d1Query(db,
         `SELECT id FROM raw_records WHERE providerId = ? AND rawPayload = ? LIMIT 1`,
         [providerId, rawPayload]
@@ -167,7 +162,6 @@ async function handleIngestionFetch(context) {
     const parseLatency = Date.now() - parseStart;
     const totalLatency = Date.now() - overallStart;
 
-    // Update run as completed
     await d1Run(db,
       `UPDATE ingestion_runs SET status = ?, completedAt = ?, recordsObserved = ?, recordsCreated = ?, fetchLatencyMs = ?, parseLatencyMs = ?, totalLatencyMs = ?, sourceRecordCount = ? WHERE id = ?`,
       ["completed", now, recordsObserved, recordsCreated, fetchLatency, parseLatency, totalLatency, recordsObserved, runId]
@@ -202,13 +196,11 @@ async function handleIngestionNormalize(context) {
   let recordsSkipped = 0;
 
   try {
-    // Get raw records for this run
     const rows = await d1Query(db,
       `SELECT * FROM raw_records WHERE ingestionRunId = ? AND providerId = ? AND isDeleted = 0`,
       [runId, providerId]
     );
 
-    // Get provider name
     const providers = await d1Query(db,
       `SELECT providerName FROM provider_registry WHERE providerId = ? OR providerName = ? LIMIT 1`,
       [providerId, providerId]
@@ -221,7 +213,6 @@ async function handleIngestionNormalize(context) {
       const rawPayload = row.rawPayload;
       const hash = cyrb53(rawPayload);
 
-      // Check for duplicate
       const dupCheck = await d1Query(db,
         `SELECT id FROM signalcore_events WHERE contentHash = ? LIMIT 1`,
         [hash]
@@ -275,7 +266,6 @@ async function handleIngestionNormalize(context) {
       recordsNormalized++;
     }
 
-    // Update run
     await d1Run(db,
       `UPDATE ingestion_runs SET recordsResolved = ?, resolveLatencyMs = ? WHERE id = ?`,
       [recordsNormalized, Date.now() - normalizeStart, runId]
@@ -301,7 +291,6 @@ async function handleIngestionRun(context) {
   let fetchError;
 
   try {
-    // FETCH PHASE
     const endpoint = resolveEndpoint(providerId);
     if (!endpoint) {
       throw new Error(`No endpoint configured for providerId: ${providerId}`);
@@ -361,7 +350,6 @@ async function handleIngestionRun(context) {
     }
     const parseLatency = Date.now() - parseStart;
 
-    // NORMALIZE PHASE
     const normalizeStart = Date.now();
     const rawRows = await d1Query(db,
       `SELECT * FROM raw_records WHERE ingestionRunId = ? AND providerId = ? AND isDeleted = 0`,
@@ -434,7 +422,6 @@ async function handleIngestionRun(context) {
     const resolveLatency = Date.now() - normalizeStart;
     const totalLatency = Date.now() - overallStart;
 
-    // Update run
     await d1Run(db,
       `UPDATE ingestion_runs SET status = ?, completedAt = ?, recordsObserved = ?, recordsCreated = ?, recordsResolved = ?, fetchLatencyMs = ?, parseLatencyMs = ?, resolveLatencyMs = ?, totalLatencyMs = ?, sourceRecordCount = ? WHERE id = ?`,
       ["completed", now, recordsObserved, recordsCreated, recordsNormalized, fetchLatency, parseLatency, resolveLatency, totalLatency, recordsObserved, runId]
@@ -470,7 +457,6 @@ async function handleIngestionStatus(context) {
     return jsonResponse({ found: true, run: runs[0] });
   }
 
-  // Return latest runs summary
   const latestRuns = await d1Query(db,
     `SELECT * FROM ingestion_runs ORDER BY startedAt DESC LIMIT 20`
   );
@@ -515,7 +501,6 @@ export async function onRequest(context) {
 
   // Handle ingestion endpoints directly
   if (url.pathname.startsWith("/api/ingestion")) {
-    // CORS preflight
     if (method === "OPTIONS") {
       return new Response(null, {
         status: 204,
@@ -545,7 +530,12 @@ export async function onRequest(context) {
   }
 
   // Proxy everything else to the API Worker
-  const targetUrl = API_BASE + url.pathname + url.search;
+  // Worker expects /api/trpc/* but /health, /version, /ready, /stripe/webhook without /api prefix
+  let workerPath = url.pathname;
+  if (!workerPath.startsWith("/api/trpc/")) {
+    workerPath = workerPath.replace(/^\/api/, "") || "/";
+  }
+  const targetUrl = API_BASE + workerPath + url.search;
   const modifiedRequest = new Request(targetUrl, {
     method: request.method,
     headers: request.headers,
