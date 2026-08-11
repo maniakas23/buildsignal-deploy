@@ -67,7 +67,7 @@ const faqs: FaqItem[] = [
   {
     question: "What data sources does BuildSignal use?",
     answer:
-      "BuildSignal aggregates building permit data from 500+ counties across the US, plus zoning changes, contractor licenses, and demographic indicators. We update our dataset daily and validate against official county records.",
+      "BuildSignal aggregates building permit data from covered US counties, plus zoning changes, contractor licenses, and demographic indicators. We update our dataset daily and validate against official county records.",
     category: "Data & Accuracy",
     popular: true,
   },
@@ -81,7 +81,7 @@ const faqs: FaqItem[] = [
   {
     question: "What counties are covered?",
     answer:
-      "We cover major metropolitan counties across all 50 US states, with particular depth in high-growth markets. Visit our County Coverage page for the full, searchable list of supported counties and their data freshness.",
+      "We cover a growing set of US counties, with particular depth in high-growth markets. Visit our County Coverage page for the full, searchable list of supported counties and their data freshness.",
     category: "Data & Accuracy",
   },
   {
@@ -119,7 +119,7 @@ const faqs: FaqItem[] = [
   {
     question: "How secure is my data?",
     answer:
-      "BuildSignal uses TLS 1.3 encryption in transit and AES-256 at rest. We are SOC 2 Type II certified and undergo annual third-party penetration testing. We never sell your data. Read our full Security page for details.",
+      "BuildSignal uses TLS 1.3 encryption in transit and AES-256 at rest. We are working toward SOC 2 Type II certification (audit in progress) and plan independent penetration testing. We never sell your data. Read our full Security page for details.",
     category: "Account",
     popular: true,
   },
