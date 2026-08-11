@@ -1,16 +1,16 @@
 import { Shield, Lock, Eye, Server, FileCheck, Fingerprint, Clock, Globe } from 'lucide-react';
 
 const CERTIFICATIONS = [
-  { name: 'SOC 2 Type II', description: 'Independent audit of security controls and processes', icon: <FileCheck className="w-5 h-5 text-accent-teal" /> },
-  { name: 'GDPR Compliant', description: 'Full compliance with EU data protection regulations', icon: <Shield className="w-5 h-5 text-accent-indigo" /> },
+  { name: 'SOC 2 Type II (In Progress)', description: 'Alignment program underway — certification audit not yet completed', icon: <FileCheck className="w-5 h-5 text-accent-teal" /> },
+  { name: 'GDPR Aligned', description: 'Controls aligned with EU data protection regulations', icon: <Shield className="w-5 h-5 text-accent-indigo" /> },
   { name: 'CCPA Ready', description: 'California Consumer Privacy Act compliance', icon: <Eye className="w-5 h-5 text-accent-amber" /> },
-  { name: 'ISO 27001', description: 'Information security management certification', icon: <Lock className="w-5 h-5 text-accent-crimson" /> },
+  { name: 'ISO 27001 (Planned)', description: 'Information security management certification — planned, not yet held', icon: <Lock className="w-5 h-5 text-accent-crimson" /> },
 ];
 
 const SECURITY_FEATURES = [
   { title: 'End-to-End Encryption', description: 'All data encrypted in transit (TLS 1.3) and at rest (AES-256)', icon: <Lock className="w-5 h-5" /> },
   { title: 'Zero-Trust Architecture', description: 'Every request authenticated and authorized, regardless of origin', icon: <Shield className="w-5 h-5" /> },
-  { title: 'Regular Penetration Testing', description: 'Quarterly third-party security assessments', icon: <Fingerprint className="w-5 h-5" /> },
+  { title: 'Penetration Testing (Planned)', description: 'Independent penetration testing planned as part of the SOC 2 program', icon: <Fingerprint className="w-5 h-5" /> },
   { title: '99.9% Uptime SLA', description: 'Enterprise-grade infrastructure with automatic failover', icon: <Clock className="w-5 h-5" /> },
   { title: 'Data Residency Options', description: 'Choose where your data is stored and processed', icon: <Globe className="w-5 h-5" /> },
   { title: 'Role-Based Access Control', description: 'Granular permissions for team members', icon: <Server className="w-5 h-5" /> },
@@ -24,7 +24,7 @@ const PRIVACY_COMMITMENTS = [
   'Transparent AI — every recommendation shows its sources',
   'Minimum data collection — we only gather what we need',
   'Breach notification within 24 hours',
-  'Annual third-party privacy audits',
+  'Independent privacy audits planned',
 ];
 
 export default function SecurityPage() {
@@ -44,7 +44,7 @@ export default function SecurityPage() {
           </h1>
           <p className="text-sm text-ink-secondary leading-relaxed max-w-2xl">
             BuildSignal implements enterprise-grade security controls to protect your data at every layer. 
-            We are SOC 2 certified, GDPR compliant, and undergo regular third-party audits.
+            We are actively working toward SOC 2 certification (not yet certified) and align our controls with GDPR requirements.
           </p>
         </div>
       </section>
