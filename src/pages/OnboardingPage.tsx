@@ -122,7 +122,7 @@ export default function OnboardingPage() {
                 <Search className="w-4 h-4 text-accent-indigo mt-0.5 shrink-0" />
                 <div>
                   <p className="text-xs font-medium text-ink-primary">Smart Search</p>
-                  <p className="text-[11px] text-ink-secondary">Find projects across 3,100+ counties</p>
+                  <p className="text-[11px] text-ink-secondary">Find projects across covered US counties</p>
                 </div>
               </div>
               <div className="flex items-start gap-3 p-3 rounded-xl bg-canvas border border-ink-wash">
