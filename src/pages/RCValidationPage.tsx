@@ -276,8 +276,8 @@ export default function RCValidationPage() {
                   { label: 'Signup flow functional', status: 'pass', detail: 'Role selector + validation' },
                   { label: 'Demo experience ready', status: 'pass', detail: '6-step walkthrough' },
                   { label: 'Support channels active', status: 'pass', detail: 'Help center + feedback' },
-                  { label: 'Security page published', status: 'pass', detail: 'SOC 2, GDPR, ISO' },
-                  { label: 'Data coverage documented', status: 'pass', detail: '3,143 counties' },
+                  { label: 'Security page published', status: 'pass', detail: 'SOC 2 (in progress), GDPR' },
+                  { label: 'Data coverage documented', status: 'pass', detail: 'Select counties, expanding' },
                   { label: 'Onboarding checklist', status: 'pass', detail: '8-step interactive' },
                 ].map((item) => (
                   <div key={item.label} className="flex items-start gap-2.5 p-3 rounded-lg bg-canvas border border-ink-wash">
@@ -298,10 +298,10 @@ export default function RCValidationPage() {
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {[
-                  { value: '500+', label: 'Companies' },
-                  { value: '3,143', label: 'Counties' },
-                  { value: '94%', label: 'Avg Confidence' },
-                  { value: '< 4hrs', label: 'Data Latency' },
+                  { value: 'Beta', label: 'Private access' },
+                  { value: '25', label: 'Counties (registry)' },
+                  { value: '12', label: 'Providers monitored' },
+                  { value: 'LIVE', label: 'Pilot: Dorchester SC' },
                 ].map((s) => (
                   <div key={s.label} className="p-3 rounded-lg bg-canvas border border-ink-wash text-center">
                     <p className="text-lg font-semibold text-ink-primary font-mono">{s.value}</p>
