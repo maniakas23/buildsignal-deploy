@@ -63,7 +63,7 @@ function wrapMeta<T>(data: T, overrides: Partial<EngineResponse<T>['meta']> = {}
     data,
     meta: {
       confidence: 94,
-      evidenceSummary: 'Aggregated from 2,400+ data sources including permits, utilities, zoning, and public records.',
+      evidenceSummary: 'Aggregated from monitored public data sources including permits, utilities, zoning, and public records.',
       lastUpdated: new Date().toISOString(),
       relatedSignals: 2847,
       source: isDemoMode() ? 'Demo Data' : 'SignalCore Intelligence',
@@ -77,7 +77,7 @@ function wrapListMeta<T>(data: T[], overrides: Partial<EngineListResponse<T>['me
     data,
     meta: {
       confidence: 94,
-      evidenceSummary: 'Aggregated from 2,400+ data sources including permits, utilities, zoning, and public records.',
+      evidenceSummary: 'Aggregated from monitored public data sources including permits, utilities, zoning, and public records.',
       lastUpdated: new Date().toISOString(),
       relatedSignals: 2847,
       total: data.length, page: 1, perPage: data.length,
