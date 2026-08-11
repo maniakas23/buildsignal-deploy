@@ -183,8 +183,8 @@ export function PrivacyPage() {
               threat detection
             </li>
             <li>
-              <strong>Audits:</strong> Annual SOC 2 Type II and penetration
-              testing
+              <strong>Audits:</strong> SOC 2 Type II audit in progress;
+              independent penetration testing planned
             </li>
             <li>
               <strong>Backups:</strong> Encrypted, geographically distributed
