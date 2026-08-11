@@ -80,7 +80,7 @@ export default function EmptyState({ type }: EmptyStateProps) {
                 Your Intelligence Dashboard is Ready
               </h3>
               <p className="text-sm text-ink-secondary mb-4 leading-relaxed">
-                BuildSignal monitors 2,400+ public data sources across 3,100+ counties. Here is how to get your first insight in under 5 minutes.
+                BuildSignal monitors public data sources across covered US counties. Here is how to get your first insight in under 5 minutes.
               </p>
               <div className="flex flex-wrap gap-3">
                 <button
@@ -146,10 +146,10 @@ export default function EmptyState({ type }: EmptyStateProps) {
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[
-              { label: 'Active Signals', value: '2,847' },
-              { label: 'Counties Covered', value: '3,100+' },
-              { label: 'Data Sources', value: '2,400+' },
-              { label: 'Avg Lead Time', value: '60-90 days' },
+              { label: 'Signals', value: 'Live' },
+              { label: 'Counties', value: 'Expanding' },
+              { label: 'Data Sources', value: 'Growing' },
+              { label: 'Lead Time', value: 'Varies' },
             ].map((stat) => (
               <div key={stat.label}>
                 <p className="text-lg font-semibold text-ink-primary font-mono">{stat.value}</p>
@@ -167,7 +167,7 @@ export default function EmptyState({ type }: EmptyStateProps) {
           </span>
           <span className="flex items-center gap-1">
             <MapPin className="w-3 h-3 text-accent-teal" />
-            3,100+ US counties
+            covered US counties
           </span>
           <span className="flex items-center gap-1">
             <Bell className="w-3 h-3 text-accent-teal" />
