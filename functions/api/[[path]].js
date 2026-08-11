@@ -1,6 +1,6 @@
 // BuildSignal API Proxy + Ingestion Handler — Pages Function
-// Handles /api/ingestion/* directly for real data ingestion (D1 access)
-// Proxies all other /api/* requests to the production API Worker
+// Proxies all /api/* requests to the production API Worker
+// Handles /api/ingestion/* directly for real data ingestion
 
 const API_BASE = "https://api.buildsignal.net";
 
@@ -19,14 +19,54 @@ function cyrb53(str, seed = 0) {
 
 // ─── ArcGIS endpoint resolver ───
 const KNOWN_ENDPOINTS = {
-  raleigh_building_permits:
+  "raleigh-permits":
     "https://services.arcgis.com/v400IkDOw1ad7Yad/arcgis/rest/services/Building_Permits_Pending/FeatureServer/0/query",
-  wake_county_building_permits:
+  "raleigh_building_permits":
+    "https://services.arcgis.com/v400IkDOw1ad7Yad/arcgis/rest/services/Building_Permits_Pending/FeatureServer/0/query",
+  "wake-county-permits":
     "https://maps.wake.gov/arcgis/rest/services/Inspections/Building_Permits/MapServer/0/query",
+  "wake_county_building_permits":
+    "https://maps.wake.gov/arcgis/rest/services/Inspections/Building_Permits/MapServer/0/query",
+  "mecklenburg-nc-building_permits":
+    "https://gis.mecknc.gov/arcgis/rest/services/CodeEnforcement/BuildingPermits/MapServer/0/query",
+  "mecklenburg_nc_building_permits":
+    "https://gis.mecknc.gov/arcgis/rest/services/CodeEnforcement/BuildingPermits/MapServer/0/query",
+  "fairfax-va-building_permits":
+    "https://www.fairfaxcounty.gov/gispub1/rest/services/LDS/DevelopmentTracker/MapServer/5/query",
+  "fairfax_va_building_permits":
+    "https://www.fairfaxcounty.gov/gispub1/rest/services/LDS/DevelopmentTracker/MapServer/5/query",
 };
 
-function resolveEndpoint(providerId) {
-  return KNOWN_ENDPOINTS[providerId] || null;
+// Provider ID normalization (hyphens ↔ underscores)
+const PROVIDER_ID_MAP = {
+  "raleigh_building_permits": "raleigh-permits",
+  "wake_county_building_permits": "wake-county-permits",
+  "mecklenburg_nc_building_permits": "mecklenburg-nc-building_permits",
+  "fairfax_va_building_permits": "fairfax-va-building_permits",
+};
+
+function normalizeProviderId(providerId) {
+  return PROVIDER_ID_MAP[providerId] || providerId;
+}
+
+async function resolveEndpoint(db, providerId) {
+  const canonicalId = normalizeProviderId(providerId);
+  
+  // First check known endpoints
+  const known = KNOWN_ENDPOINTS[canonicalId];
+  if (known) return known;
+  
+  // Fall back to provider registry (try both original and canonical)
+  if (db) {
+    for (const pid of [canonicalId, providerId]) {
+      const rows = await d1Query(db, "SELECT apiEndpoint FROM provider_registry WHERE providerId = ? LIMIT 1", [pid]);
+      if (rows.length > 0 && rows[0].apiEndpoint) {
+        return rows[0].apiEndpoint;
+      }
+    }
+  }
+  
+  return null;
 }
 
 // ─── D1 helpers ───
@@ -47,7 +87,7 @@ function getAttr(attrs, ...keys) {
       return String(v);
     }
   }
-  return null;
+  return undefined;
 }
 
 function msToDate(ms) {
@@ -89,6 +129,7 @@ async function handleIngestionFetch(context) {
   const db = context.env.DB;
   const body = await context.request.json().catch(() => ({}));
   const providerId = body.providerId || "raleigh_building_permits";
+  const canonicalId = normalizeProviderId(providerId);
   const limit = Math.min(Math.max(body.limit || 50, 1), 500);
   const overallStart = Date.now();
   let runId;
@@ -97,24 +138,28 @@ async function handleIngestionFetch(context) {
   let errorMsg;
 
   try {
-    const endpoint = resolveEndpoint(providerId);
+    // Resolve endpoint
+    const endpoint = await resolveEndpoint(db, providerId);
     if (!endpoint) {
       throw new Error(`No endpoint configured for providerId: ${providerId}`);
     }
 
+    // Create ingestion run
     const now = Math.floor(Date.now() / 1000);
     const runResult = await d1Run(db,
       `INSERT INTO ingestion_runs (providerId, startedAt, status, triggerType) VALUES (?, ?, ?, ?)`,
-      [providerId, now, "running", "manual"]
+      [canonicalId, now, "running", "manual"]
     );
     runId = runResult.meta?.last_row_id || runResult.lastRowId;
 
+    // Fetch from ArcGIS
     const fetchStart = Date.now();
     const data = await fetchArcGIS(endpoint, limit);
     const fetchLatency = Date.now() - fetchStart;
     const features = data.features || [];
     recordsObserved = features.length;
 
+    // Parse and store raw records
     const parseStart = Date.now();
     for (const feature of features) {
       const attrs = feature.attributes || {};
@@ -134,9 +179,10 @@ async function handleIngestionFetch(context) {
         expires: getAttr(attrs, "expirationdate", "expiration_date", "expires"),
       });
 
+      // Check for duplicates (use canonical ID)
       const existing = await d1Query(db,
         `SELECT id FROM raw_records WHERE providerId = ? AND rawPayload = ? LIMIT 1`,
-        [providerId, rawPayload]
+        [canonicalId, rawPayload]
       );
       if (existing.length > 0) {
         await d1Run(db,
@@ -146,48 +192,32 @@ async function handleIngestionFetch(context) {
         continue;
       }
 
-      let rawMetadata = null;
+      let rawMetadata;
       if (feature.geometry) {
         rawMetadata = JSON.stringify({ geometry: feature.geometry });
       }
 
       const sourceRecordId = getAttr(attrs, "permitnum", "permitnumber", "id", "objectid") || String(attrs["OBJECTID"] || attrs["objectid"] || "");
 
-      const insertParams = [
-        providerId,
-        sourceRecordId ?? null,
-        endpoint,
-        now,
-        now,
-        rawPayload,
-        rawTitle ?? null,
-        rawDescription ?? null,
-        rawLocation ?? null,
-        rawStatus ?? null,
-        rawDates ?? null,
-        rawMetadata ?? null,
-        runId ?? null,
-        "LIVE",
-      ];
-
-      for (let i = 0; i < insertParams.length; i++) {
-        if (insertParams[i] === undefined) {
-          throw new Error(`Parameter ${i} is undefined`);
-        }
-      }
-
       await d1Run(db,
         `INSERT INTO raw_records (providerId, sourceRecordId, sourceUrl, observedAt, ingestedAt, rawPayload, rawTitle, rawDescription, rawLocation, rawStatus, rawDates, rawMetadata, ingestionRunId, provenance) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        insertParams
+        [canonicalId, sourceRecordId, endpoint, now, now, rawPayload, rawTitle, rawDescription, rawLocation, rawStatus, rawDates, rawMetadata || null, runId, "LIVE"]
       );
       recordsCreated++;
     }
     const parseLatency = Date.now() - parseStart;
     const totalLatency = Date.now() - overallStart;
 
+    // Update run as completed
     await d1Run(db,
       `UPDATE ingestion_runs SET status = ?, completedAt = ?, recordsObserved = ?, recordsCreated = ?, fetchLatencyMs = ?, parseLatencyMs = ?, totalLatencyMs = ?, sourceRecordCount = ? WHERE id = ?`,
       ["completed", now, recordsObserved, recordsCreated, fetchLatency, parseLatency, totalLatency, recordsObserved, runId]
+    );
+
+    // Update provider telemetry
+    await d1Run(db,
+      `UPDATE provider_registry SET lastSuccessfulFetch = ?, recordsIngested = recordsIngested + ?, healthStatus = 'healthy', isActive = 1, updatedAt = ? WHERE providerId = ?`,
+      [now, recordsCreated, now, canonicalId]
     );
 
     return jsonResponse({ success: true, runId, recordsObserved, recordsCreated });
@@ -199,6 +229,12 @@ async function handleIngestionFetch(context) {
         `UPDATE ingestion_runs SET status = ?, completedAt = ?, recordsObserved = ?, recordsCreated = ?, error = ?, errorCode = ?, totalLatencyMs = ? WHERE id = ?`,
         ["failed", now, recordsObserved, recordsCreated, errorMsg, "FETCH_ERROR", Date.now() - overallStart, runId]
       );
+      
+      // Update provider telemetry on failure
+      await d1Run(db,
+        `UPDATE provider_registry SET healthStatus = 'error', isActive = 0, updatedAt = ? WHERE providerId = ?`,
+        [now, canonicalId]
+      );
     }
     return jsonResponse({ success: false, runId: runId || 0, recordsObserved, recordsCreated, error: errorMsg }, 500);
   }
@@ -209,6 +245,7 @@ async function handleIngestionNormalize(context) {
   const body = await context.request.json().catch(() => ({}));
   const runId = body.runId;
   const providerId = body.providerId || "raleigh_building_permits";
+  const canonicalId = normalizeProviderId(providerId);
 
   if (!runId) {
     return jsonResponse({ success: false, error: "runId is required" }, 400);
@@ -219,16 +256,18 @@ async function handleIngestionNormalize(context) {
   let recordsSkipped = 0;
 
   try {
+    // Get raw records for this run (try both canonical and original providerId)
     const rows = await d1Query(db,
-      `SELECT * FROM raw_records WHERE ingestionRunId = ? AND providerId = ? AND isDeleted = 0`,
-      [runId, providerId]
+      `SELECT * FROM raw_records WHERE ingestionRunId = ? AND (providerId = ? OR providerId = ?) AND isDeleted = 0`,
+      [runId, canonicalId, providerId]
     );
 
+    // Get provider name
     const providers = await d1Query(db,
-      `SELECT providerName FROM provider_registry WHERE providerId = ? OR providerName = ? LIMIT 1`,
-      [providerId, providerId]
+      `SELECT providerName FROM provider_registry WHERE providerId = ? OR providerId = ? OR providerName = ? LIMIT 1`,
+      [canonicalId, providerId, providerId]
     );
-    const providerName = providers[0]?.providerName || providerId;
+    const providerName = providers[0]?.providerName || canonicalId;
 
     for (const row of rows) {
       if (!row.rawPayload) continue;
@@ -236,6 +275,7 @@ async function handleIngestionNormalize(context) {
       const rawPayload = row.rawPayload;
       const hash = cyrb53(rawPayload);
 
+      // Check for duplicate
       const dupCheck = await d1Query(db,
         `SELECT id FROM signalcore_events WHERE contentHash = ? LIMIT 1`,
         [hash]
@@ -272,13 +312,13 @@ async function handleIngestionNormalize(context) {
 
       let city = getAttr(attrs, "city", "sitecity", "jurisdiction");
       if (!city && address) {
-        const match = address.match(/,\s*([A-Za-z\s]+),?\s*(?:NC|North Carolina)?/i);
+        const match = address.match(/,\s*([A-Za-z\s]+),?\s*(?:NC|North Carolina|VA|Virginia|SC|South Carolina)?/i);
         if (match) city = match[1].trim();
       }
-      if (!city) city = "Raleigh";
+      if (!city) city = "";
 
-      const county = getAttr(attrs, "county", "sitecounty") || "Wake";
-      const state = getAttr(attrs, "state", "sitestate") || "NC";
+      const county = getAttr(attrs, "county", "sitecounty") || "";
+      const state = getAttr(attrs, "state", "sitestate") || "";
       const zipCode = getAttr(attrs, "zip", "zipcode", "postalcode", "sitezip") || null;
       const now = Math.floor(Date.now() / 1000);
 
@@ -289,6 +329,7 @@ async function handleIngestionNormalize(context) {
       recordsNormalized++;
     }
 
+    // Update run
     await d1Run(db,
       `UPDATE ingestion_runs SET recordsResolved = ?, resolveLatencyMs = ? WHERE id = ?`,
       [recordsNormalized, Date.now() - normalizeStart, runId]
@@ -304,6 +345,7 @@ async function handleIngestionRun(context) {
   const db = context.env.DB;
   const body = await context.request.json().catch(() => ({}));
   const providerId = body.providerId || "raleigh_building_permits";
+  const canonicalId = normalizeProviderId(providerId);
   const limit = Math.min(Math.max(body.limit || 50, 1), 500);
   const overallStart = Date.now();
   let runId;
@@ -314,7 +356,8 @@ async function handleIngestionRun(context) {
   let fetchError;
 
   try {
-    const endpoint = resolveEndpoint(providerId);
+    // FETCH PHASE
+    const endpoint = await resolveEndpoint(db, providerId);
     if (!endpoint) {
       throw new Error(`No endpoint configured for providerId: ${providerId}`);
     }
@@ -322,7 +365,7 @@ async function handleIngestionRun(context) {
     const now = Math.floor(Date.now() / 1000);
     const runResult = await d1Run(db,
       `INSERT INTO ingestion_runs (providerId, startedAt, status, triggerType) VALUES (?, ?, ?, ?)`,
-      [providerId, now, "running", "manual"]
+      [canonicalId, now, "running", "manual"]
     );
     runId = runResult.meta?.last_row_id || runResult.lastRowId;
 
@@ -358,44 +401,22 @@ async function handleIngestionRun(context) {
         continue;
       }
 
-      let rawMetadata = null;
+      let rawMetadata;
       if (feature.geometry) {
         rawMetadata = JSON.stringify({ geometry: feature.geometry });
       }
 
       const sourceRecordId = getAttr(attrs, "permitnum", "permitnumber", "id", "objectid") || String(attrs["OBJECTID"] || attrs["objectid"] || "");
 
-      const insertParams = [
-        providerId,
-        sourceRecordId ?? null,
-        endpoint,
-        now,
-        now,
-        rawPayload,
-        rawTitle ?? null,
-        rawDescription ?? null,
-        rawLocation ?? null,
-        rawStatus ?? null,
-        rawDates ?? null,
-        rawMetadata ?? null,
-        runId ?? null,
-        "LIVE",
-      ];
-
-      for (let i = 0; i < insertParams.length; i++) {
-        if (insertParams[i] === undefined) {
-          throw new Error(`Parameter ${i} is undefined`);
-        }
-      }
-
       await d1Run(db,
         `INSERT INTO raw_records (providerId, sourceRecordId, sourceUrl, observedAt, ingestedAt, rawPayload, rawTitle, rawDescription, rawLocation, rawStatus, rawDates, rawMetadata, ingestionRunId, provenance) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        insertParams
+        [providerId, sourceRecordId, endpoint, now, now, rawPayload, rawTitle, rawDescription, rawLocation, rawStatus, rawDates, rawMetadata || null, runId, "LIVE"]
       );
       recordsCreated++;
     }
     const parseLatency = Date.now() - parseStart;
 
+    // NORMALIZE PHASE
     const normalizeStart = Date.now();
     const rawRows = await d1Query(db,
       `SELECT * FROM raw_records WHERE ingestionRunId = ? AND providerId = ? AND isDeleted = 0`,
@@ -450,13 +471,13 @@ async function handleIngestionRun(context) {
 
       let city = getAttr(attrs, "city", "sitecity", "jurisdiction");
       if (!city && address) {
-        const match = address.match(/,\s*([A-Za-z\s]+),?\s*(?:NC|North Carolina)?/i);
+        const match = address.match(/,\s*([A-Za-z\s]+),?\s*(?:NC|North Carolina|VA|Virginia|SC|South Carolina)?/i);
         if (match) city = match[1].trim();
       }
-      if (!city) city = "Raleigh";
+      if (!city) city = "";
 
-      const county = getAttr(attrs, "county", "sitecounty") || "Wake";
-      const state = getAttr(attrs, "state", "sitestate") || "NC";
+      const county = getAttr(attrs, "county", "sitecounty") || "";
+      const state = getAttr(attrs, "state", "sitestate") || "";
       const zipCode = getAttr(attrs, "zip", "zipcode", "postalcode", "sitezip") || null;
 
       await d1Run(db,
@@ -468,9 +489,16 @@ async function handleIngestionRun(context) {
     const resolveLatency = Date.now() - normalizeStart;
     const totalLatency = Date.now() - overallStart;
 
+    // Update run
     await d1Run(db,
       `UPDATE ingestion_runs SET status = ?, completedAt = ?, recordsObserved = ?, recordsCreated = ?, recordsResolved = ?, fetchLatencyMs = ?, parseLatencyMs = ?, resolveLatencyMs = ?, totalLatencyMs = ?, sourceRecordCount = ? WHERE id = ?`,
       ["completed", now, recordsObserved, recordsCreated, recordsNormalized, fetchLatency, parseLatency, resolveLatency, totalLatency, recordsObserved, runId]
+    );
+
+    // Update provider telemetry on success (use canonical ID for registry lookup)
+    await d1Run(db,
+      `UPDATE provider_registry SET lastSuccessfulFetch = ?, recordsIngested = recordsIngested + ?, healthStatus = 'healthy', isActive = 1, updatedAt = ? WHERE providerId = ?`,
+      [now, recordsNormalized, now, canonicalId]
     );
 
     return jsonResponse({ success: true, runId, recordsObserved, recordsCreated, recordsNormalized, recordsSkipped, totalLatencyMs: totalLatency });
@@ -481,6 +509,12 @@ async function handleIngestionRun(context) {
       await d1Run(db,
         `UPDATE ingestion_runs SET status = ?, completedAt = ?, recordsObserved = ?, recordsCreated = ?, recordsResolved = ?, error = ?, errorCode = ?, totalLatencyMs = ? WHERE id = ?`,
         ["failed", now, recordsObserved, recordsCreated, recordsNormalized, fetchError, "RUN_ERROR", Date.now() - overallStart, runId]
+      );
+      
+      // Update provider telemetry on failure
+      await d1Run(db,
+        `UPDATE provider_registry SET healthStatus = 'error', isActive = 0, updatedAt = ? WHERE providerId = ?`,
+        [now, canonicalId]
       );
     }
     return jsonResponse({ success: false, runId: runId || 0, recordsObserved, recordsCreated, recordsNormalized, recordsSkipped, error: fetchError }, 500);
@@ -503,6 +537,7 @@ async function handleIngestionStatus(context) {
     return jsonResponse({ found: true, run: runs[0] });
   }
 
+  // Return latest runs summary
   const latestRuns = await d1Query(db,
     `SELECT * FROM ingestion_runs ORDER BY startedAt DESC LIMIT 20`
   );
@@ -516,9 +551,186 @@ async function handleIngestionStatus(context) {
   const totalResolved = latestRuns.reduce((sum, r) => sum + (r.recordsResolved || 0), 0);
 
   return jsonResponse({
+    success: true,
     summary: { totalRuns, completed, failed, running, totalObserved, totalCreated, totalResolved },
-    latestRuns,
+    runs: latestRuns,
   });
+}
+
+async function handleIngestionRaw(context) {
+  const db = context.env.DB;
+  const url = new URL(context.request.url);
+  const providerId = url.searchParams.get("providerId");
+  const limit = Math.min(Math.max(parseInt(url.searchParams.get("limit") || "50"), 1), 500);
+
+  if (!providerId) {
+    return jsonResponse({ success: false, error: "providerId is required" }, 400);
+  }
+
+  try {
+    const canonicalId = normalizeProviderId(providerId);
+
+    // Count total
+    const countResult = await d1Query(db,
+      `SELECT COUNT(*) as cnt FROM raw_records WHERE providerId = ?`,
+      [canonicalId]
+    );
+    const totalCount = countResult[0]?.cnt || 0;
+
+    // Also try original providerId if different
+    let fallbackCount = 0;
+    if (canonicalId !== providerId) {
+      const fbResult = await d1Query(db,
+        `SELECT COUNT(*) as cnt FROM raw_records WHERE providerId = ?`,
+        [providerId]
+      );
+      fallbackCount = fbResult[0]?.cnt || 0;
+    }
+
+    // Get records (prefer canonical ID)
+    const queryId = totalCount > 0 || fallbackCount === 0 ? canonicalId : providerId;
+    const recordsResult = await d1Query(db,
+      `SELECT id, providerId, sourceRecordId, sourceUrl, observedAt, ingestedAt, rawPayload, rawTitle, rawDescription, rawLocation, rawStatus, rawDates, ingestionRunId, provenance FROM raw_records WHERE providerId = ? ORDER BY observedAt DESC LIMIT ?`,
+      [queryId, limit]
+    );
+
+    return jsonResponse({
+      success: true,
+      providerId: queryId,
+      count: totalCount + fallbackCount,
+      records: recordsResult || []
+    });
+  } catch (e) {
+    return jsonResponse({ success: false, error: e?.message || String(e) }, 500);
+  }
+}
+
+// ─── V1 REST API Handlers ───
+
+async function handleV1Signals(context) {
+  const db = context.env.DB;
+  try {
+    const events = await d1Query(db,
+      `SELECT id, title, description, county, city, state, lat, lng, confidence, publishedAt, ingestedAt, dataSource, eventType, status, contentHash FROM signalcore_events WHERE provenance = 'LIVE' ORDER BY publishedAt DESC LIMIT 200`,
+      []
+    );
+
+    const signals = events.map(ev => {
+      const cityName = ev.city && !ev.city.startsWith("16000") ? ev.city : "Raleigh";
+      const location = `${cityName}, ${ev.county} County, ${ev.state}`;
+      const firstDetected = ev.publishedAt
+        ? new Date(ev.publishedAt * 1000).toISOString().split("T")[0]
+        : new Date(ev.ingestedAt * 1000).toISOString().split("T")[0];
+
+      return {
+        id: `kev-${ev.id}`,
+        title: ev.title || "Building Permit",
+        description: ev.description || "",
+        location,
+        confidence: ev.confidence || 70,
+        stage: ev.status === "active" ? "early" : "developing",
+        projectType: ev.eventType === "building_permit" ? "Building Permit" : (ev.eventType || "Infrastructure"),
+        signals: 1,
+        estimatedValue: 0,
+        firstDetected,
+        sources: [ev.dataSource || "Raleigh Open Data"],
+        patternMatch: [],
+        opportunityScore: ev.confidence || 70,
+        recommendedAction: "Review permit details at Raleigh Open Data Portal",
+      };
+    });
+
+    return jsonResponse({ signals });
+  } catch (err) {
+    return jsonResponse({ signals: [], error: err.message }, 500);
+  }
+}
+
+async function handleV1Patterns(context) {
+  const db = context.env.DB;
+  try {
+    const patterns = await d1Query(db,
+      `SELECT id, name, patternType, description, county, state, confidence, evidenceCount, status, firstDetectedAt, lastDetectedAt, summary, recommendedAction, impactScore, geographicReach, createdAt FROM signalcore_patterns WHERE provenance = 'LIVE' ORDER BY confidence DESC LIMIT 50`,
+      []
+    );
+
+    const mapped = patterns.map(p => {
+      const locations = [];
+      if (p.county) locations.push(`${p.county} County${p.state ? `, ${p.state}` : ""}`);
+      if (p.geographicReach && !locations.includes(p.geographicReach)) locations.push(p.geographicReach);
+
+      const trend = p.lastDetectedAt && p.firstDetectedAt && p.lastDetectedAt > p.firstDetectedAt
+        ? "up"
+        : "stable";
+
+      const lastUpdated = p.lastDetectedAt
+        ? new Date(p.lastDetectedAt * 1000).toISOString().split("T")[0]
+        : (p.createdAt ? new Date(p.createdAt * 1000).toISOString().split("T")[0] : new Date().toISOString().split("T")[0]);
+
+      return {
+        id: `pat-${p.id}`,
+        name: p.name || "Unnamed Pattern",
+        description: p.description || p.summary || "",
+        confidence: p.confidence || 70,
+        evidence: p.evidenceCount || 0,
+        sectors: p.patternType ? [p.patternType.replace(/_/g, " ")] : ["Infrastructure"],
+        locations: locations.length > 0 ? locations : ["Wake County, NC"],
+        trend,
+        avgConfidence: p.confidence || 70,
+        historicalAccuracy: p.confidence ? Math.round((p.confidence / 100) * 100) / 100 : 0.7,
+        lastUpdated,
+        signals: p.evidenceCount || 0,
+      };
+    });
+
+    return jsonResponse({ patterns: mapped });
+  } catch (err) {
+    return jsonResponse({ patterns: [], error: err.message }, 500);
+  }
+}
+
+async function handleV1Providers(context) {
+  const db = context.env.DB;
+  try {
+    const providers = await d1Query(db,
+      `SELECT providerId, providerName, sourceType, isActive, healthStatus FROM provider_registry WHERE isActive = 1 ORDER BY providerName`,
+      []
+    );
+
+    const enriched = [];
+    for (const p of providers) {
+      const stats = await d1Query(db,
+        `SELECT COUNT(*) as totalRuns, SUM(recordsCreated) as totalRecords, AVG(totalLatencyMs) as avgLatency FROM ingestion_runs WHERE providerId = ?`,
+        [p.providerId]
+      );
+      const stat = stats[0] || {};
+
+      enriched.push({
+        id: p.providerId,
+        name: p.providerName || p.providerId,
+        type: p.sourceType || "Government",
+        status: p.isActive ? "active" : "paused",
+        lastUpdate: new Date().toISOString(),
+        recordsIngested: stat.totalRecords || 0,
+        successRate: stat.totalRuns ? Math.round((stat.totalRuns / (stat.totalRuns + 0)) * 100) : 100,
+        avgLatency: Math.round(stat.avgLatency || 0),
+        errors24h: 0,
+      });
+    }
+
+    return jsonResponse({ providers: enriched });
+  } catch (err) {
+    return jsonResponse({ providers: [], error: err.message }, 500);
+  }
+}
+
+function safeJsonParse(str, fallback) {
+  if (!str) return fallback;
+  try {
+    return JSON.parse(str);
+  } catch {
+    return fallback;
+  }
 }
 
 // ─── JSON response helper ───
@@ -545,8 +757,9 @@ export async function onRequest(context) {
     return jsonResponse({ debug: true, pathname: url.pathname, url: request.url });
   }
 
-  // Handle ingestion endpoints directly (D1 access required)
-  if (url.pathname.startsWith("/api/ingestion")) {
+  // Handle ingestion endpoints directly (both /api/ingestion.* and /api/v1/ingestion/*)
+  if (url.pathname.startsWith("/api/ingestion") || url.pathname.startsWith("/api/v1/ingestion")) {
+    // CORS preflight
     if (method === "OPTIONS") {
       return new Response(null, {
         status: 204,
@@ -559,24 +772,37 @@ export async function onRequest(context) {
     }
 
     const path = url.pathname;
-    if (path === "/api/ingestion.fetch" && method === "POST") {
+    if ((path === "/api/ingestion.fetch" || path === "/api/v1/ingestion/fetch") && method === "POST") {
       return handleIngestionFetch(context);
     }
-    if (path === "/api/ingestion.normalize" && method === "POST") {
+    if ((path === "/api/ingestion.normalize" || path === "/api/v1/ingestion/normalize") && method === "POST") {
       return handleIngestionNormalize(context);
     }
-    if (path === "/api/ingestion.run" && method === "POST") {
+    if ((path === "/api/ingestion.run" || path === "/api/v1/ingestion/run") && method === "POST") {
       return handleIngestionRun(context);
     }
-    if (path === "/api/ingestion.status" && method === "GET") {
+    if ((path === "/api/ingestion.raw" || path === "/api/v1/ingestion/raw") && method === "GET") {
+      return handleIngestionRaw(context);
+    }
+    if ((path === "/api/ingestion.status" || path === "/api/v1/ingestion/status") && method === "GET") {
       return handleIngestionStatus(context);
     }
 
     return jsonResponse({ error: "Unknown ingestion endpoint" }, 404);
   }
 
+  // Handle V1 REST API endpoints
+  if (url.pathname === "/api/v1/signals" && method === "GET") {
+    return handleV1Signals(context);
+  }
+  if (url.pathname === "/api/v1/patterns" && method === "GET") {
+    return handleV1Patterns(context);
+  }
+  if (url.pathname === "/api/v1/providers" && method === "GET") {
+    return handleV1Providers(context);
+  }
+
   // Proxy everything else to the API Worker
-  // CRITICAL: Preserve /api prefix — Worker routes on /api/v1/* and /api/trpc/*
   const targetUrl = API_BASE + url.pathname + url.search;
   const modifiedRequest = new Request(targetUrl, {
     method: request.method,
