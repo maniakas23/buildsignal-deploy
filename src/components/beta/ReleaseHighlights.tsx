@@ -62,8 +62,8 @@ const RELEASES: ReleaseItem[] = [
   },
   {
     id: 'r6',
-    title: '3,100+ County Coverage',
-    description: 'Expanded coverage to all 3,143 US counties. Real-time monitoring of planning boards, DOT filings, utility requests, and zoning records.',
+    title: 'County Coverage Expansion',
+    description: 'Coverage expanding across covered US counties, with live pilot ingestion in Dorchester County, SC. Monitoring of planning boards, DOT filings, utility requests, and zoning records in covered counties.',
     icon: Map,
     color: 'text-accent-teal',
     tag: 'Expanded',
@@ -148,7 +148,7 @@ export default function ReleaseHighlights() {
           </div>
 
           {/* Footer */}
-          <div className="px-5 py-3 border-t border-ink-wash/50 bg-canvas/30">
+          <div className="px-5 py-3 border-b border-ink-wash/50 bg-canvas/30">
             <button
               onClick={() => setIsOpen(false)}
               className="w-full py-2.5 rounded-xl bg-accent-indigo text-white text-sm font-semibold hover:bg-accent-indigo-dim transition-all"
