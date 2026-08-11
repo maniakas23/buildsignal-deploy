@@ -58,7 +58,7 @@ const CERT_SECTIONS: CertSection[] = [
   {
     id: 'providers', title: 'Provider Quality', icon: <Globe className="w-4 h-4 text-accent-amber" />,
     items: [
-      { id: 'p1', label: '3,143 counties covered', status: 'pending', detail: 'Full US coverage' },
+      { id: 'p1', label: 'County coverage live', status: 'pending', detail: 'Select counties, expanding' },
       { id: 'p2', label: 'Freshness <4 hours', status: 'pending', detail: 'Target SLA' },
       { id: 'p3', label: 'Duplicate rate <1%', status: 'pending', detail: 'Dedup target' },
       { id: 'p4', label: 'Retry success >99%', status: 'pending', detail: 'Resilience' },
@@ -131,7 +131,7 @@ const CERT_SECTIONS: CertSection[] = [
       { id: 'c4', label: 'Billing flow functional', status: 'pending', detail: 'Stripe integration' },
       { id: 'c5', label: 'Support docs published', status: 'pending', detail: 'Help center' },
       { id: 'c6', label: 'Onboarding checklist', status: 'pending', detail: '8 interactive steps' },
-      { id: 'c7', label: 'Trust signals visible', status: 'pending', detail: '500+ companies' },
+      { id: 'c7', label: 'Trust signals visible', status: 'pending', detail: 'Honest trust signals only' },
     ],
   },
   {
