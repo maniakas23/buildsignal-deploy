@@ -15,7 +15,7 @@ interface QualityMetric {
 }
 
 const METRICS: QualityMetric[] = [
-  { label: 'Coverage', value: '3,143 counties', target: '3,143', status: 'good', icon: <Database className="w-4 h-4" /> },
+  { label: 'Coverage', value: '25 counties (registry)', target: 'expanding', status: 'warning', icon: <Database className="w-4 h-4" /> },
   { label: 'Freshness', value: '< 4 hours', target: '< 6 hours', status: 'good', icon: <Clock className="w-4 h-4" /> },
   { label: 'Duplicate Rate', value: '0.3%', target: '< 1%', status: 'good', icon: <Filter className="w-4 h-4" /> },
   { label: 'Retry Success', value: '99.7%', target: '> 99%', status: 'good', icon: <RefreshCw className="w-4 h-4" /> },
@@ -81,7 +81,7 @@ export default function DataQualityPanel() {
             {METRICS.map((m) => (
               <div key={m.label} className="p-3 rounded-lg bg-canvas border border-ink-wash">
                 <div className="flex items-center gap-1.5 mb-1">
-                  <span className={m.status === 'good' ? 'text-accent-teal' : 'text-accent-amber'}>{m.icon}</span>
+                  <span className={m.status === 'good' ? 'text-accent-teal' : m.status === 'warning' ? 'text-accent-amber' : 'text-accent-crimson'}>{m.icon}</span>
                   <span className="text-[10px] text-ink-tertiary">{m.label}</span>
                 </div>
                 <p className={`text-sm font-semibold font-mono ${m.status === 'good' ? 'text-accent-teal' : 'text-accent-amber'}`}>{m.value}</p>
