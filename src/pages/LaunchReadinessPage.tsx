@@ -65,7 +65,7 @@ const READINESS_SCORES: ReadinessScore[] = [
     score: 92,
     icon: <BarChart3 className="w-4 h-4 text-accent-amber" />,
     checks: [
-      { label: '3,143 counties covered', pass: true },
+      { label: 'County coverage live (select counties, expanding)', pass: true },
       { label: 'Freshness <4 hours', pass: true },
       { label: 'Duplicate rate <1%', pass: true },
       { label: 'Retry success >99%', pass: true },
@@ -97,7 +97,7 @@ const READINESS_SCORES: ReadinessScore[] = [
       { label: 'Input validation', pass: true },
       { label: 'Security page published', pass: true },
       { label: 'GDPR compliance', pass: true },
-      { label: 'SOC 2 ready', pass: true },
+      { label: 'SOC 2 certification (in progress)', pass: false },
       { label: 'Audit logging', pass: true },
     ],
   },
@@ -242,7 +242,7 @@ export default function LaunchReadinessPage() {
                   { value: '45', label: 'Pages', sub: 'All validated' },
                   { value: '31', label: 'tRPC Routers', sub: '250+ procedures' },
                   { value: '30', label: 'D1 Tables', sub: 'All migrations current' },
-                  { value: '95.7%', label: 'Readiness Score', sub: 'Launch ready' },
+                  { value: '95.7%', label: 'Readiness Score', sub: 'Internal assessment' },
                 ].map((m) => (
                   <div key={m.label} className="p-3 rounded-lg bg-canvas border border-ink-wash text-center">
                     <p className="text-xl font-semibold text-ink-primary font-mono">{m.value}</p>
