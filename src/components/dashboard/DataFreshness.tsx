@@ -22,8 +22,8 @@ function timeAgo(dateStr: string): string {
 export default function DataFreshness({
   lastUpdate = new Date().toISOString(),
   nextScan,
-  sourcesOnline = 2387,
-  sourcesTotal = 2400,
+  sourcesOnline = 12,
+  sourcesTotal = 12,
 }: DataFreshnessProps) {
   const [now, setNow] = useState(new Date());
 
@@ -75,7 +75,7 @@ export default function DataFreshness({
       {/* Coverage */}
       <span className="flex items-center gap-1">
         <Database className="w-3 h-3" />
-        3,100+ counties
+        covered US counties
       </span>
     </div>
   );
