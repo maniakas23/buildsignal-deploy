@@ -271,8 +271,7 @@ export function SignupPage() {
                                   delete next.name;
                                   return next;
                                 });
-                              }
-                            }}
+                              }}
                             placeholder="John Doe"
                             className={cn(errors.name && "border-red-400 focus:ring-red-200")}
                           />
@@ -455,8 +454,7 @@ export function SignupPage() {
                               </div>
                               {billingCycle === "annual" && plan.price > 0 && (
                                 <p className="text-xs text-[#18A999] mt-1 font-medium">
-                                  ${Math.round(plan.price * 12 * 0.8)} billed annually
-                                </p>
+                                  ${Math.round(plan.price * 12 * 0.8)} billed annually</p>
                               )}
                               <p className="text-xs text-[#6B7B8F] mt-1 line-clamp-2">
                                 {plan.description}
@@ -634,7 +632,7 @@ export function SignupPage() {
                     </li>
                     <li className="flex items-center gap-2">
                       <Shield className="h-4 w-4 text-[#18A999] shrink-0" />
-                      Bank-grade security &amp; SOC 2 certified
+                      Bank-grade security &amp; SOC 2 program in progress
                     </li>
                   </ul>
                 </div>
@@ -683,7 +681,7 @@ export function SignupPage() {
                       <span className="font-medium text-sm text-[#0B1F33]">Enterprise-grade security</span>
                     </div>
                     <p className="text-xs text-[#6B7B8F]">
-                      SOC 2 Type II certified. 256-bit AES encryption. SSO & SAML 2.0 ready. Data never sold.
+                      SOC 2 Type II program in progress. 256-bit AES encryption. SSO & SAML 2.0 ready. Data never sold.
                     </p>
                   </div>
 
@@ -718,7 +716,7 @@ export function SignupPage() {
                     </div>
                     <div className="flex items-center gap-2 text-sm text-[#6B7B8F]">
                       <Check className="h-4 w-4 text-[#18A999]" />
-                      SOC 2 Type II certified
+                      SOC 2 Type II (In Progress)
                     </div>
                   </div>
                 </div>
