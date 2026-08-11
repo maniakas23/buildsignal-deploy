@@ -1,25 +1,24 @@
 import { MapPin, Database, Clock, Globe, CheckCircle2 } from 'lucide-react';
 
 const COVERAGE_STATS = [
-  { value: '3,143', label: 'Counties Monitored', icon: <MapPin className="w-5 h-5 text-accent-indigo" /> },
-  { value: '2,400+', label: 'Data Sources', icon: <Database className="w-5 h-5 text-accent-teal" /> },
-  { value: '<4hrs', label: 'Avg. Refresh Rate', icon: <Clock className="w-5 h-5 text-accent-amber" /> },
-  { value: '50', label: 'States + DC', icon: <Globe className="w-5 h-5 text-accent-crimson" /> },
+  { value: '25', label: 'Counties in Coverage Registry', icon: <MapPin className="w-5 h-5 text-accent-indigo" /> },
+  { value: '12', label: 'Monitored Providers', icon: <Database className="w-5 h-5 text-accent-teal" /> },
+  { value: 'Varies', label: 'Refresh Rate by Source', icon: <Clock className="w-5 h-5 text-accent-amber" /> },
+  { value: '7', label: 'States Covered', icon: <Globe className="w-5 h-5 text-accent-crimson" /> },
 ];
 
 const SOURCE_TYPES = [
-  { name: 'Permit Filings', description: 'Building, electrical, plumbing, and mechanical permits', refresh: '4-6 hours', coverage: '98%' },
-  { name: 'Zoning Changes', description: 'Rezoning applications, variances, and amendments', refresh: '12-24 hours', coverage: '95%' },
-  { name: 'Utility Filings', description: 'Water, sewer, gas, and electric service requests', refresh: '6-12 hours', coverage: '92%' },
-  { name: 'Planning Documents', description: 'Site plans, master plans, and development agreements', refresh: '24-48 hours', coverage: '88%' },
-  { name: 'Public Notices', description: 'Hearing notices, RFQs, and government announcements', refresh: '12-24 hours', coverage: '90%' },
-  { name: 'Transportation', description: 'Road projects, transit expansions, and port activity', refresh: '24-48 hours', coverage: '85%' },
+  { name: 'Permit Filings', description: 'Building, electrical, plumbing, and mechanical permits', refresh: '4-6 hours', coverage: 'varies' },
+  { name: 'Zoning Changes', description: 'Rezoning applications, variances, and amendments', refresh: '12-24 hours', coverage: 'varies' },
+  { name: 'Utility Filings', description: 'Water, sewer, gas, and electric service requests', refresh: '6-12 hours', coverage: 'varies' },
+  { name: 'Planning Documents', description: 'Site plans, master plans, and development agreements', refresh: '24-48 hours', coverage: 'varies' },
+  { name: 'Public Notices', description: 'Hearing notices, RFQs, and government announcements', refresh: '12-24 hours', coverage: 'varies' },
+  { name: 'Transportation', description: 'Road projects, transit expansions, and port activity', refresh: '24-48 hours', coverage: 'varies' },
 ];
 
 const SAMPLE_COUNTIES = [
-  'Harris County, TX', 'Travis County, TX', 'Dallas County, TX', 'King County, WA',
-  'Los Angeles County, CA', 'Cook County, IL', 'Miami-Dade County, FL', 'Denver County, CO',
-  'Maricopa County, AZ', ' Fulton County, GA', 'Mecklenburg County, NC', 'Orange County, CA',
+  'Wake County, NC', 'Durham County, NC', 'Guilford County, NC', 'Forsyth County, NC',
+  'Fairfax County, VA', 'Dorchester County, SC',
 ];
 
 export default function DataCoveragePage() {
@@ -35,11 +34,10 @@ export default function DataCoveragePage() {
             <span className="text-xs text-ink-tertiary uppercase tracking-wider">Data Coverage</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-ink-primary mb-3">
-            Nationwide Data Coverage
+            Data Coverage
           </h1>
           <p className="text-sm text-ink-secondary leading-relaxed max-w-2xl">
-            BuildSignal monitors 3,143 counties across all 50 states and DC, ingesting data from 
-            2,400+ sources with refresh rates as fast as 4 hours.
+            BuildSignal is expanding coverage across covered US counties, ingesting data from monitored public sources with refresh rates that vary by source.
           </p>
         </div>
       </section>
@@ -107,7 +105,7 @@ export default function DataCoveragePage() {
           ))}
         </div>
         <p className="text-xs text-ink-tertiary mt-4 text-center">
-          And 3,131 more counties across all 50 states. Contact us for specific coverage questions.
+          Coverage is expanding. Contact us for specific coverage questions.
         </p>
       </section>
     </div>
