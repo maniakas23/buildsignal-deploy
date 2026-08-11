@@ -271,7 +271,8 @@ export function SignupPage() {
                                   delete next.name;
                                   return next;
                                 });
-                              }}
+                              }
+                            }}
                             placeholder="John Doe"
                             className={cn(errors.name && "border-red-400 focus:ring-red-200")}
                           />
