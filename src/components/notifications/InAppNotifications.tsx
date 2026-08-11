@@ -51,7 +51,7 @@ const INITIAL_NOTIFICATIONS: Notification[] = [
     id: 'n4',
     type: 'system',
     title: 'Data refresh complete',
-    description: '2,847 signals updated across 3,100+ counties',
+    description: 'Signals updated across covered US counties',
     time: '3h ago',
     read: true,
   },
