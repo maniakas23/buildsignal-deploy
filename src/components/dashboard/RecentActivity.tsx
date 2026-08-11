@@ -65,7 +65,7 @@ const ACTIVITIES: ActivityItem[] = [
     icon: Zap,
     iconColor: 'text-accent-teal',
     title: 'Data refresh complete',
-    description: '2,847 signals updated across 3,100+ counties',
+    description: 'Signals updated across covered US counties',
     time: '3h ago',
     type: 'system',
   },
