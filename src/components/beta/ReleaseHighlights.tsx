@@ -148,7 +148,7 @@ export default function ReleaseHighlights() {
           </div>
 
           {/* Footer */}
-          <div className="px-5 py-3 border-b border-ink-wash/50 bg-canvas/30">
+          <div className="px-5 py-3 border-t border-ink-wash/50 bg-canvas/30">
             <button
               onClick={() => setIsOpen(false)}
               className="w-full py-2.5 rounded-xl bg-accent-indigo text-white text-sm font-semibold hover:bg-accent-indigo-dim transition-all"
