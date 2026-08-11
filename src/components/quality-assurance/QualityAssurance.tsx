@@ -54,7 +54,7 @@ const VALIDATION_DIMENSIONS = [
     tests: '128',
     passed: '128',
     failed: '0',
-    description: 'SOC 2 Type II, GDPR, CCPA compliant. Zero critical vulnerabilities.',
+    description: 'Controls aligned to SOC 2 Type II (certification in progress), GDPR, and CCPA. Zero known critical vulnerabilities.',
   },
   {
     dimension: 'Accessibility',
