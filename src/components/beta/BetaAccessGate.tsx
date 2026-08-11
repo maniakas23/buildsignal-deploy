@@ -203,7 +203,7 @@ export default function BetaAccessGate({ onAccessGranted }: Props) {
         {/* Trust footer */}
         <div className="mt-6 flex items-center justify-center gap-4 text-[11px] text-ink-tertiary">
           <span className="flex items-center gap-1">
-            <Shield className="w-3 h-3" /> SOC 2 Compliant
+            <Shield className="w-3 h-3" /> SOC 2 Program In Progress
           </span>
           <span className="w-1 h-1 rounded-full bg-ink-wash" />
           <span>GDPR Ready</span>
