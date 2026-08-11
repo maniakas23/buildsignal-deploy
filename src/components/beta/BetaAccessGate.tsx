@@ -67,7 +67,7 @@ export default function BetaAccessGate({ onAccessGranted }: Props) {
             Get 45-60 day head starts on construction projects
           </p>
           <p className="text-xs text-ink-tertiary">
-            Monitor permits, zoning changes, and utility filings across 2,400+ data sources — before they go public.
+            Monitor permits, zoning changes, and utility filings across covered US counties — before they go public.
           </p>
         </div>
 
@@ -81,7 +81,7 @@ export default function BetaAccessGate({ onAccessGranted }: Props) {
             ))}
           </div>
           <div className="text-xs text-ink-secondary">
-            <span className="font-semibold text-ink-primary">200+</span> CRE professionals
+            <span className="font-semibold text-ink-primary">Private beta</span> — limited seats
           </div>
           <span className="text-ink-wash">|</span>
           <div className="flex items-center gap-1 text-xs text-accent-teal">
