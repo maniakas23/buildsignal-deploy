@@ -166,7 +166,7 @@ export function Login() {
             </span>
             <span className="flex items-center gap-1">
               <Building2 className="h-3 w-3" />
-              SOC 2 Type II
+              SOC 2 Type II (In Progress)
             </span>
           </div>
         </div>
