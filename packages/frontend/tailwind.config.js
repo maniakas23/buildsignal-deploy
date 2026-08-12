@@ -55,8 +55,8 @@ export default {
         "halogen-white": "#E8F4FD",
       },
       fontFamily: {
-        sans: ['Geist', 'Inter', system-ui, '-apple-system', 'sans-serif'],
-        mono: ['Geist Mono', ui-monospace, 'Cascadia Code', 'Source Code Pro', 'monospace'],
+        sans: ['Geist', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        mono: ['Geist Mono', 'ui-monospace', 'Cascadia Code', 'Source Code Pro', 'monospace'],
       },
       fontSize: {
         'display': ['60px', { lineHeight: '1.1', letterSpacing: '-1.5px', fontWeight: '700' }],
@@ -64,7 +64,7 @@ export default {
         'h2': ['36px', { lineHeight: '1.15', letterSpacing: '-0.5px', fontWeight: '600' }],
         'h3': ['20px', { lineHeight: '1.3', fontWeight: '600' }],
         'body': ['18px', { lineHeight: '1.65', fontWeight: '400' }],
-        'sidebar': ['16px', { lintHeight: '1.5', fontWeight: '400' }],
+        'sidebar': ['16px', { lineHeight: '1.5', fontWeight: '400' }],
         'data': ['48px', { lineHeight: '1', letterSpacing: '-0.5px', fontWeight: '600' }],
         'caption': ['12px', { lineHeight: '1.4', letterSpacing: '0.08em', fontWeight: '500' }],
         'nav': ['13px', { lineHeight: '1', letterSpacing: '0.01em', fontWeight: '500' }],
