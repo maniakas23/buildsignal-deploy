@@ -173,7 +173,7 @@ export function DashboardTour() {
 
       {/* Tooltip */}
       <div
-        className="absolute z-[101] w-80 bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 p-5"
+        className="absolute z-[101] w-80 bg-[var(--bs-surface)] rounded-xl shadow-2xl border border-[var(--bs-border)] p-5"
         style={{
           top: tooltipPos.top,
           left: tooltipPos.left,
@@ -182,30 +182,30 @@ export function DashboardTour() {
       >
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-[#1F5EFF]" />
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+            <Sparkles className="h-4 w-4 text-[var(--bs-action)]" />
+            <span className="text-xs font-medium text-[var(--bs-text-tertiary)]">
               Step {currentStep + 1} of {tourSteps.length}
             </span>
           </div>
           <button
             onClick={handleSkip}
-            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+            className="text-[var(--bs-text-tertiary)] hover:text-[var(--bs-text-primary)] transition-colors"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1 mb-4">
+        <div className="w-full bg-[var(--bs-surface-hover)] rounded-full h-1 mb-4">
           <div
-            className="bg-[#1F5EFF] h-1 rounded-full transition-all duration-300"
+            className="bg-[var(--bs-action)] h-1 rounded-full transition-all duration-300"
             style={{ width: `${progress}%` }}
           />
         </div>
 
-        <h3 className="text-base font-bold text-slate-900 dark:text-white mb-2">
+        <h3 className="text-base font-bold text-[var(--bs-text-primary)] mb-2">
           {step.title}
         </h3>
-        <p className="text-sm text-slate-600 dark:text-slate-300 mb-4 leading-relaxed">
+        <p className="text-sm text-[var(--bs-text-secondary)] mb-4 leading-relaxed">
           {step.description}
         </p>
 
@@ -221,13 +221,13 @@ export function DashboardTour() {
             Back
           </Button>
           <div className="flex gap-2">
-            <Button variant="ghost" size="sm" onClick={handleSkip} className="text-xs text-slate-500">
+            <Button variant="ghost" size="sm" onClick={handleSkip} className="text-xs text-[var(--bs-text-tertiary)]">
               Skip
             </Button>
             <Button
               size="sm"
               onClick={handleNext}
-              className="text-xs bg-[#1F5EFF] hover:bg-[#1F5EFF]/90 text-white"
+              className="text-xs bg-[var(--bs-action)] hover:bg-[var(--bs-action)]/90 text-[var(--bs-surface)]"
             >
               {currentStep === tourSteps.length - 1 ? "Finish" : "Next"}
               <ChevronRight className="h-3 w-3 ml-1" />
