@@ -1,319 +1,218 @@
 import { z } from "zod";
-import { TRPCError } from "@trpc/server";
-import { createRouter, publicQuery, authedQuery } from "./middleware";
-import { like, eq, and, or, gte, lte, sql, desc } from "drizzle-orm";
-import {
-  signalcoreEvents,
-  signalcorePatterns,
-  signalcoreRecommendations,
-  searchHistory,
-} from "../db/schema";
-
-/** Enforce plan-based search limits */
-function getSearchLimits(plan: string) {
-  switch (plan) {
-    case "starter":
-      return { maxLimit: 20, allowedTypes: ["events"] as const };
-    case "basic":
-      return { maxLimit: 50, allowedTypes: ["events", "patterns"] as const };
-    case "advanced":
-    case "pro":
-    case "enterprise":
-      return {
-        maxLimit: 100,
-        allowedTypes: ["events", "patterns", "recommendations", "counties"] as const,
-      };
-    default:
-      return { maxLimit: 20, allowedTypes: ["events"] as const };
-  }
-}
+import { createRouter, publicQuery } from "./middleware";
+import { kestovarCanonicalEvents, searchHistory } from "@db/schema-sqlite";
+import { eq, like, and, desc, sql, gte, lte } from "drizzle-orm";
+import { getDbFromContext } from "./queries/connection";
 
 export const searchRouter = createRouter({
-  // Global search across all content types
-  search: authedQuery
+  search: publicQuery
     .input(
       z.object({
-        query: z.string().min(1).max(200),
-        types: z
-          .array(z.enum(["events", "patterns", "recommendations", "counties"]))
-          .optional(),
-        state: z.string().optional(),
+        q: z.string().min(1).max(200),
         county: z.string().optional(),
-        sector: z.string().optional(),
-        dateFrom: z.string().optional(), // ISO date
+        state: z.string().optional(),
+        city: z.string().optional(),
+        eventType: z.string().optional(),
+        permitType: z.string().optional(),
+        status: z.string().optional(),
+        minValue: z.number().optional(),
+        maxValue: z.number().optional(),
+        contractorName: z.string().optional(),
+        ownerName: z.string().optional(),
+        dateFrom: z.string().optional(),
         dateTo: z.string().optional(),
-        confidenceMin: z.number().min(0).max(100).optional(),
-        sortBy: z.enum(["relevance", "date", "confidence"]).default("relevance"),
+        lat: z.number().optional(),
+        lng: z.number().optional(),
+        radiusMiles: z.number().optional(),
         limit: z.number().min(1).max(100).default(20),
         offset: z.number().min(0).default(0),
+        sortBy: z.enum(["relevance", "date", "value"]).default("relevance"),
+        sortOrder: z.enum(["asc", "desc"]).default("desc"),
       })
     )
     .query(async ({ input, ctx }) => {
-      const limits = getSearchLimits(ctx.user.plan);
-      const effectiveLimit = Math.min(input.limit, limits.maxLimit);
-      const requestedTypes = input.types || ["events", "patterns", "recommendations"];
-      const searchTypes = requestedTypes.filter((t) =>
-        limits.allowedTypes.includes(t as (typeof limits.allowedTypes)[number])
-      );
+      const db = getDbFromContext();
+      const conditions = [eq(kestovarCanonicalEvents.statusCanonical, "active")];
 
-      if (searchTypes.length === 0) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: `Your plan (${ctx.user.plan}) does not allow the requested search types`,
-        });
-      }
-
-      const results: Array<Record<string, unknown> & { _type: string }> = [];
-      const queryPattern = `%${input.query}%`;
-
-      // ── Search events ──
-      if (searchTypes.includes("events")) {
-        const conditions: Array<ReturnType<typeof eq> | ReturnType<typeof like> | ReturnType<typeof gte> | ReturnType<typeof lte>> = [];
-        if (input.state) conditions.push(eq(signalcoreEvents.state, input.state));
-        if (input.county) conditions.push(like(signalcoreEvents.county, `%${input.county}%`));
-        if (input.sector) conditions.push(like(signalcoreEvents.eventType, `%${input.sector}%`));
-        if (input.confidenceMin !== undefined)
-          conditions.push(gte(signalcoreEvents.confidence, input.confidenceMin));
-        if (input.dateFrom)
-          conditions.push(gte(signalcoreEvents.createdAt, new Date(input.dateFrom)));
-        if (input.dateTo)
-          conditions.push(lte(signalcoreEvents.createdAt, new Date(input.dateTo)));
-
-        const textConditions = [
-          like(signalcoreEvents.eventType, queryPattern),
-          like(signalcoreEvents.county, queryPattern),
-          like(signalcoreEvents.description, queryPattern),
-          like(signalcoreEvents.title, queryPattern),
-        ];
-
-        const eventResults = await ctx.db
-          .select()
-          .from(signalcoreEvents)
-          .where(and(...conditions, or(...textConditions)))
-          .limit(effectiveLimit)
-          .all();
-
-        results.push(...eventResults.map((r) => ({ ...r, _type: "event" as const })));
-      }
-
-      // ── Search patterns ──
-      if (searchTypes.includes("patterns")) {
-        const conditions: Array<ReturnType<typeof eq> | ReturnType<typeof like> | ReturnType<typeof gte> | ReturnType<typeof lte>> = [];
-        if (input.state) conditions.push(eq(signalcorePatterns.state, input.state));
-        if (input.county) conditions.push(like(signalcorePatterns.county, `%${input.county}%`));
-        if (input.confidenceMin !== undefined)
-          conditions.push(gte(signalcorePatterns.confidence, input.confidenceMin));
-        if (input.dateFrom)
-          conditions.push(gte(signalcorePatterns.createdAt, new Date(input.dateFrom)));
-        if (input.dateTo)
-          conditions.push(lte(signalcorePatterns.createdAt, new Date(input.dateTo)));
-
-        const textConditions = [
-          like(signalcorePatterns.patternType, queryPattern),
-          like(signalcorePatterns.county, queryPattern),
-          like(signalcorePatterns.description, queryPattern),
-          like(signalcorePatterns.name, queryPattern),
-        ];
-
-        const patternResults = await ctx.db
-          .select()
-          .from(signalcorePatterns)
-          .where(and(...conditions, or(...textConditions)))
-          .limit(effectiveLimit)
-          .all();
-
-        results.push(...patternResults.map((r) => ({ ...r, _type: "pattern" as const })));
-      }
-
-      // ── Search recommendations ──
-      if (searchTypes.includes("recommendations")) {
-        const conditions: Array<ReturnType<typeof eq> | ReturnType<typeof like> | ReturnType<typeof gte> | ReturnType<typeof lte>> = [];
-        if (input.state)
-          conditions.push(like(signalcoreRecommendations.jurisdiction, `%${input.state}%`));
-        if (input.county)
-          conditions.push(like(signalcoreRecommendations.jurisdiction, `%${input.county}%`));
-        if (input.confidenceMin !== undefined)
-          conditions.push(gte(signalcoreRecommendations.confidenceScore, input.confidenceMin));
-        if (input.dateFrom)
-          conditions.push(gte(signalcoreRecommendations.createdAt, new Date(input.dateFrom)));
-        if (input.dateTo)
-          conditions.push(lte(signalcoreRecommendations.createdAt, new Date(input.dateTo)));
-
-        const textConditions = [
-          like(signalcoreRecommendations.targetProduct, queryPattern),
-          like(signalcoreRecommendations.jurisdiction, queryPattern),
-          like(signalcoreRecommendations.summary, queryPattern),
-          like(signalcoreRecommendations.rationale, queryPattern),
-        ];
-
-        const recResults = await ctx.db
-          .select()
-          .from(signalcoreRecommendations)
-          .where(and(...conditions, or(...textConditions)))
-          .limit(effectiveLimit)
-          .all();
-
-        results.push(
-          ...recResults.map((r) => ({ ...r, _type: "recommendation" as const }))
+      if (input.q) {
+        const query = `%${input.q}%`;
+        conditions.push(
+          sql`(${kestovarCanonicalEvents.title} LIKE ${query} OR ${kestovarCanonicalEvents.description} LIKE ${query} OR ${kestovarCanonicalEvents.address} LIKE ${query} OR ${kestovarCanonicalEvents.contractorName} LIKE ${query} OR ${kestovarCanonicalEvents.ownerName} LIKE ${query})`
         );
       }
+      if (input.county) conditions.push(like(kestovarCanonicalEvents.county, `%${input.county}%`));
+      if (input.state) conditions.push(eq(kestovarCanonicalEvents.state, input.state));
+      if (input.city) conditions.push(like(kestovarCanonicalEvents.city, `%${input.city}%`));
+      if (input.eventType) conditions.push(eq(kestovarCanonicalEvents.eventType, input.eventType));
+      if (input.permitType) conditions.push(eq(kestovarCanonicalEvents.permitType, input.permitType));
+      if (input.status) conditions.push(eq(kestovarCanonicalEvents.status, input.status));
+      if (input.minValue) conditions.push(gte(kestovarCanonicalEvents.value, input.minValue));
+      if (input.maxValue) conditions.push(lte(kestovarCanonicalEvents.value, input.maxValue));
+      if (input.contractorName) conditions.push(like(kestovarCanonicalEvents.contractorName, `%${input.contractorName}%`));
+      if (input.ownerName) conditions.push(like(kestovarCanonicalEvents.ownerName, `%${input.ownerName}%`));
 
-      // ── Sort results ──
-      if (input.sortBy === "date") {
-        results.sort(
-          (a, b) =>
-            new Date((b.createdAt as string | Date) || 0).getTime() -
-            new Date((a.createdAt as string | Date) || 0).getTime()
-        );
-      } else if (input.sortBy === "confidence") {
-        results.sort(
-          (a, b) =>
-            ((b.confidence as number) || (b.confidenceScore as number) || 0) -
-            ((a.confidence as number) || (a.confidenceScore as number) || 0)
-        );
+      // Date range filter
+      if (input.dateFrom) {
+        const fromDate = new Date(input.dateFrom);
+        if (!isNaN(fromDate.getTime())) {
+          conditions.push(gte(kestovarCanonicalEvents.publishedAt, fromDate));
+        }
       }
-      // relevance: keep as-is (interleaved by type)
+      if (input.dateTo) {
+        const toDate = new Date(input.dateTo);
+        if (!isNaN(toDate.getTime())) {
+          conditions.push(lte(kestovarCanonicalEvents.publishedAt, toDate));
+        }
+      }
 
-      // ── Save to search history ──
-      await ctx.db
-        .insert(searchHistory)
-        .values({
-          userId: ctx.user.id,
-          query: input.query,
+      // Build order by
+      let orderBy;
+      switch (input.sortBy) {
+        case "date":
+          orderBy = input.sortOrder === "asc" ? kestovarCanonicalEvents.publishedAt : desc(kestovarCanonicalEvents.publishedAt);
+          break;
+        case "value":
+          orderBy = input.sortOrder === "asc" ? kestovarCanonicalEvents.value : desc(kestovarCanonicalEvents.value);
+          break;
+        default:
+          orderBy = desc(kestovarCanonicalEvents.confidence);
+      }
+
+      const results = await db
+        .select()
+        .from(kestovarCanonicalEvents)
+        .where(and(...conditions))
+        .orderBy(orderBy)
+        .limit(input.limit)
+        .offset(input.offset);
+
+      // Log search history
+      try {
+        await db.insert(searchHistory).values({
+          query: input.q,
           filters: JSON.stringify({
-            types: searchTypes,
-            state: input.state,
             county: input.county,
-            sector: input.sector,
+            state: input.state,
+            city: input.city,
+            eventType: input.eventType,
+            permitType: input.permitType,
+            status: input.status,
+            minValue: input.minValue,
+            maxValue: input.maxValue,
           }),
           resultCount: results.length,
-        })
-        .run()
-        .catch(() => {
-          // Swallow history-save errors so they don't break search
+          createdAt: new Date(),
+          provenance: "LIVE",
         });
+      } catch {
+        // Non-critical: don't fail search if history logging fails
+      }
 
       return {
-        results: results.slice(input.offset, input.offset + effectiveLimit),
+        results,
         total: results.length,
-        query: input.query,
-        types: searchTypes,
+        query: input.q,
+        filters: {
+          county: input.county,
+          state: input.state,
+          city: input.city,
+          eventType: input.eventType,
+          permitType: input.permitType,
+          status: input.status,
+        },
       };
     }),
 
-  // Auto-complete suggestions
-  suggestions: authedQuery
-    .input(
-      z.object({
-        query: z.string().min(1).max(100),
-        limit: z.number().min(1).max(10).default(5),
-      })
-    )
-    .query(async ({ input, ctx }) => {
-      const suggestions: string[] = [];
-      const pattern = `%${input.query}%`;
+  // ── Get search suggestions ─────────────────────────────
+  suggestions: publicQuery
+    .input(z.object({ q: z.string().min(1).max(100) }))
+    .query(async ({ input }) => {
+      const db = getDbFromContext();
+      const query = `%${input.q}%`;
 
-      // Unique event types matching query
-      const events = await ctx.db
-        .selectDistinct({ eventType: signalcoreEvents.eventType })
-        .from(signalcoreEvents)
-        .where(like(signalcoreEvents.eventType, pattern))
-        .limit(input.limit)
-        .all();
-      suggestions.push(...events.map((e) => e.eventType).filter(Boolean));
+      const results = await db
+        .selectDistinct({
+          county: kestovarCanonicalEvents.county,
+          city: kestovarCanonicalEvents.city,
+          contractorName: kestovarCanonicalEvents.contractorName,
+        })
+        .from(kestovarCanonicalEvents)
+        .where(
+          and(
+            eq(kestovarCanonicalEvents.statusCanonical, "active"),
+            sql`(${kestovarCanonicalEvents.county} LIKE ${query} OR ${kestovarCanonicalEvents.city} LIKE ${query} OR ${kestovarCanonicalEvents.contractorName} LIKE ${query})`
+          )
+        )
+        .limit(10);
 
-      // Unique county names matching query
-      const counties = await ctx.db
-        .selectDistinct({ county: signalcoreEvents.county })
-        .from(signalcoreEvents)
-        .where(like(signalcoreEvents.county, pattern))
-        .limit(input.limit)
-        .all();
-      suggestions.push(...counties.map((c) => c.county).filter(Boolean));
-
-      // Unique pattern types matching query
-      const patterns = await ctx.db
-        .selectDistinct({ patternType: signalcorePatterns.patternType })
-        .from(signalcorePatterns)
-        .where(like(signalcorePatterns.patternType, pattern))
-        .limit(input.limit)
-        .all();
-      suggestions.push(...patterns.map((p) => p.patternType).filter(Boolean));
-
-      // Unique target products matching query
-      const products = await ctx.db
-        .selectDistinct({ targetProduct: signalcoreRecommendations.targetProduct })
-        .from(signalcoreRecommendations)
-        .where(like(signalcoreRecommendations.targetProduct, pattern))
-        .limit(input.limit)
-        .all();
-      suggestions.push(...products.map((p) => p.targetProduct).filter(Boolean));
-
-      return [...new Set(suggestions)].slice(0, input.limit);
+      return {
+        suggestions: results
+          .filter((r) => r.county || r.city || r.contractorName)
+          .map((r) => r.county || r.city || r.contractorName),
+      };
     }),
 
-  // Recent searches for the authenticated user
-  recentSearches: authedQuery
-    .input(
-      z.object({
-        limit: z.number().min(1).max(20).default(10),
-      })
-    )
-    .query(async ({ input, ctx }) => {
-      return ctx.db
+  // ── Recent searches ────────────────────────────────────
+  recent: publicQuery
+    .input(z.object({ limit: z.number().min(1).max(50).default(10) }).optional())
+    .query(async ({ input }) => {
+      const db = getDbFromContext();
+      const searches = await db
         .select()
         .from(searchHistory)
-        .where(eq(searchHistory.userId, ctx.user.id))
         .orderBy(desc(searchHistory.createdAt))
-        .limit(input.limit)
-        .all();
+        .limit(input?.limit || 10);
+
+      return { searches, total: searches.length };
     }),
 
-  // Clear search history
-  clearHistory: authedQuery.mutation(async ({ ctx }) => {
-    await ctx.db
-      .delete(searchHistory)
-      .where(eq(searchHistory.userId, ctx.user.id))
-      .run();
-    return { success: true };
-  }),
+  // ── Search by ID ───────────────────────────────────────
+  byId: publicQuery
+    .input(z.object({ id: z.string() }))
+    .query(async ({ input }) => {
+      const db = getDbFromContext();
+      const result = await db
+        .select()
+        .from(kestovarCanonicalEvents)
+        .where(eq(kestovarCanonicalEvents.canonicalId, input.id))
+        .get();
 
-  // Facet counts for filters (public, no auth required)
-  facets: publicQuery.query(async ({ ctx }) => {
-    // Count by state
-    const stateCounts = await ctx.db
-      .select({
-        state: signalcoreEvents.state,
-        count: sql<number>`count(*)`,
-      })
-      .from(signalcoreEvents)
-      .groupBy(signalcoreEvents.state)
-      .all();
+      if (!result) throw new Error("Signal not found");
+      return result;
+    }),
 
-    // Count by event type
-    const typeCounts = await ctx.db
-      .select({
-        type: signalcoreEvents.eventType,
-        count: sql<number>`count(*)`,
-      })
-      .from(signalcoreEvents)
-      .groupBy(signalcoreEvents.eventType)
-      .all();
+  // ── Similar signals ────────────────────────────────────
+  similar: publicQuery
+    .input(z.object({ id: z.string(), limit: z.number().min(1).max(20).default(5) }))
+    .query(async ({ input }) => {
+      const db = getDbFromContext();
+      const source = await db
+        .select()
+        .from(kestovarCanonicalEvents)
+        .where(eq(kestovarCanonicalEvents.canonicalId, input.id))
+        .get();
 
-    // Count by pattern type
-    const patternTypeCounts = await ctx.db
-      .select({
-        type: signalcorePatterns.patternType,
-        count: sql<number>`count(*)`,
-      })
-      .from(signalcorePatterns)
-      .groupBy(signalcorePatterns.patternType)
-      .all();
+      if (!source) throw new Error("Signal not found");
 
-    return {
-      states: stateCounts,
-      eventTypes: typeCounts,
-      patternTypes: patternTypeCounts,
-    };
-  }),
+      const conditions = [eq(kestovarCanonicalEvents.statusCanonical, "active")];
+      if (source.county) conditions.push(eq(kestovarCanonicalEvents.county, source.county));
+      if (source.eventType) conditions.push(eq(kestovarCanonicalEvents.eventType, source.eventType));
+
+      const results = await db
+        .select()
+        .from(kestovarCanonicalEvents)
+        .where(and(...conditions))
+        .orderBy(desc(kestovarCanonicalEvents.publishedAt))
+        .limit(input.limit);
+
+      return {
+        results: results.filter((r) => r.canonicalId !== input.id),
+        source: {
+          id: source.canonicalId,
+          title: source.title,
+          county: source.county,
+          eventType: source.eventType,
+        },
+      };
+    }),
 });
