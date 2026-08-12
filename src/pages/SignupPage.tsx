@@ -191,14 +191,14 @@ export function SignupPage() {
   const selectedPlanData = getPlanById(selectedPlan);
 
   return (
-    <div className="min-h-screen bg-[#F7F9FC]">
+    <div className="min-h-screen bg-[var(--bs-canvas)]">
       <div className="container mx-auto py-8 px-4">
         <div className="max-w-5xl mx-auto">
           {/* Back to home */}
           <Button
             variant="ghost"
             onClick={() => navigate("/")}
-            className="mb-6 gap-2 text-[#0B1F33]"
+            className="mb-6 gap-2 text-[var(--bs-text-primary)]"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Home
@@ -207,9 +207,9 @@ export function SignupPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main Form */}
             <div className="lg:col-span-2">
-              <Card className="border-[#F5F5F5] shadow-sm">
+              <Card className="border-[var(--bs-border)] shadow-sm">
                 <CardHeader>
-                  <CardTitle className="text-2xl text-[#0B1F33]">
+                  <CardTitle className="text-2xl text-[var(--bs-text-primary)]">
                     {step === 1 && "Create Your Account"}
                     {step === 2 && "Choose Your Plan"}
                     {step === 3 && "Get Started with BuildSignal"}
@@ -225,10 +225,10 @@ export function SignupPage() {
                             className={cn(
                               "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium mb-1",
                               step > idx + 1
-                                ? "bg-[#18A999] text-white"
+                                ? "bg-[var(--bs-intelligence)] text-white"
                                 : step === idx + 1
-                                ? "bg-[#1F5EFF] text-white"
-                                : "bg-[#F5F5F5] text-[#6B7B8F]"
+                                ? "bg-[var(--bs-action)] text-white"
+                                : "bg-[var(--bs-surface-hover)] text-[var(--bs-text-tertiary)]"
                             )}
                           >
                             {step > idx + 1 ? (
@@ -241,8 +241,8 @@ export function SignupPage() {
                             className={cn(
                               "text-xs font-medium",
                               step >= idx + 1
-                                ? "text-[#0B1F33]"
-                                : "text-[#6B7B8F]"
+                                ? "text-[var(--bs-text-primary)]"
+                                : "text-[var(--bs-text-tertiary)]"
                             )}
                           >
                             {s.label}
@@ -250,7 +250,7 @@ export function SignupPage() {
                         </div>
                       ))}
                     </div>
-                    <Progress value={(step / 3) * 100} className="h-2 bg-[#F5F5F5]" />
+                    <Progress value={(step / 3) * 100} className="h-2 bg-[var(--bs-surface-hover)]" />
                   </div>
 
                   <form onSubmit={handleSubmit} className="space-y-5">
@@ -258,7 +258,7 @@ export function SignupPage() {
                     {step === 1 && (
                       <>
                         <div className="space-y-2">
-                          <Label htmlFor="name" className="text-[#0B1F33]">Full Name</Label>
+                          <Label htmlFor="name" className="text-[var(--bs-text-primary)]">Full Name</Label>
                           <Input
                             id="name"
                             type="text"
@@ -274,10 +274,10 @@ export function SignupPage() {
                               }
                             }}
                             placeholder="John Doe"
-                            className={cn(errors.name && "border-red-400 focus:ring-red-200")}
+                            className={cn(errors.name && "border-red-400 focus:ring-red-500/20")}
                           />
                           {errors.name && (
-                            <p className="text-xs text-red-600 flex items-center gap-1">
+                            <p className="text-xs text-red-400 flex items-center gap-1">
                               <AlertCircle className="h-3 w-3" />
                               {errors.name}
                             </p>
@@ -285,7 +285,7 @@ export function SignupPage() {
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="email" className="text-[#0B1F33]">Work Email</Label>
+                          <Label htmlFor="email" className="text-[var(--bs-text-primary)]">Work Email</Label>
                           <Input
                             id="email"
                             type="email"
@@ -301,10 +301,10 @@ export function SignupPage() {
                               }
                             }}
                             placeholder="you@company.com"
-                            className={cn(errors.email && "border-red-400 focus:ring-red-200")}
+                            className={cn(errors.email && "border-red-400 focus:ring-red-500/20")}
                           />
                           {errors.email && (
-                            <p className="text-xs text-red-600 flex items-center gap-1">
+                            <p className="text-xs text-red-400 flex items-center gap-1">
                               <AlertCircle className="h-3 w-3" />
                               {errors.email}
                             </p>
@@ -312,7 +312,7 @@ export function SignupPage() {
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="password" className="text-[#0B1F33]">Password</Label>
+                          <Label htmlFor="password" className="text-[var(--bs-text-primary)]">Password</Label>
                           <div className="relative">
                             <Input
                               id="password"
@@ -330,14 +330,14 @@ export function SignupPage() {
                               }}
                               placeholder="At least 8 characters with uppercase, lowercase, and number"
                               className={cn(
-                                errors.password && "border-red-400 focus:ring-red-200",
+                                errors.password && "border-red-400 focus:ring-red-500/20",
                                 "pr-10"
                               )}
                             />
                             <button
                               type="button"
                               onClick={() => setShowPassword(!showPassword)}
-                              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B7B8F] hover:text-[#0B1F33] transition-colors"
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--bs-text-tertiary)] hover:text-[var(--bs-text-primary)] transition-colors"
                             >
                               {showPassword ? (
                                 <EyeOff className="h-4 w-4" />
@@ -347,7 +347,7 @@ export function SignupPage() {
                             </button>
                           </div>
                           {errors.password && (
-                            <p className="text-xs text-red-600 flex items-center gap-1">
+                            <p className="text-xs text-red-400 flex items-center gap-1">
                               <AlertCircle className="h-3 w-3" />
                               {errors.password}
                             </p>
@@ -355,7 +355,7 @@ export function SignupPage() {
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="confirmPassword" className="text-[#0B1F33]">Confirm Password</Label>
+                          <Label htmlFor="confirmPassword" className="text-[var(--bs-text-primary)]">Confirm Password</Label>
                           <Input
                             id="confirmPassword"
                             type="password"
@@ -371,10 +371,10 @@ export function SignupPage() {
                               }
                             }}
                             placeholder="Repeat your password"
-                            className={cn(errors.confirmPassword && "border-red-400 focus:ring-red-200")}
+                            className={cn(errors.confirmPassword && "border-red-400 focus:ring-red-500/20")}
                           />
                           {errors.confirmPassword && (
-                            <p className="text-xs text-red-600 flex items-center gap-1">
+                            <p className="text-xs text-red-400 flex items-center gap-1">
                               <AlertCircle className="h-3 w-3" />
                               {errors.confirmPassword}
                             </p>
@@ -387,7 +387,7 @@ export function SignupPage() {
                     {step === 2 && (
                       <div className="space-y-4">
                         {errors.plan && (
-                          <div className="flex items-center gap-2 text-sm text-red-700 bg-red-50 p-3 rounded-lg border border-red-100">
+                          <div className="flex items-center gap-2 text-sm text-red-400 bg-red-500/10 p-3 rounded-lg border border-red-500/20">
                             <AlertCircle className="h-4 w-4" />
                             {errors.plan}
                           </div>
@@ -399,7 +399,7 @@ export function SignupPage() {
                             variant={billingCycle === "monthly" ? "default" : "outline"}
                             size="sm"
                             onClick={() => setBillingCycle("monthly")}
-                            className={billingCycle === "monthly" ? "bg-[#1F5EFF]" : ""}
+                            className={billingCycle === "monthly" ? "bg-[var(--bs-action)]" : ""}
                           >
                             Monthly
                           </Button>
@@ -408,10 +408,10 @@ export function SignupPage() {
                             variant={billingCycle === "annual" ? "default" : "outline"}
                             size="sm"
                             onClick={() => setBillingCycle("annual")}
-                            className={billingCycle === "annual" ? "bg-[#1F5EFF]" : ""}
+                            className={billingCycle === "annual" ? "bg-[var(--bs-action)]" : ""}
                           >
                             Annual
-                            <Badge className="ml-1.5 bg-[#18A999] text-white text-[10px] hover:bg-[#18A999]">
+                            <Badge className="ml-1.5 bg-[var(--bs-intelligence)] text-white text-[10px] hover:bg-[var(--bs-intelligence)]">
                               Save 20%
                             </Badge>
                           </Button>
@@ -431,38 +431,38 @@ export function SignupPage() {
                                 });
                               }}
                               className={cn(
-                                "relative p-4 border rounded-lg text-left transition-all hover:shadow-md bg-white",
+                                "relative p-4 border rounded-lg text-left transition-all hover:shadow-md bg-[var(--bs-surface)]",
                                 selectedPlan === plan.id
-                                  ? "border-[#1F5EFF] ring-2 ring-[#1F5EFF] bg-[rgba(31,94,255,0.04)]"
-                                  : "border-[#E5E5E5]"
+                                  ? "border-[var(--bs-action)] ring-2 ring-[var(--bs-action)] bg-[var(--bs-action)]/4"
+                                  : "border-[var(--bs-border)]"
                               )}
                             >
                               {plan.highlighted && (
-                                <Badge className="absolute top-2 right-2 text-[10px] px-1.5 bg-[#1F5EFF] text-white hover:bg-[#1F5EFF]">
+                                <Badge className="absolute top-2 right-2 text-[10px] px-1.5 bg-[var(--bs-action)] text-white hover:bg-[var(--bs-action)]">
                                   Popular
                                 </Badge>
                               )}
-                              <div className="font-semibold text-[#0B1F33]">{plan.name}</div>
-                              <div className="text-lg font-bold mt-1 text-[#0B1F33]">
+                              <div className="font-semibold text-[var(--bs-text-primary)]">{plan.name}</div>
+                              <div className="text-lg font-bold mt-1 text-[var(--bs-text-primary)]">
                                 {plan.price === 0
                                   ? "Custom"
                                   : `$${plan.price}`}
                                 {plan.price > 0 && (
-                                  <span className="text-sm font-normal text-[#6B7B8F]">
+                                  <span className="text-sm font-normal text-[var(--bs-text-tertiary)]">
                                     /{plan.interval}
                                   </span>
                                 )}
                               </div>
                               {billingCycle === "annual" && plan.price > 0 && (
-                                <p className="text-xs text-[#18A999] mt-1 font-medium">
+                                <p className="text-xs text-[var(--bs-intelligence)] mt-1 font-medium">
                                   ${Math.round(plan.price * 12 * 0.8)} billed annually</p>
                               )}
-                              <p className="text-xs text-[#6B7B8F] mt-1 line-clamp-2">
+                              <p className="text-xs text-[var(--bs-text-tertiary)] mt-1 line-clamp-2">
                                 {plan.description}
                               </p>
                               {selectedPlan === plan.id && (
                                 <div className="absolute bottom-2 right-2">
-                                  <Check className="h-5 w-5 text-[#1F5EFF]" />
+                                  <Check className="h-5 w-5 text-[var(--bs-action)]" />
                                 </div>
                               )}
                             </button>
@@ -470,17 +470,17 @@ export function SignupPage() {
                         </div>
 
                         {selectedPlanData && (
-                          <div className="bg-[#F7F9FC] rounded-lg p-4 mt-4 border border-[#F5F5F5]">
-                            <h4 className="font-medium mb-2 text-[#0B1F33]">
+                          <div className="bg-[var(--bs-canvas)] rounded-lg p-4 mt-4 border border-[var(--bs-border)]">
+                            <h4 className="font-medium mb-2 text-[var(--bs-text-primary)]">
                               {selectedPlanData.name} includes:
                             </h4>
                             <ul className="space-y-1">
                               {selectedPlanData.features.map((f: string) => (
                                 <li
                                   key={f}
-                                  className="flex items-center gap-2 text-sm text-[#0B1F33]"
+                                  className="flex items-center gap-2 text-sm text-[var(--bs-text-primary)]"
                                 >
-                                  <Check className="h-3.5 w-3.5 text-[#18A999]" />
+                                  <Check className="h-3.5 w-3.5 text-[var(--bs-intelligence)]" />
                                   {f}
                                 </li>
                               ))}
@@ -493,38 +493,38 @@ export function SignupPage() {
                     {/* Step 3: Finalize */}
                     {step === 3 && (
                       <div className="space-y-6 text-center">
-                        <div className="bg-[#F7F9FC] rounded-lg p-6 border border-[#F5F5F5]">
-                          <Building2 className="h-10 w-10 text-[#1F5EFF] mx-auto mb-3" />
-                          <h3 className="text-lg font-semibold mb-1 text-[#0B1F33]">
+                        <div className="bg-[var(--bs-canvas)] rounded-lg p-6 border border-[var(--bs-border)]">
+                          <Building2 className="h-10 w-10 text-[var(--bs-action)] mx-auto mb-3" />
+                          <h3 className="text-lg font-semibold mb-1 text-[var(--bs-text-primary)]">
                             You&apos;re almost there!
                           </h3>
-                          <p className="text-[#6B7B8F] text-sm mb-4">
+                          <p className="text-[var(--bs-text-tertiary)] text-sm mb-4">
                             Create your account and start exploring construction market intelligence.
                           </p>
 
                           {selectedPlanData && (
-                            <div className="bg-white border border-[#E5E5E5] rounded-lg p-4 mb-4 text-left">
+                            <div className="bg-[var(--bs-surface)] border border-[var(--bs-border)] rounded-lg p-4 mb-4 text-left">
                               <div className="flex items-center justify-between mb-2">
-                                <span className="font-medium text-[#0B1F33]">
+                                <span className="font-medium text-[var(--bs-text-primary)]">
                                   {selectedPlanData.name}
                                 </span>
-                                <Badge variant="secondary" className="bg-[#F5F5F5] text-[#0B1F33]">
+                                <Badge variant="secondary" className="bg-[var(--bs-surface-hover)] text-[var(--bs-text-primary)]">
                                   {billingCycle === "annual" ? "Annual" : "Monthly"}
                                 </Badge>
                               </div>
-                              <div className="text-2xl font-bold text-[#0B1F33]">
+                              <div className="text-2xl font-bold text-[var(--bs-text-primary)]">
                                 {selectedPlanData.price === 0
                                   ? "Custom"
                                   : `$${selectedPlanData.price}`}
                                 {selectedPlanData.price > 0 && (
-                                  <span className="text-sm font-normal text-[#6B7B8F]">
+                                  <span className="text-sm font-normal text-[var(--bs-text-tertiary)]">
                                     /{selectedPlanData.interval}
                                   </span>
                                 )}
                               </div>
                               {billingCycle === "annual" &&
                                 selectedPlanData.price > 0 && (
-                                  <p className="text-xs text-[#18A999] mt-1 font-medium">
+                                  <p className="text-xs text-[var(--bs-intelligence)] mt-1 font-medium">
                                     ${Math.round(selectedPlanData.price * 12 * 0.8)}{" "}
                                     billed annually (Save 20%)
                                   </p>
@@ -532,7 +532,7 @@ export function SignupPage() {
                             </div>
                           )}
 
-                          <div className="flex items-center justify-center gap-4 text-xs text-[#6B7B8F]">
+                          <div className="flex items-center justify-center gap-4 text-xs text-[var(--bs-text-tertiary)]">
                             <span className="flex items-center gap-1">
                               <Lock className="h-3 w-3" />
                               256-bit SSL
@@ -545,7 +545,7 @@ export function SignupPage() {
                         </div>
 
                         {(errors.submit || registerError) && (
-                          <p className="text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-100">
+                          <p className="text-sm text-red-400 bg-red-500/10 p-3 rounded-lg border border-red-500/20">
                             {errors.submit || registerError.message}
                           </p>
                         )}
@@ -559,7 +559,7 @@ export function SignupPage() {
                           type="button"
                           variant="outline"
                           onClick={handleBack}
-                          className="gap-2 border-[#E5E5E5] text-[#0B1F33]"
+                          className="gap-2 border-[var(--bs-border)] text-[var(--bs-text-primary)]"
                         >
                           <ArrowLeft className="h-4 w-4" />
                           Back
@@ -572,7 +572,7 @@ export function SignupPage() {
                         <Button
                           type="button"
                           onClick={handleNext}
-                          className="gap-2 bg-[#1F5EFF] hover:bg-[#1F5EFF]/90"
+                          className="gap-2 bg-[var(--bs-action)] hover:bg-[var(--bs-action)]/90"
                         >
                           Continue
                           <ArrowRight className="h-4 w-4" />
@@ -581,7 +581,7 @@ export function SignupPage() {
                         <Button
                           type="submit"
                           disabled={registerIsPending}
-                          className="gap-2 bg-[#1F5EFF] hover:bg-[#1F5EFF]/90"
+                          className="gap-2 bg-[var(--bs-action)] hover:bg-[var(--bs-action)]/90"
                         >
                           {registerIsPending ? (
                             <>
@@ -600,11 +600,11 @@ export function SignupPage() {
                   </form>
 
                   {/* Login link */}
-                  <div className="mt-6 text-center text-sm text-[#6B7B8F]">
+                  <div className="mt-6 text-center text-sm text-[var(--bs-text-tertiary)]">
                     Already have an account?{" "}
                     <button
                       onClick={() => navigate("/login")}
-                      className="text-[#1F5EFF] hover:underline font-medium"
+                      className="text-[var(--bs-action)] hover:underline font-medium"
                     >
                       Log in
                     </button>
@@ -617,34 +617,34 @@ export function SignupPage() {
             <div className="hidden lg:block">
               <div className="sticky top-8 space-y-6">
                 {/* Value Proposition */}
-                <div className="bg-gradient-to-br from-[rgba(31,94,255,0.08)] to-[rgba(31,94,255,0.04)] border border-[rgba(31,94,255,0.15)] rounded-xl p-5">
+                <div className="bg-gradient-to-br from-[var(--bs-action)]/8 to-[var(--bs-action)]/4 border border-[var(--bs-action)]/15 rounded-xl p-5">
                   <div className="flex items-center gap-2 mb-3">
-                    <Sparkles className="h-5 w-5 text-[#1F5EFF]" />
-                    <span className="font-semibold text-[#0B1F33]">Why BuildSignal?</span>
+                    <Sparkles className="h-5 w-5 text-[var(--bs-action)]" />
+                    <span className="font-semibold text-[var(--bs-text-primary)]">Why BuildSignal?</span>
                   </div>
-                  <ul className="space-y-2 text-sm text-[#6B7B8F]">
+                  <ul className="space-y-2 text-sm text-[var(--bs-text-tertiary)]">
                     <li className="flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4 text-[#18A999] shrink-0" />
+                      <TrendingUp className="h-4 w-4 text-[var(--bs-intelligence)] shrink-0" />
                       AI-powered trend analysis across construction markets
                     </li>
                     <li className="flex items-center gap-2">
-                      <Zap className="h-4 w-4 text-[#18A999] shrink-0" />
+                      <Zap className="h-4 w-4 text-[var(--bs-intelligence)] shrink-0" />
                       Streamline market research with automated intelligence gathering
                     </li>
                     <li className="flex items-center gap-2">
-                      <Shield className="h-4 w-4 text-[#18A999] shrink-0" />
+                      <Shield className="h-4 w-4 text-[var(--bs-intelligence)] shrink-0" />
                       Bank-grade security &amp; SOC 2 program in progress
                     </li>
                   </ul>
                 </div>
 
                 {/* Free Trial Box */}
-                <div className="bg-[rgba(31,94,255,0.04)] border border-[rgba(31,94,255,0.10)] rounded-xl p-5">
+                <div className="bg-[var(--bs-action)]/4 border border-[var(--bs-action)]/10 rounded-xl p-5">
                   <div className="flex items-center gap-2 mb-3">
-                    <Sparkles className="h-5 w-5 text-[#1F5EFF]" />
-                    <span className="font-semibold text-[#0B1F33]">Start with a 14-Day Free Trial</span>
+                    <Sparkles className="h-5 w-5 text-[var(--bs-action)]" />
+                    <span className="font-semibold text-[var(--bs-text-primary)]">Start with a 14-Day Free Trial</span>
                   </div>
-                  <p className="text-sm text-[#6B7B8F]">
+                  <p className="text-sm text-[var(--bs-text-tertiary)]">
                     Full access to all features. No credit card required. Cancel anytime.
                     Get actionable intelligence for your markets within minutes.
                   </p>
@@ -652,51 +652,51 @@ export function SignupPage() {
 
                 {/* Platform Trust Signals */}
                 <div className="space-y-4">
-                  <h3 className="text-sm font-semibold text-[#6B7B8F] uppercase tracking-wide">
+                  <h3 className="text-sm font-semibold text-[var(--bs-text-tertiary)] uppercase tracking-wide">
                     Why professionals trust BuildSignal
                   </h3>
 
-                  <div className="bg-white border border-[#F5F5F5] rounded-lg p-4">
+                  <div className="bg-[var(--bs-surface)] border border-[var(--bs-border)] rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <Database className="h-4 w-4 text-[#1F5EFF]" />
-                      <span className="font-medium text-sm text-[#0B1F33]">Real-time data coverage</span>
+                      <Database className="h-4 w-4 text-[var(--bs-action)]" />
+                      <span className="font-medium text-sm text-[var(--bs-text-primary)]">Real-time data coverage</span>
                     </div>
-                    <p className="text-xs text-[#6B7B8F]">
+                    <p className="text-xs text-[var(--bs-text-tertiary)]">
                       Multi-county permit monitoring from municipal sources. Daily updates on construction activity across target markets.
                     </p>
                   </div>
 
-                  <div className="bg-white border border-[#F5F5F5] rounded-lg p-4">
+                  <div className="bg-[var(--bs-surface)] border border-[var(--bs-border)] rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <BrainCircuit className="h-4 w-4 text-[#1F5EFF]" />
-                      <span className="font-medium text-sm text-[#0B1F33]">Transparent AI methodology</span>
+                      <BrainCircuit className="h-4 w-4 text-[var(--bs-action)]" />
+                      <span className="font-medium text-sm text-[var(--bs-text-primary)]">Transparent AI methodology</span>
                     </div>
-                    <p className="text-xs text-[#6B7B8F]">
+                    <p className="text-xs text-[var(--bs-text-tertiary)]">
                       Confidence scores on every prediction. Model performance published monthly. No black boxes.
                     </p>
                   </div>
 
-                  <div className="bg-white border border-[#F5F5F5] rounded-lg p-4">
+                  <div className="bg-[var(--bs-surface)] border border-[var(--bs-border)] rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <Shield className="h-4 w-4 text-[#18A999]" />
-                      <span className="font-medium text-sm text-[#0B1F33]">Enterprise-grade security</span>
+                      <Shield className="h-4 w-4 text-[var(--bs-intelligence)]" />
+                      <span className="font-medium text-sm text-[var(--bs-text-primary)]">Enterprise-grade security</span>
                     </div>
-                    <p className="text-xs text-[#6B7B8F]">
+                    <p className="text-xs text-[var(--bs-text-tertiary)]">
                       SOC 2 Type II program in progress. 256-bit AES encryption. SSO & SAML 2.0 ready. Data never sold.
                     </p>
                   </div>
 
-                  <div className="bg-white border border-[#F5F5F5] rounded-lg p-4">
+                  <div className="bg-[var(--bs-surface)] border border-[var(--bs-border)] rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <FileText className="h-4 w-4 text-[#1F5EFF]" />
-                      <span className="font-medium text-sm text-[#0B1F33]">See a sample report</span>
+                      <FileText className="h-4 w-4 text-[var(--bs-action)]" />
+                      <span className="font-medium text-sm text-[var(--bs-text-primary)]">See a sample report</span>
                     </div>
-                    <p className="text-xs text-[#6B7B8F] mb-2">
+                    <p className="text-xs text-[var(--bs-text-tertiary)] mb-2">
                       Preview the intelligence BuildSignal delivers — real opportunity analysis, confidence scores, and market trends.
                     </p>
                     <button
                       onClick={() => window.open("/reports-hub", "_blank")}
-                      className="text-xs text-[#1F5EFF] hover:underline font-medium"
+                      className="text-xs text-[var(--bs-action)] hover:underline font-medium"
                     >
                       View sample report →
                     </button>
@@ -704,19 +704,19 @@ export function SignupPage() {
                 </div>
 
                 {/* Security Badges */}
-                <div className="bg-[#F7F9FC] rounded-xl p-4 border border-[#F5F5F5]">
-                  <h3 className="text-sm font-semibold text-[#0B1F33] mb-3">Your data is safe</h3>
+                <div className="bg-[var(--bs-canvas)] rounded-xl p-4 border border-[var(--bs-border)]">
+                  <h3 className="text-sm font-semibold text-[var(--bs-text-primary)] mb-3">Your data is safe</h3>
                   <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-sm text-[#6B7B8F]">
-                      <Lock className="h-4 w-4 text-[#18A999]" />
+                    <div className="flex items-center gap-2 text-sm text-[var(--bs-text-tertiary)]">
+                      <Lock className="h-4 w-4 text-[var(--bs-intelligence)]" />
                       256-bit SSL encryption
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-[#6B7B8F]">
-                      <Shield className="h-4 w-4 text-[#18A999]" />
+                    <div className="flex items-center gap-2 text-sm text-[var(--bs-text-tertiary)]">
+                      <Shield className="h-4 w-4 text-[var(--bs-intelligence)]" />
                       Your data is never sold
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-[#6B7B8F]">
-                      <Check className="h-4 w-4 text-[#18A999]" />
+                    <div className="flex items-center gap-2 text-sm text-[var(--bs-text-tertiary)]">
+                      <Check className="h-4 w-4 text-[var(--bs-intelligence)]" />
                       SOC 2 Type II (In Progress)
                     </div>
                   </div>
