@@ -166,7 +166,7 @@ function RoadmapCard({
   );
 }
 
-export default function RoadmapPage() {
+export function RoadmapPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
