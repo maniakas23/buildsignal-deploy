@@ -1,515 +1,280 @@
-// BuildSignal D1 Schema — SQLite edition
-// Drizzle ORM table definitions for Cloudflare D1
+import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
 
-import { sqliteTable, integer, text, real, index, uniqueIndex } from "drizzle-orm/sqlite-core";
+// ============================================================
+// Core Tables
+// ============================================================
 
-// ─── Users ───
 export const users = sqliteTable("users", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  id: text("id").primaryKey(),
   email: text("email").notNull().unique(),
-  passwordHash: text("passwordHash"),
-  role: text("role").default("user"),
-  status: text("status").default("active"),
-  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  updatedAt: integer("updatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  lastLoginAt: integer("lastLoginAt", { mode: "timestamp" }),
-  stripeCustomerId: text("stripeCustomerId"),
-  stripeSubscriptionId: text("stripeSubscriptionId"),
-  stripePriceId: text("stripePriceId"),
-  subscriptionStatus: text("subscriptionStatus"),
-  subscriptionTier: text("subscriptionTier"),
-  currentPeriodEnd: integer("currentPeriodEnd", { mode: "timestamp" }),
-  plan: text("plan").default("free"),
-  isAdmin: integer("isAdmin", { mode: "boolean" }).default(false),
-  isActive: integer("isActive", { mode: "boolean" }).default(true),
   name: text("name"),
-  company: text("company"),
-  phone: text("phone"),
-  avatarUrl: text("avatarUrl"),
-  industry: text("industry"),
-  jobTitle: text("jobTitle"),
-  emailVerified: integer("emailVerified", { mode: "boolean" }).default(false),
-  onboardingCompleted: integer("onboardingCompleted", { mode: "boolean" }).default(false),
-  onboardedAt: integer("onboardedAt", { mode: "timestamp" }),
-  referralCode: text("referralCode"),
-  referredBy: text("referredBy"),
-  metadata: text("metadata"),
-  settings: text("settings"),
-  activityStatus: text("activityStatus").default("active"),
-  loginCount: integer("loginCount").default(0),
-  lastActivityAt: integer("lastActivityAt", { mode: "timestamp" }),
-  lastActiveAt: integer("lastActiveAt", { mode: "timestamp" }),
-  usageCounts: text("usageCounts"),
-  dataSource: text("dataSource"),
-  region: text("region"),
-  timezone: text("timezone"),
-  language: text("language"),
-  mfaEnabled: integer("mfaEnabled", { mode: "boolean" }).default(false),
-  mfaSecret: text("mfaSecret"),
-  provenance: text("provenance").default("SEED"),
+  passwordHash: text("password_hash"),
+  plan: text("plan", { enum: ["free", "starter", "pro", "business", "enterprise"] }).default("free"),
+  isAdmin: integer("is_admin", { mode: "boolean" }).default(false),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  avatarUrl: text("avatar_url"),
+  stripeCustomerId: text("stripe_customer_id"),
+  stripeSubscriptionId: text("stripe_subscription_id"),
 });
 
-// ─── Sessions ───
-export const sessions = sqliteTable("sessions", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  userId: integer("userId").notNull(),
-  token: text("token").notNull().unique(),
-  expiresAt: integer("expiresAt", { mode: "timestamp" }).notNull(),
-  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  ipAddress: text("ipAddress"),
-  userAgent: text("userAgent"),
-  revokedAt: integer("revokedAt", { mode: "timestamp" }),
-  provenance: text("provenance").default("SEED"),
-});
-
-// ─── Organizations ───
 export const organizations = sqliteTable("organizations", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  id: text("id").primaryKey(),
   name: text("name").notNull(),
   slug: text("slug").notNull().unique(),
-  description: text("description"),
-  logoUrl: text("logoUrl"),
-  website: text("website"),
-  industry: text("industry"),
-  size: text("size"),
-  status: text("status").default("active"),
-  plan: text("plan").default("free"),
-  stripeCustomerId: text("stripeCustomerId"),
-  stripeSubscriptionId: text("stripeSubscriptionId"),
-  subscriptionStatus: text("subscriptionStatus"),
-  currentPeriodEnd: integer("currentPeriodEnd", { mode: "timestamp" }),
-  settings: text("settings"),
-  metadata: text("metadata"),
-  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  updatedAt: integer("updatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  billingEmail: text("billingEmail"),
-  billingAddress: text("billingAddress"),
-  usageQuota: integer("usageQuota").default(0),
-  usageCount: integer("usageCount").default(0),
-  provenance: text("provenance").default("SEED"),
+  ownerId: text("owner_id").notNull(),
+  plan: text("plan", { enum: ["free", "starter", "pro", "business", "enterprise"] }).default("free"),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
-// ─── Organization Members ───
-export const organizationMembers = sqliteTable("organization_members", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  organizationId: integer("organizationId").notNull(),
-  userId: integer("userId").notNull(),
-  role: text("role").default("member"),
-  invitedBy: integer("invitedBy"),
-  invitedAt: integer("invitedAt", { mode: "timestamp" }),
-  joinedAt: integer("joinedAt", { mode: "timestamp" }),
-  status: text("status").default("active"),
-  permissions: text("permissions"),
-  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  updatedAt: integer("updatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  provenance: text("provenance").default("SEED"),
+export const orgMembers = sqliteTable("org_members", {
+  id: text("id").primaryKey(),
+  orgId: text("org_id").notNull(),
+  userId: text("user_id").notNull(),
+  role: text("role", { enum: ["owner", "admin", "member"] }).default("member"),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
-// ─── Ingestion Sources ───
-export const ingestionSources = sqliteTable("ingestion_sources", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  name: text("name").notNull(),
-  sourceType: text("sourceType").notNull(),
-  endpointUrl: text("endpointUrl"),
-  apiKey: text("apiKey"),
-  config: text("config"),
-  schedule: text("schedule"),
-  lastRunAt: integer("lastRunAt", { mode: "timestamp" }),
-  nextRunAt: integer("nextRunAt", { mode: "timestamp" }),
-  status: text("status").default("active"),
-  healthStatus: text("healthStatus").default("healthy"),
-  errorCount: integer("errorCount").default(0),
-  successCount: integer("successCount").default(0),
-  metadata: text("metadata"),
-  isActive: integer("isActive", { mode: "boolean" }).default(true),
-  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  updatedAt: integer("updatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  provenance: text("provenance").default("SEED"),
-});
+// ============================================================
+// Signals & Events
+// ============================================================
 
-// ─── Raw Records (Ingestion Pipeline) ───
-export const rawRecords = sqliteTable("raw_records", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  providerId: text("providerId"),
-  sourceRecordId: text("sourceRecordId"),
-  sourceUrl: text("sourceUrl"),
-  observedAt: integer("observedAt", { mode: "timestamp" }),
-  ingestedAt: integer("ingestedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  rawPayload: text("rawPayload"),
-  rawTitle: text("rawTitle"),
-  rawDescription: text("rawDescription"),
-  rawLocation: text("rawLocation"),
-  rawStatus: text("rawStatus"),
-  rawDates: text("rawDates"),
-  rawMetadata: text("rawMetadata"),
-  ingestionRunId: integer("ingestionRunId"),
-  resolvedEntityId: integer("resolvedEntityId"),
-  resolvedEntityType: text("resolvedEntityType"),
-  resolvedAt: integer("resolvedAt", { mode: "timestamp" }),
-  provenance: text("provenance").default("LIVE"),
-  isDeleted: integer("isDeleted", { mode: "boolean" }).default(false),
-});
-
-// ─── Ingestion Runs ───
-export const ingestionRuns = sqliteTable("ingestion_runs", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  providerId: text("providerId"),
-  startedAt: integer("startedAt", { mode: "timestamp" }),
-  completedAt: integer("completedAt", { mode: "timestamp" }),
-  status: text("status").default("running"),
-  triggerType: text("triggerType").default("manual"),
-  recordsObserved: integer("recordsObserved").default(0),
-  recordsCreated: integer("recordsCreated").default(0),
-  recordsResolved: integer("recordsResolved").default(0),
-  recordsFailed: integer("recordsFailed").default(0),
-  fetchLatencyMs: integer("fetchLatencyMs"),
-  parseLatencyMs: integer("parseLatencyMs"),
-  resolveLatencyMs: integer("resolveLatencyMs"),
-  totalLatencyMs: integer("totalLatencyMs"),
-  sourceRecordCount: integer("sourceRecordCount").default(0),
-  error: text("error"),
-  errorCode: text("errorCode"),
-  metadata: text("metadata"),
-  provenance: text("provenance").default("LIVE"),
-});
-
-// ─── Provider Registry ───
-export const providerRegistry = sqliteTable("provider_registry", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  providerId: text("providerId").notNull().unique(),
-  providerName: text("providerName").notNull(),
-  providerType: text("providerType").default("arcgis"),
-  endpointUrl: text("endpointUrl"),
-  jurisdiction: text("jurisdiction"),
-  state: text("state"),
-  county: text("county"),
-  isActive: integer("isActive", { mode: "boolean" }).default(true),
-  lastIngestedAt: integer("lastIngestedAt", { mode: "timestamp" }),
-  totalRecords: integer("totalRecords").default(0),
-  config: text("config"),
-  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  updatedAt: integer("updatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  provenance: text("provenance").default("SEED"),
-});
-
-// ─── Entity Resolution Log ───
-export const entityResolutionLog = sqliteTable("entity_resolution_log", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  rawRecordId: integer("rawRecordId").notNull(),
-  entityType: text("entityType").notNull(),
-  entityId: integer("entityId"),
-  confidence: integer("confidence").default(0),
-  method: text("method"),
-  status: text("status").default("pending"),
-  error: text("error"),
-  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  provenance: text("provenance").default("LIVE"),
-});
-
-// ─── SignalCore Events ───
+// LEGACY: Do not write new data here. Use kestovar_canonical_events instead.
 export const signalcoreEvents = sqliteTable("signalcore_events", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  providerId: text("providerId"),
-  externalId: text("externalId"),
-  eventType: text("eventType").notNull(),
-  title: text("title").notNull(),
+  id: text("id").primaryKey(),
+  providerId: integer("provider_id").notNull(),
+  sourceUrl: text("source_url"),
+  title: text("title"),
   description: text("description"),
+  location: text("location"),
+  county: text("county"),
+  state: text("state"),
+  zipCode: text("zip_code"),
+  address: text("address"),
+  lat: real("lat"),
+  lng: real("lng"),
+  permitType: text("permit_type"),
+  permitClass: text("permit_class"),
+  value: real("value"),
+  contractorName: text("contractor_name"),
+  contractorPhone: text("contractor_phone"),
+  contractorEmail: text("contractor_email"),
+  ownerName: text("owner_name"),
+  publishedAt: integer("published_at", { mode: "timestamp" }),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  rawData: text("raw_data"),
+  normalizedData: text("normalized_data"),
+  contentHash: text("content_hash"),
+  status: text("status"),
+  eventType: text("event_type"),
+});
+
+// CANONICAL: All new ingestion writes go to this table.
+export const kestovarCanonicalEvents = sqliteTable("kestovar_canonical_events", {
+  canonicalId: text("canonical_id").primaryKey(),
+  providerId: text("provider_id").notNull(),
+  sourceRecordId: text("source_record_id"),
+  sourceUrl: text("source_url"),
+  eventType: text("event_type"),
+  title: text("title"),
+  description: text("description"),
+  permitType: text("permit_type"),
+  permitClass: text("permit_class"),
+  workClass: text("work_class"),
   county: text("county"),
   state: text("state"),
   city: text("city"),
-  zipCode: text("zipCode"),
-  lat: text("lat"),
-  lng: text("lng"),
+  zipCode: text("zip_code"),
   address: text("address"),
-  publishedAt: integer("publishedAt", { mode: "timestamp" }),
-  ingestedAt: integer("ingestedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  confidence: integer("confidence").default(70),
-  status: text("status").default("active"),
-  contentHash: text("contentHash"),
-  rawData: text("rawData"),
-  dataSource: text("dataSource"),
-  metadata: text("metadata"),
-  tags: text("tags"),
-  searchVector: text("searchVector"),
-  clusterId: integer("clusterId"),
-  provenance: text("provenance").default("SEED"),
+  lat: real("lat"),
+  lng: real("lng"),
+  parcelId: text("parcel_id"),
+  applicationDate: integer("application_date", { mode: "timestamp" }),
+  issueDate: integer("issue_date", { mode: "timestamp" }),
+  status: text("status"),
+  statusMapped: text("status_mapped"),
+  value: real("value"),
+  contractorName: text("contractor_name"),
+  contractorPhone: text("contractor_phone"),
+  contractorEmail: text("contractor_email"),
+  ownerName: text("owner_name"),
+  rawData: text("raw_data"),
+  normalizedData: text("normalized_data"),
+  contentHash: text("content_hash"),
+  publishedAt: integer("published_at", { mode: "timestamp" }),
+  ingestedAt: integer("ingested_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  sourceUpdatedAt: integer("source_updated_at", { mode: "timestamp" }),
+  validationErrors: text("validation_errors"),
+  confidence: real("confidence").default(0.5),
+  statusCanonical: text("status_canonical").default("active"),
+  provenance: text("provenance").default("LIVE"),
+  lineageVersion: integer("lineage_version").default(1),
 });
 
-// ─── SignalCore Patterns ───
+// ============================================================
+// Patterns & Opportunities
+// ============================================================
+
 export const signalcorePatterns = sqliteTable("signalcore_patterns", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  patternType: text("patternType").notNull(),
-  patternName: text("patternName").notNull(),
-  description: text("description"),
-  county: text("county"),
-  state: text("state"),
-  city: text("city"),
-  zipCode: text("zipCode"),
-  eventCount: integer("eventCount").default(0),
-  firstSeenAt: integer("firstSeenAt", { mode: "timestamp" }),
-  lastSeenAt: integer("lastSeenAt", { mode: "timestamp" }),
-  confidence: integer("confidence").default(0),
-  status: text("status").default("active"),
-  evidence: text("evidence"),
-  metadata: text("metadata"),
-  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  updatedAt: integer("updatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  provenance: text("provenance").default("SEED"),
-});
-
-// ─── SignalCore Opportunities ───
-export const signalcoreOpportunities = sqliteTable("signalcore_opportunities", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  patternId: integer("patternId"),
-  title: text("title").notNull(),
-  description: text("description"),
-  opportunityType: text("opportunityType").default("contracting"),
-  estimatedValue: real("estimatedValue"),
-  confidence: integer("confidence").default(0),
-  status: text("status").default("open"),
-  priority: text("priority").default("medium"),
-  county: text("county"),
-  state: text("state"),
-  city: text("city"),
-  zipCode: text("zipCode"),
-  address: text("address"),
-  lat: text("lat"),
-  lng: text("lng"),
-  contactName: text("contactName"),
-  contactEmail: text("contactEmail"),
-  contactPhone: text("contactPhone"),
-  deadlineAt: integer("deadlineAt", { mode: "timestamp" }),
-  awardedTo: text("awardedTo"),
-  awardedAt: integer("awardedAt", { mode: "timestamp" }),
-  estimatedValueMin: real("estimatedValueMin"),
-  estimatedValueMax: real("estimatedValueMax"),
-  tags: text("tags"),
-  metadata: text("metadata"),
-  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  updatedAt: integer("updatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  provenance: text("provenance").default("SEED"),
-});
-
-// ─── SignalCore Recommendations ───
-export const signalcoreRecommendations = sqliteTable("signalcore_recommendations", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  userId: integer("userId"),
-  opportunityId: integer("opportunityId"),
-  patternId: integer("patternId"),
-  title: text("title").notNull(),
-  description: text("description"),
-  recommendationType: text("recommendationType").default("opportunity"),
-  confidence: integer("confidence").default(0),
-  status: text("status").default("pending"),
-  reason: text("reason"),
-  actionTaken: text("actionTaken"),
-  actionTakenAt: integer("actionTakenAt", { mode: "timestamp" }),
-  dismissedAt: integer("dismissedAt", { mode: "timestamp" }),
-  dismissedReason: text("dismissedReason"),
-  metadata: text("metadata"),
-  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  updatedAt: integer("updatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  provenance: text("provenance").default("SEED"),
-});
-
-// ─── SignalCore Alerts ───
-export const signalcoreAlerts = sqliteTable("signalcore_alerts", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  userId: integer("userId"),
-  patternId: integer("patternId"),
-  opportunityId: integer("opportunityId"),
-  title: text("title").notNull(),
-  description: text("description"),
-  alertType: text("alertType").default("pattern_match"),
-  severity: text("severity").default("info"),
-  status: text("status").default("unread"),
-  dismissedAt: integer("dismissedAt", { mode: "timestamp" }),
-  metadata: text("metadata"),
-  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  updatedAt: integer("updatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  provenance: text("provenance").default("SEED"),
-});
-
-// ─── SignalCore Daily Briefs ───
-export const signalcoreDailyBriefs = sqliteTable("signalcore_daily_briefs", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  userId: integer("userId"),
-  date: text("date").notNull(),
-  summary: text("summary"),
-  eventCount: integer("eventCount").default(0),
-  patternCount: integer("patternCount").default(0),
-  opportunityCount: integer("opportunityCount").default(0),
-  alertCount: integer("alertCount").default(0),
-  recommendationCount: integer("recommendationCount").default(0),
-  content: text("content"),
-  metadata: text("metadata"),
-  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  updatedAt: integer("updatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  provenance: text("provenance").default("SEED"),
-});
-
-// ─── Watchlists ───
-export const watchlists = sqliteTable("watchlists", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  userId: integer("userId").notNull(),
-  name: text("name").notNull(),
+  id: text("id").primaryKey(),
+  patternName: text("pattern_name").notNull(),
+  patternType: text("pattern_type").notNull(),
   description: text("description"),
   query: text("query"),
   filters: text("filters"),
-  isActive: integer("isActive", { mode: "boolean" }).default(true),
-  alertEnabled: integer("alertEnabled", { mode: "boolean" }).default(false),
-  lastMatchAt: integer("lastMatchAt", { mode: "timestamp" }),
-  matchCount: integer("matchCount").default(0),
-  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  updatedAt: integer("updatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  provenance: text("provenance").default("SEED"),
+  confidence: real("confidence").default(0.5),
+  signalCount: integer("signal_count").default(0),
+  isActive: integer("is_active", { mode: "boolean" }).default(true),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  provenance: text("provenance").default("LIVE"),
 });
 
-// ─── Notifications ───
-export const notifications = sqliteTable("notifications", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  userId: integer("userId").notNull(),
-  type: text("type").notNull(),
-  title: text("title").notNull(),
-  message: text("message"),
-  data: text("data"),
-  isRead: integer("isRead", { mode: "boolean" }).default(false),
-  readAt: integer("readAt", { mode: "timestamp" }),
-  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  provenance: text("provenance").default("SEED"),
+export const opportunities = sqliteTable("opportunities", {
+  id: text("id").primaryKey(),
+  signalId: text("signal_id").notNull(),
+  title: text("title"),
+  description: text("description"),
+  confidenceScore: real("confidence_score").default(0.5),
+  estimatedValue: real("estimated_value"),
+  status: text("status").default("open"),
+  assignedTo: text("assigned_to"),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
-// ─── Search History ───
-export const searchHistory = sqliteTable("search_history", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  userId: integer("userId"),
-  query: text("query").notNull(),
+// ============================================================
+// Providers & Polling
+// ============================================================
+
+export const providerRegistry = sqliteTable("provider_registry", {
+  providerId: text("provider_id").primaryKey(),
+  providerName: text("provider_name").notNull(),
+  sourceType: text("source_type").notNull(),
+  sourceUrl: text("source_url"),
+  apiEndpoint: text("api_endpoint"),
+  apiKeyEnv: text("api_key_env"),
+  cronExpression: text("cron_expression").default("0 6 * * *"),
+  isActive: integer("is_active", { mode: "boolean" }).default(true),
+  healthStatus: text("health_status").default("healthy"),
+  lastRunAt: integer("last_run_at", { mode: "timestamp" }),
+  nextRunAt: integer("next_run_at", { mode: "timestamp" }),
+  recordsFetchedTotal: integer("records_fetched_total").default(0),
+  recordsIngestedTotal: integer("records_ingested_total").default(0),
+  failureCount: integer("failure_count").default(0),
+  successRate: real("success_rate").default(1.0),
+  avgLatencyMs: integer("avg_latency_ms").default(0),
+  metadata: text("metadata"),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+export const providerPollingSchedule = sqliteTable("provider_polling_schedule", {
+  id: text("id").primaryKey(),
+  providerId: text("provider_id").notNull(),
+  cronExpression: text("cron_expression").default("0 6 * * *"),
+  timezone: text("timezone").default("America/New_York"),
+  isEnabled: integer("is_enabled", { mode: "boolean" }).default(true),
+  lastTriggeredAt: integer("last_triggered_at", { mode: "timestamp" }),
+  nextTriggerAt: integer("next_trigger_at", { mode: "timestamp" }),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+export const circuitBreaker = sqliteTable("circuit_breaker", {
+  id: text("id").primaryKey(),
+  providerId: text("provider_id").notNull(),
+  failureCount: integer("failure_count").default(0),
+  lastFailureAt: integer("last_failure_at", { mode: "timestamp" }),
+  isOpen: integer("is_open", { mode: "boolean" }).default(false),
+  openedAt: integer("opened_at", { mode: "timestamp" }),
+  cooldownMs: integer("cooldown_ms").default(300000),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+export const ingestionRuns = sqliteTable("ingestion_runs", {
+  id: text("id").primaryKey(),
+  providerId: text("provider_id").notNull(),
+  startedAt: integer("started_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  endedAt: integer("ended_at", { mode: "timestamp" }),
+  recordsFetched: integer("records_fetched").default(0),
+  recordsCreated: integer("records_created").default(0),
+  recordsUpdated: integer("records_updated").default(0),
+  recordsSkipped: integer("records_skipped").default(0),
+  recordsFailed: integer("records_failed").default(0),
+  totalLatencyMs: integer("total_latency_ms").default(0),
+  status: text("status", { enum: ["running", "success", "partial", "failed"] }).default("running"),
+  errorMessage: text("error_message"),
+  logOutput: text("log_output"),
+});
+
+// ============================================================
+// Watchlists
+// ============================================================
+
+export const watchlists = sqliteTable("watchlists", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
   filters: text("filters"),
-  resultCount: integer("resultCount").default(0),
-  clickedResults: text("clickedResults"),
-  sessionId: text("sessionId"),
-  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  provenance: text("provenance").default("SEED"),
+  isActive: integer("is_active", { mode: "boolean" }).default(true),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
-// ─── Analytics Events ───
-export const analyticsEvents = sqliteTable("analytics_events", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  userId: integer("userId"),
-  eventType: text("eventType").notNull(),
-  eventData: text("eventData"),
-  pageUrl: text("pageUrl"),
-  sessionId: text("sessionId"),
-  ipAddress: text("ipAddress"),
-  userAgent: text("userAgent"),
-  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  provenance: text("provenance").default("SEED"),
+export const watchlistItems = sqliteTable("watchlist_items", {
+  id: text("id").primaryKey(),
+  watchlistId: text("watchlist_id").notNull(),
+  signalId: text("signal_id").notNull(),
+  notes: text("notes"),
+  status: text("status").default("active"),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
-// ─── Audit Log ───
-export const auditLog = sqliteTable("audit_log", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  userId: integer("userId"),
-  action: text("action").notNull(),
-  resourceType: text("resourceType"),
-  resourceId: text("resourceId"),
-  details: text("details"),
-  ipAddress: text("ipAddress"),
-  userAgent: text("userAgent"),
-  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  provenance: text("provenance").default("SEED"),
-});
+// ============================================================
+// Billing & Subscriptions
+// ============================================================
 
-// ─── Subscriptions ───
 export const subscriptions = sqliteTable("subscriptions", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  userId: integer("userId").notNull(),
-  stripeSubscriptionId: text("stripeSubscriptionId").notNull().unique(),
-  stripePriceId: text("stripePriceId").notNull(),
-  stripeCustomerId: text("stripeCustomerId").notNull(),
-  status: text("status").notNull(),
-  currentPeriodStart: integer("currentPeriodStart", { mode: "timestamp" }),
-  currentPeriodEnd: integer("currentPeriodEnd", { mode: "timestamp" }),
-  cancelAtPeriodEnd: integer("cancelAtPeriodEnd", { mode: "boolean" }).default(false),
-  canceledAt: integer("canceledAt", { mode: "timestamp" }),
-  plan: text("plan").default("starter"),
-  quantity: integer("quantity").default(1),
-  metadata: text("metadata"),
-  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  updatedAt: integer("updatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  provenance: text("provenance").default("SEED"),
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  orgId: text("org_id"),
+  stripeCustomerId: text("stripe_customer_id"),
+  stripeSubscriptionId: text("stripe_subscription_id"),
+  stripePriceId: text("stripe_price_id"),
+  plan: text("plan", { enum: ["free", "starter", "pro", "business", "enterprise"] }).default("free"),
+  status: text("status", { enum: ["active", "canceled", "past_due", "trialing"] }).default("active"),
+  currentPeriodStart: integer("current_period_start", { mode: "timestamp" }),
+  currentPeriodEnd: integer("current_period_end", { mode: "timestamp" }),
+  cancelAtPeriodEnd: integer("cancel_at_period_end", { mode: "boolean" }).default(false),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
-// ─── Invoices ───
 export const invoices = sqliteTable("invoices", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  userId: integer("userId").notNull(),
-  stripeInvoiceId: text("stripeInvoiceId").notNull().unique(),
-  stripeSubscriptionId: text("stripeSubscriptionId"),
-  amount: real("amount").notNull(),
+  id: text("id").primaryKey(),
+  subscriptionId: text("subscription_id").notNull(),
+  stripeInvoiceId: text("stripe_invoice_id"),
+  amount: integer("amount"),
   currency: text("currency").default("usd"),
-  status: text("status").notNull(),
-  pdfUrl: text("pdfUrl"),
-  hostedInvoiceUrl: text("hostedInvoiceUrl"),
-  invoiceNumber: text("invoiceNumber"),
-  description: text("description"),
-  periodStart: integer("periodStart", { mode: "timestamp" }),
-  periodEnd: integer("periodEnd", { mode: "timestamp" }),
-  metadata: text("metadata"),
-  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  updatedAt: integer("updatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  provenance: text("provenance").default("SEED"),
+  status: text("status", { enum: ["draft", "open", "paid", "uncollectible", "void"] }).default("open"),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
-// ─── Feature Flags ───
-export const featureFlags = sqliteTable("feature_flags", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  name: text("name").notNull().unique(),
-  description: text("description"),
-  enabled: integer("enabled", { mode: "boolean" }).default(false),
-  rolloutPercentage: integer("rolloutPercentage").default(0),
-  allowedUsers: text("allowedUsers"),
-  allowedOrgs: text("allowedOrgs"),
-  metadata: text("metadata"),
-  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  updatedAt: integer("updatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  provenance: text("provenance").default("SEED"),
-});
+// ============================================================
+// Telemetry
+// ============================================================
 
-// ─── Counties ───
-export const counties = sqliteTable("counties", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  name: text("name").notNull(),
-  state: text("state").notNull(),
-  fipsCode: text("fipsCode").unique(),
-  population: integer("population"),
-  medianIncome: real("medianIncome"),
-  lat: real("lat"),
-  lng: real("lng"),
-  boundaryGeojson: text("boundaryGeojson"),
+export const telemetryEvents = sqliteTable("telemetry_events", {
+  id: text("id").primaryKey(),
+  eventType: text("event_type").notNull(),
+  endpoint: text("endpoint"),
+  durationMs: integer("duration_ms"),
+  error: integer("error", { mode: "boolean" }).default(false),
+  userId: text("user_id"),
   metadata: text("metadata"),
-  isActive: integer("isActive", { mode: "boolean" }).default(true),
-  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  updatedAt: integer("updatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  provenance: text("provenance").default("SEED"),
-});
-
-// ─── Learning Models ───
-export const learningModels = sqliteTable("learning_models", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  name: text("name").notNull(),
-  modelType: text("modelType").notNull(),
-  version: text("version").notNull(),
-  description: text("description"),
-  trainingDataSize: integer("trainingDataSize"),
-  accuracy: real("accuracy"),
-  precision: real("precision"),
-  recall: real("recall"),
-  f1Score: real("f1Score"),
-  trainingStartedAt: integer("trainingStartedAt", { mode: "timestamp" }),
-  trainingCompletedAt: integer("trainingCompletedAt", { mode: "timestamp" }),
-  deploymentStatus: text("deploymentStatus").default("draft"),
-  deployedAt: integer("deployedAt", { mode: "timestamp" }),
-  retiredAt: integer("retiredAt", { mode: "timestamp" }),
-  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
