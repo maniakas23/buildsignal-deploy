@@ -61,7 +61,7 @@ function getTypeBadgeClass(type: string): string {
   if (t.includes("surge")) return "bg-accent-indigo/10 text-accent-indigo border-accent-indigo/20";
   if (t.includes("zoning")) return "bg-accent-amber/10 text-accent-amber border-accent-amber/20";
   if (t.includes("utility")) return "bg-accent-teal/10 text-accent-teal border-accent-teal/20";
-  if (t.includes("project")) return "bg-[#0B1F33]/10 text-[#0B1F33] border-[#0B1F33]/20";
+  if (t.includes("project")) return "bg-[#0B1F33]/10 text-[var(--bs-text-primary)] border-[#0B1F33]/20";
   return "bg-ink-tertiary/10 text-ink-tertiary border-ink-tertiary/20";
 }
 
@@ -79,7 +79,7 @@ function getTypeBgClass(type: string): string {
   if (t.includes("surge")) return "bg-accent-indigo/5 text-accent-indigo";
   if (t.includes("zoning")) return "bg-accent-amber/5 text-accent-amber";
   if (t.includes("utility")) return "bg-accent-teal/5 text-accent-teal";
-  if (t.includes("project")) return "bg-[#0B1F33]/5 text-[#0B1F33]";
+  if (t.includes("project")) return "bg-[#0B1F33]/5 text-[var(--bs-text-primary)]";
   return "bg-ink-tertiary/5 text-ink-tertiary";
 }
 
@@ -100,7 +100,7 @@ export default function AlertsPage() {
     },
   });
 
-  const markAllReadMutation = trpc.notification.markAllRead.useMutation({
+  const markAllReadMutation = trpc.stripe.markAllRead.useMutation({
     onSuccess: () => {
       utils.notification.history.invalidate();
     },
@@ -278,103 +278,20 @@ export default function AlertsPage() {
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-canvas flex items-center justify-center">
               <AlertTriangle className="w-7 h-7 text-accent-amber" />
             </div>
-            <p className="text-ink-secondary font-medium mb-1">
+            <p className="text-lg font-medium text-ink-primary mb-2">
               Failed to load alerts
             </p>
-            <p className="text-sm text-ink-tertiary max-w-sm mx-auto mb-4">
-              {error.message || "Something went wrong while fetching your notifications."}
+            <p className="text-sm text-ink-tertiary mb-4 max-w-md mx-auto">
+              {error.message || "An unexpected error occurred"}
             </p>
             <Button
               variant="outline"
-              size="sm"
               onClick={() => refetch()}
               className="border-border text-ink-secondary hover:text-accent-indigo hover:border-accent-indigo/40"
             >
               <RotateCcw className="w-4 h-4 mr-1.5" />
-              Retry
+              Try Again
             </Button>
-          </div>
-        )}
-
-        {/* Alert Feed */}
-        {!isLoading && !error && filteredItems.length > 0 && (
-          <div className="space-y-4">
-            {filteredItems.map((notification) => {
-              const isUnread = !notification.read;
-              const typeBadgeClass = getTypeBadgeClass(notification.type);
-              const typeBgClass = getTypeBgClass(notification.type);
-              const typeIcon = getTypeIcon(notification.type);
-              const isMarkingThis =
-                markReadMutation.isPending &&
-                markReadMutation.variables?.id === notification.id;
-
-              return (
-                <Card
-                  key={notification.id}
-                  className={`bg-surface border-border transition-all hover:shadow-sm ${
-                    isUnread ? "border-l-4 border-l-accent-indigo" : ""
-                  }`}
-                >
-                  <CardContent className="p-0">
-                    <div className="flex items-start gap-4 p-5">
-                      {/* Type Icon */}
-                      <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${typeBgClass}`}
-                      >
-                        {typeIcon}
-                      </div>
-
-                      {/* Content */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1 flex-wrap">
-                          <Badge
-                            variant="outline"
-                            className={`text-xs font-medium px-2 py-0.5 ${typeBadgeClass}`}
-                          >
-                            {notification.type}
-                          </Badge>
-                          {isUnread && (
-                            <span className="w-2 h-2 rounded-full bg-accent-indigo" />
-                          )}
-                        </div>
-                        <h3 className="text-sm font-semibold text-ink-primary mb-1">
-                          {notification.title}
-                        </h3>
-                        <p className="text-sm text-ink-secondary leading-relaxed">
-                          {notification.message}
-                        </p>
-                        <div className="flex items-center gap-4 mt-2 text-xs text-ink-tertiary">
-                          <span className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            {relativeTime(notification.createdAt)}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Actions */}
-                      <div className="flex flex-col gap-2 shrink-0">
-                        {isUnread && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleMarkRead(notification.id)}
-                            disabled={isMarkingThis}
-                            className="text-accent-indigo hover:bg-accent-indigo/10 h-8 px-2"
-                          >
-                            {isMarkingThis ? (
-                              <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                            ) : (
-                              <Eye className="w-4 h-4 mr-1" />
-                            )}
-                            Mark Read
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
           </div>
         )}
 
@@ -384,13 +301,83 @@ export default function AlertsPage() {
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-canvas flex items-center justify-center">
               <Inbox className="w-7 h-7 text-ink-tertiary" />
             </div>
-            <p className="text-ink-secondary font-medium mb-1">
-              No alerts right now
+            <p className="text-lg font-medium text-ink-primary mb-2">
+              {activeTab === "Unread"
+                ? "No unread alerts"
+                : activeTab === "Read"
+                  ? "No read alerts"
+                  : "No alerts yet"}
             </p>
-            <p className="text-sm text-ink-tertiary max-w-sm mx-auto">
-              We&apos;ll notify you when new activity is detected in your monitored
-              areas.
+            <p className="text-sm text-ink-tertiary max-w-md mx-auto">
+              {activeTab === "Unread"
+                ? "You're all caught up! We'll notify you when new activity is detected."
+                : activeTab === "Read"
+                  ? "Read alerts will appear here once you've marked them."
+                  : "You'll be notified when activity is detected in your monitored counties and watchlists."}
             </p>
+          </div>
+        )}
+
+        {/* Alert List */}
+        {!isLoading && !error && filteredItems.length > 0 && (
+          <div className="space-y-4">
+            {filteredItems.map((alert) => (
+              <Card
+                key={alert.id}
+                className={`bg-surface border-border transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md cursor-pointer ${
+                  !alert.read
+                    ? "border-l-4 border-l-accent-indigo"
+                    : ""
+                }`}
+                onClick={() => !alert.read && handleMarkRead(alert.id)}
+              >
+                <CardContent className="p-5">
+                  <div className="flex items-start gap-4">
+                    <div
+                      className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${getTypeBgClass(
+                        alert.type
+                      )}`}
+                    >
+                      {getTypeIcon(alert.type)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <Badge
+                          variant="outline"
+                          className={`text-[10px] ${getTypeBadgeClass(alert.type)}`}
+                        >
+                          {alert.type}
+                        </Badge>
+                        {!alert.read && (
+                          <span className="w-2 h-2 rounded-full bg-accent-indigo" />
+                        )}
+                      </div>
+                      <h3 className="text-sm font-semibold text-ink-primary mb-1">
+                        {alert.title}
+                      </h3>
+                      <p className="text-sm text-ink-secondary leading-relaxed mb-2">
+                        {alert.message}
+                      </p>
+                      <div className="flex items-center gap-4 text-xs text-ink-tertiary">
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {relativeTime(alert.createdAt)}
+                        </span>
+                        {alert.link && (
+                          <a
+                            href={alert.link}
+                            className="text-accent-indigo hover:underline"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            View Details
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         )}
       </div>
