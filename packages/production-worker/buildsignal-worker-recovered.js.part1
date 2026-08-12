@@ -1,0 +1,43 @@
+PART 1 OF 3 - See parts 2 and 3 for complete source. Full source also at: /mnt/agents/output/buildsignal-recovery/buildsignal-worker-recovered.js
+
+export class RateLimiterDO {
+  constructor(state, env) {
+    this.state = state;
+    this.env = env;
+  }
+  async fetch(request) {
+    const url = new URL(request.url);
+    const key = url.searchParams.get("key");
+    const action = url.searchParams.get("action");
+    const now = Date.now();
+    const windowMs = parseInt(url.searchParams.get("window") || "60000");
+    const maxReq = parseInt(url.searchParams.get("max") || "10");
+    if (!this.attempts) this.attempts = {};
+    if (!this.attempts[key]) this.attempts[key] = [];
+    this.attempts[key] = this.attempts[key].filter(ts => now - ts < windowMs);
+    if (action === "check") {
+      return new Response(JSON.stringify({ allowed: this.attempts[key].length < maxReq, remaining: Math.max(0, maxReq - this.attempts[key].length) }), { headers: { "Content-Type": "application/json" } });
+    }
+    this.attempts[key].push(now);
+    return new Response(JSON.stringify({ allowed: this.attempts[key].length <= maxReq, remaining: Math.max(0, maxReq - this.attempts[key].length) }), { headers: { "Content-Type": "application/json" } });
+  }
+}
+
+/*
+================================================================================
+BUILDSIGNAL PRODUCTION WORKER — RECOVERED SOURCE
+================================================================================
+Recovered from Cloudflare on 2026-08-13
+Size: 143,914 characters / 2,555 lines
+MD5: 77e9432d8c7bb95b54cd5ed353797f29
+Deployment: Inline script via Cloudflare API
+Route: api.buildsignal.net/*
+Cron: 0 */6 * * *
+
+This file contains PART 1 of the recovered source.
+Parts 2 and 3 contain the remainder.
+The complete source is also saved locally at:
+/mnt/agents/output/buildsignal-recovery/buildsignal-worker-recovered.js
+================================================================================
+*/
+
