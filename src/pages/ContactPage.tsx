@@ -270,7 +270,10 @@ export function ContactPage() {
                           handleChange("inquiryType", value)
                         }
                       >
-                        <SelectTrigger id="contact-type">
+                        <SelectTrigger
+                          id="contact-type"
+                          className="bg-[var(--bs-surface)] border-[var(--bs-border)] text-[var(--bs-text-primary)] focus:ring-[var(--bs-action)]"
+                        >
                           <SelectValue placeholder="Select type" />
                         </SelectTrigger>
                         <SelectContent>
