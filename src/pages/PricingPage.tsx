@@ -26,7 +26,7 @@ import { cn } from "@/lib/utils";
 interface Plan {
   id: string;
   name: string;
-  price: number;
+  price: number | null;
   interval: string;
   description: string;
   features: string[];
@@ -89,7 +89,7 @@ const defaultPlans: Plan[] = [
   {
     id: "enterprise",
     name: "Enterprise",
-    price: 0,
+    price: null,
     interval: "custom",
     description: "Tailored deployments for large enterprises with custom data needs.",
     features: [
@@ -211,13 +211,13 @@ export function PricingPage() {
 
   const plans = (config.data?.plans?.length ? config.data.plans : defaultPlans) as Plan[];
 
-  const getAnnualPrice = (price: number) => {
-    if (price === 0) return 0;
+  const getAnnualPrice = (price: number | null) => {
+    if (price === null || price === 0) return 0;
     return Math.round(price * 12 * 0.8);
   };
 
-  const getPriceDisplay = (plan: { price: number; interval: string }) => {
-    if (plan.price === 0) return { display: "Custom", sub: "" };
+  const getPriceDisplay = (plan: { price: number | null; interval: string }) => {
+    if (plan.price === null || plan.price === 0) return { display: "Custom", sub: "" };
     if (billingCycle === "annual") {
       const annual = getAnnualPrice(plan.price);
       return {
@@ -240,16 +240,16 @@ export function PricingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto py-16 px-4">
+    <div className="min-h-screen bg-[var(--bs-canvas)]">
+      <div className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <Badge variant="secondary" className="mb-4">
+          <Badge variant="secondary" className="mb-4 bg-[var(--bs-surface)] text-[var(--bs-text-secondary)] border-[var(--bs-border)]">
             <BadgeCheck className="h-3 w-3 mr-1" />
             14-Day Money-Back Guarantee
           </Badge>
-          <h1 className="text-4xl font-bold mb-4">Simple, Transparent Pricing</h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <h1 className="text-4xl font-bold mb-4 text-[var(--bs-text-primary)]">Simple, Transparent Pricing</h1>
+          <p className="text-xl text-[var(--bs-text-secondary)] max-w-2xl mx-auto">
             Choose the plan that fits your intelligence needs. All plans include a 14-day free trial.
           </p>
         </div>
@@ -260,13 +260,13 @@ export function PricingPage() {
             value={billingCycle}
             onValueChange={(v) => setBillingCycle(v as "monthly" | "annual")}
           >
-            <TabsList className="bg-muted">
-              <TabsTrigger value="monthly">Monthly</TabsTrigger>
-              <TabsTrigger value="annual" className="relative">
+            <TabsList className="bg-[var(--bs-surface)] border border-[var(--bs-border)]">
+              <TabsTrigger value="monthly" className="data-[state=active]:bg-[var(--bs-action)] data-[state=active]:text-white">Monthly</TabsTrigger>
+              <TabsTrigger value="annual" className="relative data-[state=active]:bg-[var(--bs-action)] data-[state=active]:text-white">
                 Annual
                 <Badge
                   variant="default"
-                  className="absolute -top-2 -right-2 bg-green-500 text-white text-[10px] px-1.5 py-0"
+                  className="absolute -top-2 -right-2 bg-[var(--bs-intelligence)] text-white text-[10px] px-1.5 py-0"
                 >
                   Save 20%
                 </Badge>
@@ -280,6 +280,7 @@ export function PricingPage() {
           {plans.map((plan) => {
             const priceInfo = getPriceDisplay(plan);
             const isHighlighted = plan.highlighted;
+            const isCustomPrice = plan.price === null || plan.price === 0;
 
             return (
               <div
@@ -287,44 +288,44 @@ export function PricingPage() {
                 className={cn(
                   "relative p-6 border rounded-xl transition-all hover:shadow-lg",
                   isHighlighted
-                    ? "border-primary ring-2 ring-primary scale-105 bg-card shadow-md"
-                    : "border-border bg-card"
+                    ? "border-[var(--bs-action)] ring-2 ring-[var(--bs-action)] scale-105 bg-[var(--bs-surface)] shadow-md"
+                    : "border-[var(--bs-border)] bg-[var(--bs-surface)]"
                 )}
               >
                 {isHighlighted && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <Badge className="bg-primary text-primary-foreground px-3 py-1">
+                    <Badge className="bg-[var(--bs-action)] text-white px-3 py-1">
                       <Star className="h-3 w-3 mr-1 fill-current" />
                       Most Popular
                     </Badge>
                   </div>
                 )}
 
-                <h3 className="text-lg font-semibold mt-2">{plan.name}</h3>
+                <h3 className="text-lg font-semibold mt-2 text-[var(--bs-text-primary)]">{plan.name}</h3>
                 <div className="mt-4">
-                  <span className="text-3xl font-bold">{priceInfo.display}</span>
+                  <span className="text-3xl font-bold text-[var(--bs-text-primary)]">{priceInfo.display}</span>
                   {priceInfo.sub && (
-                    <span className="text-muted-foreground text-sm ml-1">
+                    <span className="text-[var(--bs-text-tertiary)] text-sm ml-1">
                       {priceInfo.sub}
                     </span>
                   )}
                 </div>
-                {billingCycle === "annual" && plan.price > 0 && (
-                  <p className="text-xs text-green-600 font-medium mt-1">
+                {billingCycle === "annual" && !isCustomPrice && (
+                  <p className="text-xs text-[var(--bs-intelligence)] font-medium mt-1">
                     ${getAnnualPrice(plan.price)} billed annually
                   </p>
                 )}
-                <p className="mt-2 text-sm text-muted-foreground">{plan.description}</p>
+                <p className="mt-2 text-sm text-[var(--bs-text-secondary)]">{plan.description}</p>
 
                 <ul className="mt-4 space-y-2">
                   {plan.features.slice(0, 5).map((feature: string) => (
-                    <li key={feature} className="flex items-center gap-2 text-sm">
-                      <Check className="h-4 w-4 text-green-500 shrink-0" />
+                    <li key={feature} className="flex items-center gap-2 text-sm text-[var(--bs-text-secondary)]">
+                      <Check className="h-4 w-4 text-[var(--bs-intelligence)] shrink-0" />
                       <span className="text-sm">{feature}</span>
                     </li>
                   ))}
                   {plan.features.length > 5 && (
-                    <li className="text-xs text-muted-foreground pl-6">
+                    <li className="text-xs text-[var(--bs-text-tertiary)] pl-6">
                       +{plan.features.length - 5} more features
                     </li>
                   )}
@@ -335,8 +336,8 @@ export function PricingPage() {
                   className={cn(
                     "mt-6 w-full rounded-lg px-4 py-2.5 text-sm font-medium transition-colors",
                     isHighlighted
-                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                      : "border border-input bg-background hover:bg-accent hover:text-accent-foreground"
+                      ? "bg-[var(--bs-action)] text-white hover:opacity-90"
+                      : "border border-[var(--bs-border)] bg-[var(--bs-canvas)] text-[var(--bs-text-primary)] hover:bg-[var(--bs-surface-hover)]"
                   )}
                 >
                   {plan.cta}
@@ -350,7 +351,7 @@ export function PricingPage() {
         <div className="text-center mb-10">
           <button
             onClick={() => navigate("/demo")}
-            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+            className="inline-flex items-center gap-2 text-sm text-[var(--bs-text-secondary)] hover:text-[var(--bs-action)] transition-colors"
           >
             <MessageSquare className="h-4 w-4" />
             Not sure which plan?{" "}
@@ -362,21 +363,21 @@ export function PricingPage() {
         </div>
 
         {/* Trust Signals */}
-        <div className="flex flex-wrap items-center justify-center gap-6 mb-16 text-sm text-muted-foreground">
+        <div className="flex flex-wrap items-center justify-center gap-6 mb-16 text-sm text-[var(--bs-text-secondary)]">
           <div className="flex items-center gap-2">
-            <Lock className="h-4 w-4 text-green-500" />
+            <Lock className="h-4 w-4 text-[var(--bs-intelligence)]" />
             <span>SSL Secure</span>
           </div>
           <div className="flex items-center gap-2">
-            <CreditCard className="h-4 w-4 text-green-500" />
+            <CreditCard className="h-4 w-4 text-[var(--bs-intelligence)]" />
             <span>PCI Compliant</span>
           </div>
           <div className="flex items-center gap-2">
-            <Shield className="h-4 w-4 text-green-500" />
+            <Shield className="h-4 w-4 text-[var(--bs-intelligence)]" />
             <span>No hidden fees</span>
           </div>
           <div className="flex items-center gap-2">
-            <BadgeCheck className="h-4 w-4 text-green-500" />
+            <BadgeCheck className="h-4 w-4 text-[var(--bs-intelligence)]" />
             <span>14-Day Money-Back Guarantee</span>
           </div>
         </div>
@@ -384,18 +385,18 @@ export function PricingPage() {
         {/* Comparison Table */}
         {plans.length > 0 && (
           <div className="mb-16">
-            <h2 className="text-2xl font-bold text-center mb-8">Compare All Plans</h2>
-            <div className="overflow-x-auto rounded-xl border border-border">
+            <h2 className="text-2xl font-bold text-center mb-8 text-[var(--bs-text-primary)]">Compare All Plans</h2>
+            <div className="overflow-x-auto rounded-xl border border-[var(--bs-border)]">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-muted/50 border-b border-border">
-                    <th className="text-left p-4 font-semibold">Feature</th>
+                  <tr className="bg-[var(--bs-surface-hover)] border-b border-[var(--bs-border)]">
+                    <th className="text-left p-4 font-semibold text-[var(--bs-text-primary)]">Feature</th>
                     {plans.map((plan) => (
                       <th
                         key={plan.id}
                         className={cn(
                           "p-4 text-center font-semibold",
-                          plan.highlighted && "bg-primary/5 text-primary"
+                          plan.highlighted && "bg-[var(--bs-action)]/10 text-[var(--bs-action)]"
                         )}
                       >
                         {plan.name}
@@ -408,13 +409,13 @@ export function PricingPage() {
                     <tr
                       key={feature.key}
                       className={cn(
-                        "border-b border-border",
-                        idx % 2 === 0 ? "bg-background" : "bg-muted/20"
+                        "border-b border-[var(--bs-border)]",
+                        idx % 2 === 0 ? "bg-[var(--bs-canvas)]" : "bg-[var(--bs-surface)]/50"
                       )}
                     >
-                      <td className="p-4 font-medium">
+                      <td className="p-4 font-medium text-[var(--bs-text-primary)]">
                         <div className="flex items-center gap-2">
-                          <feature.icon className="h-4 w-4 text-muted-foreground" />
+                          <feature.icon className="h-4 w-4 text-[var(--bs-text-tertiary)]" />
                           {feature.label}
                         </div>
                       </td>
@@ -423,7 +424,7 @@ export function PricingPage() {
                           key={plan.id}
                           className={cn(
                             "p-4 text-center",
-                            plan.highlighted && "bg-primary/5"
+                            plan.highlighted && "bg-[var(--bs-action)]/5"
                           )}
                         >
                           <FeatureValue plan={plan} featureKey={feature.key} />
@@ -439,29 +440,29 @@ export function PricingPage() {
 
         {/* FAQ Section */}
         <div className="max-w-3xl mx-auto mb-16">
-          <h2 className="text-2xl font-bold text-center mb-8 flex items-center justify-center gap-2">
-            <HelpCircle className="h-6 w-6 text-primary" />
+          <h2 className="text-2xl font-bold text-center mb-8 flex items-center justify-center gap-2 text-[var(--bs-text-primary)]">
+            <HelpCircle className="h-6 w-6 text-[var(--bs-action)]" />
             Frequently Asked Questions
           </h2>
           <div className="space-y-3">
             {faqs.map((faq, idx) => (
               <div
                 key={idx}
-                className="border border-border rounded-lg overflow-hidden"
+                className="border border-[var(--bs-border)] rounded-lg overflow-hidden bg-[var(--bs-surface)]"
               >
                 <button
                   onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                  className="w-full flex items-center justify-between p-4 text-left hover:bg-muted/50 transition-colors"
+                  className="w-full flex items-center justify-between p-4 text-left hover:bg-[var(--bs-surface-hover)] transition-colors"
                 >
-                  <span className="font-medium">{faq.question}</span>
+                  <span className="font-medium text-[var(--bs-text-primary)]">{faq.question}</span>
                   {openFaq === idx ? (
-                    <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <ChevronUp className="h-4 w-4 text-[var(--bs-text-tertiary)] shrink-0" />
                   ) : (
-                    <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <ChevronDown className="h-4 w-4 text-[var(--bs-text-tertiary)] shrink-0" />
                   )}
                 </button>
                 {openFaq === idx && (
-                  <div className="px-4 pb-4 text-muted-foreground text-sm">
+                  <div className="px-4 pb-4 text-[var(--bs-text-secondary)] text-sm">
                     {faq.answer}
                   </div>
                 )}
@@ -471,25 +472,25 @@ export function PricingPage() {
         </div>
 
         {/* Enterprise CTA */}
-        <div className="bg-muted/30 rounded-xl p-8 text-center space-y-4">
-          <div className="flex items-center justify-center gap-2 text-muted-foreground">
+        <div className="bg-[var(--bs-surface)] rounded-xl p-8 text-center space-y-4 border border-[var(--bs-border)]">
+          <div className="flex items-center justify-center gap-2 text-[var(--bs-text-secondary)]">
             <Building2 className="h-5 w-5" />
             <span className="font-medium">Need a custom solution?</span>
           </div>
-          <p className="text-sm text-muted-foreground max-w-md mx-auto">
+          <p className="text-sm text-[var(--bs-text-secondary)] max-w-md mx-auto">
             Contact our sales team for volume pricing, custom integrations, white-label reports, and dedicated support.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
             <button
               onClick={() => navigate("/demo")}
-              className="inline-flex items-center gap-2 rounded-lg bg-primary text-primary-foreground px-5 py-2.5 text-sm font-medium hover:bg-primary/90 transition-colors"
+              className="inline-flex items-center gap-2 rounded-lg bg-[var(--bs-action)] text-white px-5 py-2.5 text-sm font-medium hover:opacity-90 transition-colors"
             >
               Request a Demo
               <ArrowRight className="h-4 w-4" />
             </button>
             <button
               onClick={() => navigate("/contact")}
-              className="inline-flex items-center gap-2 rounded-lg border border-input bg-background px-5 py-2.5 text-sm font-medium hover:bg-accent transition-colors"
+              className="inline-flex items-center gap-2 rounded-lg border border-[var(--bs-border)] bg-[var(--bs-canvas)] px-5 py-2.5 text-sm font-medium hover:bg-[var(--bs-surface-hover)] transition-colors text-[var(--bs-text-primary)]"
             >
               Contact Sales
             </button>
