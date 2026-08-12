@@ -30,10 +30,10 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
 const planConfig: Record<string, { name: string; color: string; features: string[] }> = {
-  starter: { name: "Starter", color: "bg-[#6B7B8F]", features: ["1 county", "10 searches/mo", "1 report/mo"] },
-  scout: { name: "Scout", color: "bg-[#1F5EFF]", features: ["5 counties", "100 searches/mo", "10 reports/mo", "Email alerts"] },
-  professional: { name: "Professional", color: "bg-[#18A999]", features: ["20 counties", "500 searches/mo", "50 reports/mo", "API access"] },
-  business: { name: "Business", color: "bg-[#0B1F33]", features: ["Unlimited counties", "Unlimited searches", "Full API", "Priority support"] },
+  starter: { name: "Starter", color: "bg-[var(--bs-text-tertiary)]", features: ["1 county", "10 searches/mo", "1 report/mo"] },
+  scout: { name: "Scout", color: "bg-[var(--bs-action)]", features: ["5 counties", "100 searches/mo", "10 reports/mo", "Email alerts"] },
+  professional: { name: "Professional", color: "bg-[var(--bs-intelligence)]", features: ["20 counties", "500 searches/mo", "50 reports/mo", "API access"] },
+  business: { name: "Business", color: "bg-[var(--bs-text-primary)]", features: ["Unlimited counties", "Unlimited searches", "Full API", "Priority support"] },
   enterprise: { name: "Enterprise", color: "bg-[#FFD700]", features: ["Custom integrations", "Unlimited seats", "SLA guarantee"] },
 };
 
@@ -80,35 +80,35 @@ export default function SettingsPage() {
 
   if (authLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#F7F9FC]">
-        <Loader2 className="h-8 w-8 animate-spin text-[#1F5EFF]" />
+      <div className="flex items-center justify-center min-h-screen bg-[var(--bs-canvas)]">
+        <Loader2 className="h-8 w-8 animate-spin text-[var(--bs-action)]" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F7F9FC]">
+    <div className="min-h-screen bg-[var(--bs-canvas)]">
       <div className="max-w-5xl mx-auto p-6">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <Button
             variant="ghost"
             onClick={() => navigate("/dashboard")}
-            className="gap-2 text-[#0B1F33]"
+            className="gap-2 text-[var(--bs-text-primary)]"
           >
             <ArrowLeft className="h-4 w-4" />
             Back
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-[#0B1F33]">Settings</h1>
-            <p className="text-sm text-[#6B7B8F]">
+            <h1 className="text-2xl font-bold text-[var(--bs-text-primary)]">Settings</h1>
+            <p className="text-sm text-[var(--bs-text-tertiary)]">
               Manage your account, preferences, and billing
             </p>
           </div>
         </div>
 
         {savedMessage && (
-          <div className="mb-6 bg-[#18A999]/10 border border-[#18A999]/20 text-[#18A999] rounded-lg p-3 flex items-center gap-2 text-sm font-medium">
+          <div className="mb-6 bg-[var(--bs-intelligence)]/10 border border-[var(--bs-intelligence)]/20 text-[var(--bs-intelligence)] rounded-lg p-3 flex items-center gap-2 text-sm font-medium">
             <Check className="h-4 w-4" />
             Settings saved successfully
           </div>
@@ -118,16 +118,16 @@ export default function SettingsPage() {
           {/* Left Column */}
           <div className="lg:col-span-2 space-y-6">
             {/* Profile */}
-            <Card className="border-[#F5F5F5] shadow-sm">
+            <Card className="border-[var(--bs-surface-hover)] shadow-sm bg-[var(--bs-surface)]">
               <CardHeader>
-                <CardTitle className="text-lg text-[#0B1F33] flex items-center gap-2">
-                  <User className="h-5 w-5 text-[#1F5EFF]" />
+                <CardTitle className="text-lg text-[var(--bs-text-primary)] flex items-center gap-2">
+                  <User className="h-5 w-5 text-[var(--bs-action)]" />
                   Profile
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="settings-name" className="text-[#0B1F33]">
+                  <Label htmlFor="settings-name" className="text-[var(--bs-text-primary)]">
                     Full Name
                   </Label>
                   <Input
@@ -135,27 +135,27 @@ export default function SettingsPage() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Your name"
-                    className="text-[#0B1F33]"
+                    className="text-[var(--bs-text-primary)] bg-[var(--bs-canvas)] border-[var(--bs-border)]"
                   />
-                  <p className="text-xs text-[#6B7B8F]">
+                  <p className="text-xs text-[var(--bs-text-tertiary)]">
                     This is how your name will appear across the platform.
                   </p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="settings-email" className="text-[#0B1F33]">
+                  <Label htmlFor="settings-email" className="text-[var(--bs-text-primary)]">
                     Email
                   </Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B7B8F]" />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--bs-text-tertiary)]" />
                     <Input
                       id="settings-email"
                       value={user?.email || ""}
                       disabled
-                      className="pl-10 bg-[#F7F9FC] text-[#6B7B8F]"
+                      className="pl-10 bg-[var(--bs-canvas)] text-[var(--bs-text-tertiary)] border-[var(--bs-border)]"
                     />
                   </div>
-                  <p className="text-xs text-[#6B7B8F]">
+                  <p className="text-xs text-[var(--bs-text-tertiary)]">
                     Email cannot be changed. Contact support if needed.
                   </p>
                 </div>
@@ -163,24 +163,24 @@ export default function SettingsPage() {
             </Card>
 
             {/* Notification Preferences */}
-            <Card className="border-[#F5F5F5] shadow-sm">
+            <Card className="border-[var(--bs-surface-hover)] shadow-sm bg-[var(--bs-surface)]">
               <CardHeader>
-                <CardTitle className="text-lg text-[#0B1F33] flex items-center gap-2">
-                  <Bell className="h-5 w-5 text-[#1F5EFF]" />
+                <CardTitle className="text-lg text-[var(--bs-text-primary)] flex items-center gap-2">
+                  <Bell className="h-5 w-5 text-[var(--bs-action)]" />
                   Notification Preferences
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 {prefsLoading ? (
                   <div className="flex items-center justify-center py-4">
-                    <Loader2 className="h-5 w-5 animate-spin text-[#1F5EFF]" />
+                    <Loader2 className="h-5 w-5 animate-spin text-[var(--bs-action)]" />
                   </div>
                 ) : (
                   <>
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <Label className="text-[#0B1F33]">Email Notifications</Label>
-                        <p className="text-xs text-[#6B7B8F]">
+                        <Label className="text-[var(--bs-text-primary)]">Email Notifications</Label>
+                        <p className="text-xs text-[var(--bs-text-tertiary)]">
                           Receive alerts and updates via email
                         </p>
                       </div>
@@ -191,12 +191,12 @@ export default function SettingsPage() {
                       />
                     </div>
 
-                    <Separator className="bg-[#F5F5F5]" />
+                    <Separator className="bg-[var(--bs-border)]" />
 
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <Label className="text-[#0B1F33]">In-App Notifications</Label>
-                        <p className="text-xs text-[#6B7B8F]">
+                        <Label className="text-[var(--bs-text-primary)]">In-App Notifications</Label>
+                        <p className="text-xs text-[var(--bs-text-tertiary)]">
                           Show notifications inside the app
                         </p>
                       </div>
@@ -207,25 +207,25 @@ export default function SettingsPage() {
                       />
                     </div>
 
-                    <Separator className="bg-[#F5F5F5]" />
+                    <Separator className="bg-[var(--bs-border)]" />
 
                     <div className="space-y-2">
-                      <Label className="text-[#0B1F33]">Alert Frequency</Label>
+                      <Label className="text-[var(--bs-text-primary)]">Alert Frequency</Label>
                       <Select
                         value={prefs?.alertFrequency ?? "daily"}
                         onValueChange={handleFrequencyChange}
                         disabled={updatePrefs.isPending}
                       >
-                        <SelectTrigger className="w-[200px] border-[#E5E5E5]">
+                        <SelectTrigger className="w-[200px] border-[var(--bs-border)] bg-[var(--bs-canvas)]">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="bg-[var(--bs-surface)] border-[var(--bs-border)]">
                           <SelectItem value="realtime">Real-time</SelectItem>
                           <SelectItem value="daily">Daily Digest</SelectItem>
                           <SelectItem value="weekly">Weekly Summary</SelectItem>
                         </SelectContent>
                       </Select>
-                      <p className="text-xs text-[#6B7B8F]">
+                      <p className="text-xs text-[var(--bs-text-tertiary)]">
                         How often you want to receive non-urgent alerts
                       </p>
                     </div>
@@ -235,18 +235,18 @@ export default function SettingsPage() {
             </Card>
 
             {/* Security */}
-            <Card className="border-[#F5F5F5] shadow-sm">
+            <Card className="border-[var(--bs-surface-hover)] shadow-sm bg-[var(--bs-surface)]">
               <CardHeader>
-                <CardTitle className="text-lg text-[#0B1F33] flex items-center gap-2">
-                  <Shield className="h-5 w-5 text-[#1F5EFF]" />
+                <CardTitle className="text-lg text-[var(--bs-text-primary)] flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-[var(--bs-action)]" />
                   Security
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-[#0B1F33]">Password</p>
-                    <p className="text-xs text-[#6B7B8F]">
+                    <p className="text-sm font-medium text-[var(--bs-text-primary)]">Password</p>
+                    <p className="text-xs text-[var(--bs-text-tertiary)]">
                       Manage your account password
                     </p>
                   </div>
@@ -254,7 +254,7 @@ export default function SettingsPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => navigate("/forgot-password")}
-                    className="border-[#E5E5E5] text-[#0B1F33]"
+                    className="border-[var(--bs-border)] text-[var(--bs-text-primary)] hover:bg-[var(--bs-surface-hover)]"
                   >
                     Change Password
                   </Button>
@@ -266,10 +266,10 @@ export default function SettingsPage() {
           {/* Right Column */}
           <div className="space-y-6">
             {/* Plan Info */}
-            <Card className="border-[#F5F5F5] shadow-sm">
+            <Card className="border-[var(--bs-surface-hover)] shadow-sm bg-[var(--bs-surface)]">
               <CardHeader>
-                <CardTitle className="text-lg text-[#0B1F33] flex items-center gap-2">
-                  <CreditCard className="h-5 w-5 text-[#1F5EFF]" />
+                <CardTitle className="text-lg text-[var(--bs-text-primary)] flex items-center gap-2">
+                  <CreditCard className="h-5 w-5 text-[var(--bs-action)]" />
                   Your Plan
                 </CardTitle>
               </CardHeader>
@@ -279,10 +279,10 @@ export default function SettingsPage() {
                     <Building2 className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <p className="font-semibold text-[#0B1F33]">{planInfo.name}</p>
+                    <p className="font-semibold text-[var(--bs-text-primary)]">{planInfo.name}</p>
                     <Badge
                       variant="secondary"
-                      className="bg-[#F5F5F5] text-[#6B7B8F] text-[10px] mt-0.5"
+                      className="bg-[var(--bs-surface-hover)] text-[var(--bs-text-tertiary)] text-[10px] mt-0.5"
                     >
                       {currentPlan === "starter" ? "Free" : "Paid"}
                     </Badge>
@@ -291,15 +291,15 @@ export default function SettingsPage() {
 
                 <ul className="space-y-1.5">
                   {planInfo.features.map((feature) => (
-                    <li key={feature} className="flex items-center gap-2 text-xs text-[#0B1F33]">
-                      <Check className="h-3 w-3 text-[#18A999] shrink-0" />
+                    <li key={feature} className="flex items-center gap-2 text-xs text-[var(--bs-text-primary)]">
+                      <Check className="h-3 w-3 text-[var(--bs-intelligence)] shrink-0" />
                       {feature}
                     </li>
                   ))}
                 </ul>
 
                 <Button
-                  className="w-full bg-[#1F5EFF] hover:bg-[#1F5EFF]/90"
+                  className="w-full bg-[var(--bs-action)] hover:bg-[var(--bs-action)]/90"
                   onClick={() => navigate("/billing")}
                 >
                   Manage Billing
@@ -309,9 +309,9 @@ export default function SettingsPage() {
 
             {/* Usage Summary */}
             {usage && (
-              <Card className="border-[#F5F5F5] shadow-sm">
+              <Card className="border-[var(--bs-surface-hover)] shadow-sm bg-[var(--bs-surface)]">
                 <CardHeader>
-                  <CardTitle className="text-lg text-[#0B1F33]">Usage</CardTitle>
+                  <CardTitle className="text-lg text-[var(--bs-text-primary)]">Usage</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {[
@@ -321,16 +321,16 @@ export default function SettingsPage() {
                   ].map((item) => (
                     <div key={item.label}>
                       <div className="flex items-center justify-between text-xs mb-1">
-                        <span className="text-[#6B7B8F]">{item.label}</span>
-                        <span className="text-[#0B1F33] font-medium">
+                        <span className="text-[var(--bs-text-tertiary)]">{item.label}</span>
+                        <span className="text-[var(--bs-text-primary)] font-medium">
                           {item.limit >= 9999 ? "Unlimited" : `${item.used} / ${item.limit}`}
                         </span>
                       </div>
-                      <div className="h-1.5 bg-[#F5F5F5] rounded-full overflow-hidden">
+                      <div className="h-1.5 bg-[var(--bs-surface-hover)] rounded-full overflow-hidden">
                         <div
                           className={cn(
                             "h-full rounded-full transition-all",
-                            item.limit >= 9999 ? "w-full bg-[#18A999]" : "bg-[#1F5EFF]"
+                            item.limit >= 9999 ? "w-full bg-[var(--bs-intelligence)]" : "bg-[var(--bs-action)]"
                           )}
                           style={{
                             width: item.limit >= 9999 ? "100%" : `${Math.min((item.used / item.limit) * 100, 100)}%`,
