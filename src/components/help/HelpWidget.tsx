@@ -241,7 +241,7 @@ export function HelpWidget() {
                 <a href="mailto:support@buildsignal.net">
                   <Button
                     size="sm"
-                    className="w-full h-9 bg-[#0B1F33] hover:bg-[#0B1F33]/80 text-[#F7FAFC] border border-[rgba(255,255,255,0.06)]"
+                    className="w-full h-9 bg-[var(--bs-canvas)] hover:bg-[var(--bs-canvas)]/80 text-[#F7FAFC] border border-[rgba(255,255,255,0.06)]"
                   >
                     <Mail className="h-4 w-4 mr-2" />
                     Email Support
@@ -279,7 +279,7 @@ export function HelpWidget() {
           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6366F1] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B1117]
           ${isOpen ? "scale-0 opacity-0" : "scale-100 opacity-100 hover:scale-110"}
         `}
-        style={{ backgroundColor: "#0B1F33" }}
+        style={{ backgroundColor: "var(--bs-canvas)" }}
         aria-label={isOpen ? "Close help" : "Open help"}
         aria-expanded={isOpen}
       >
