@@ -66,8 +66,8 @@ module.exports = {
         "halogen-white": "#E8F4FD",
       },
       fontFamily: {
-        sans: ['Geist', 'Inter', system-ui, '-apple-system', 'sans-serif'],
-        mono: ['Geist Mono', ui-monospace, 'Cascadia Code', 'Source Code Pro', 'monospace'],
+        sans: ['Geist', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        mono: ['Geist Mono', 'ui-monospace', 'Cascadia Code', 'Source Code Pro', 'monospace'],
       },
       fontSize: {
         'display': ['60px', { lineHeight: '1.1', letterSpacing: '-1.5px', fontWeight: '700' }],
