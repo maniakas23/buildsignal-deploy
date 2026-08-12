@@ -200,9 +200,9 @@
   /* Typography utilities */
   .text-display { font-family: 'Tiempos Headline', Georgia, serif; font-weight: 300; line-height: 1.1; letter-spacing: -1.5px; }
   .text-hero    { font-family: 'Tiempos Headline', Georgia, serif; font-weight: 300; line-height: 1.05; letter-spacing: -2px; }
-  .text-body    { font-family: 'Geist'; system-ui, sans-serif; font-size: 18px; line-height: 1.6; }
-  .text-caption { font-family: 'Geist', system-ui, sans-serif; font-size: 14px; line-height: 1.5; color: var(--ink-tertiary); }
-  .text-micro  { font-family: 'Geist', system-ui, sans-serif; font-size: 12px; line-height: 1.4; }
+  .text-body    { font-family: 'Geist', 'system-ui', sans-serif; font-size: 18px; line-height: 1.6; }
+  .text-caption { font-family: 'Geist', 'system-ui', sans-serif; font-size: 14px; line-height: 1.5; color: var(--ink-tertiary); }
+  .text-micro   { font-family: 'Geist', 'system-ui', sans-serif; font-size: 12px; line-height: 1.4; }
   .font-mono    { font-family: 'JetBrains Mono', monospace; }
 
   /* Layout */
