@@ -7,6 +7,7 @@ import { appRouter } from "./router";
 import { createContext } from "./context";
 import { handleStripeWebhook } from "./stripe-router";
 import { getDbFromContext } from "./queries/connection";
+import { v1 } from "./v1-router";
 
 const app = new Hono();
 
@@ -30,6 +31,9 @@ app.use("/api/trpc/*", async (c) => {
     createContext: (opts) => createContext({ ...opts, env: c.env }),
   });
 });
+
+// V1 REST API — backward compatibility for external consumers
+app.route("/api/v1", v1);
 
 app.all("/api/*", (c) => c.json({ error: "Not Found" }, 404));
 

@@ -20,140 +20,365 @@ import {
 import { trpc } from "@/providers/trpc";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Footer } from "@/components/ui-custom/Footer";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
-interface Plan {
-  id: string;
-  name: string;
-  price: number | null;
-  interval: string;
-  description: string;
-  features: string[];
-  highlighted: boolean;
-  cta: string;
+export function PricingPage() {
+  const navigate = useNavigate();
+  const [expandedComparison, setExpandedComparison] = useState(false);
+
+  const { data: plansData } = trpc.billing.plans.useQuery();
+
+  const plans = plansData || [
+    {
+      id: "scout",
+      name: "Scout",
+      price: 49,
+      interval: "month",
+      description: "For individual sales professionals getting started",
+      features: ["3 counties", "10 alerts/day", "Email notifications", "Basic analytics"],
+    },
+    {
+      id: "pro",
+      name: "Pro",
+      price: 149,
+      interval: "month",
+      description: "For growing teams with territory coverage",
+      features: [
+        "10 counties",
+        "50 alerts/day",
+        "Email + SMS notifications",
+        "Advanced analytics",
+        "Watchlist (50 projects)",
+        "API access",
+      ],
+    },
+    {
+      id: "business",
+      name: "Business",
+      price: 399,
+      interval: "month",
+      description: "For organizations with multiple markets",
+      features: [
+        "Unlimited counties",
+        "Unlimited alerts",
+        "Priority support",
+        "Custom integrations",
+        "SSO",
+        "White-glove onboarding",
+      ],
+    },
+    {
+      id: "enterprise",
+      name: "Enterprise",
+      price: null,
+      interval: "custom",
+      description: "For large enterprises with custom requirements",
+      features: [
+        "Unlimited everything",
+        "Dedicated account manager",
+        "Custom data sources",
+        "SLA guarantees",
+        "On-premise option",
+      ],
+    },
+  ];
+
+  const getPriceDisplay = (plan: { price: number | null; interval: string }) => {
+    if (plan.price === null || plan.price === 0) return { display: "Custom", sub: "" };
+    if (plan.interval === "year") {
+      const monthly = Math.round(plan.price / 12);
+      return { display: `$${monthly}`, sub: `/mo (billed $${plan.price}/yr)` };
+    }
+    return { display: `$${plan.price}`, sub: "/month" };
+  };
+
+  const getAnnualPrice = (monthly: number) => Math.round(monthly * 12 * 0.85);
+
+  const comparisonFeatures = [
+    "counties",
+    "alerts",
+    "watchlist",
+    "api",
+    "analytics",
+    "sso",
+    "support",
+    "whiteglove",
+  ];
+
+  return (
+    <div className="space-y-10">
+      {/* Header */}
+      <div className="text-center space-y-4">
+        <h1 className="text-4xl font-bold tracking-tight">
+          Simple, transparent pricing
+        </h1>
+        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          Start free, upgrade when you're ready. No hidden fees, cancel anytime.
+        </p>
+      </div>
+
+      {/* Billing Toggle */}
+      <div className="flex justify-center">
+        <Tabs defaultValue="monthly" className="w-auto">
+          <TabsList>
+            <TabsTrigger value="monthly">Monthly</TabsTrigger>
+            <TabsTrigger value="annual">
+              Annual
+              <Badge variant="secondary" className="ml-2 text-xs">
+                Save 15%
+              </Badge>
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
+
+      {/* Plans */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {plans.map((plan) => {
+          const price = getPriceDisplay(plan as any);
+          const isEnterprise = plan.price === null;
+
+          return (
+            <Card
+              key={plan.id}
+              className={`relative flex flex-col ${
+                plan.id === "pro"
+                  ? "border-primary shadow-lg"
+                  : "border-border"
+              }`}
+            >
+              {plan.id === "pro" && (
+                <Badge
+                  variant="default"
+                  className="absolute -top-2 -right-2 bg-[#4ade80] text-[#081018] text-[10px] px-1.5 py-0 font-semibold"
+                >
+                  Popular
+                </Badge>
+              )}
+              <CardHeader className="pb-3">
+                <div className="text-sm font-medium text-muted-foreground">
+                  {plan.name}
+                </div>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-3xl font-bold">{price.display}</span>
+                  {price.sub && (
+                    <span className="text-sm text-muted-foreground">
+                      {price.sub}
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {plan.description}
+                </p>
+              </CardHeader>
+              <CardContent className="flex-1 flex flex-col">
+                <div className="space-y-2 mb-6 flex-1">
+                  {(plan as any).features.map((feature: string) => (
+                    <div key={feature} className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-[#4ade80] shrink-0" />
+                      <span className="text-sm text-[var(--bs-text-primary)]">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+                <Button
+                  className="w-full"
+                  variant={plan.id === "pro" ? "default" : "outline"}
+                  onClick={() => {
+                    trackEvent("pricing_cta_click", { plan: plan.id });
+                    navigate(`/signup?plan=${plan.id}`);
+                  }}
+                >
+                  {isEnterprise ? "Contact Sales" : "Get Started"}
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Annual pricing note */}
+      <div className="text-center">
+        <p className="text-sm text-muted-foreground">
+          Annual plans save 15%. All plans include a 14-day free trial.
+        </p>
+      </div>
+
+      <Separator />
+
+      {/* Feature Comparison */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold">Feature comparison</h2>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setExpandedComparison(!expandedComparison)}
+          >
+            {expandedComparison ? (
+              <>
+                <ChevronUp className="h-4 w-4 mr-1" />
+                Collapse
+              </>
+            ) : (
+              <>
+                <ChevronDown className="h-4 w-4 mr-1" />
+                Expand all
+              </>
+            )}
+          </Button>
+        </div>
+
+        <Card>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left p-4 font-medium">Feature</th>
+                    {plans.map((plan) => (
+                      <th
+                        key={plan.id}
+                        className={`text-center p-4 font-medium ${
+                          plan.id === "pro" ? "bg-primary/5" : ""
+                        }`}
+                      >
+                        {plan.name}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {comparisonFeatures.map((feature) => (
+                    <tr key={feature} className="border-b last:border-0">
+                      <td className="p-4 capitalize">{feature}</td>
+                      {plans.map((plan) => (
+                        <td
+                          key={plan.id}
+                          className={`text-center p-4 ${
+                            plan.id === "pro" ? "bg-primary/5" : ""
+                          }`}
+                        >
+                          <FeatureValue plan={plan as any} featureKey={feature} />
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Separator />
+
+      {/* FAQ */}
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold text-center">
+          Frequently asked questions
+        </h2>
+        <Accordion type="single" collapsible className="max-w-2xl mx-auto">
+          <AccordionItem value="trial">
+            <AccordionTrigger>
+              Can I try before I buy?
+            </AccordionTrigger>
+            <AccordionContent>
+              Yes! Every plan includes a 14-day free trial with full access to
+              all features. No credit card required to start.
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="cancel">
+            <AccordionTrigger>
+              How do I cancel my subscription?
+            </AccordionTrigger>
+            <AccordionContent>
+              You can cancel anytime from your account settings. Your access
+              continues until the end of your billing period.
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="upgrade">
+            <AccordionTrigger>
+              Can I upgrade or downgrade my plan?
+            </AccordionTrigger>
+            <AccordionContent>
+              Yes, you can change your plan at any time. Upgrades take effect
+              immediately; downgrades take effect at the next billing cycle.
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="enterprise">
+            <AccordionTrigger>
+              What's included in the Enterprise plan?
+            </AccordionTrigger>
+            <AccordionContent>
+              Enterprise includes everything in Business plus custom data
+              sources, SLA guarantees, dedicated support, and optional
+              on-premise deployment. Contact us for a custom quote.
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </div>
+
+      <Separator />
+
+      {/* Trust badges */}
+      <div className="flex flex-wrap justify-center gap-8 text-sm text-muted-foreground">
+        <div className="flex items-center gap-2">
+          <Lock className="h-4 w-4 text-[#4ade80]" />
+          <span>SSL Secure</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <CreditCard className="h-4 w-4 text-[#4ade80]" />
+          <span>PCI Compliant</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Shield className="h-4 w-4 text-[#4ade80]" />
+          <span>No hidden fees</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <BadgeCheck className="h-4 w-4 text-[#4ade80]" />
+          <span>SOC 2 Type II</span>
+        </div>
+      </div>
+
+      <Separator />
+
+      {/* CTA */}
+      <div className="text-center space-y-4">
+        <h2 className="text-2xl font-bold">
+          Still have questions?
+        </h2>
+        <p className="text-muted-foreground">
+          Our team is here to help you find the right plan.
+        </p>
+        <div className="flex flex-wrap justify-center gap-4">
+          <Button
+            variant="outline"
+            onClick={() => navigate("/contact")}
+          >
+            <MessageSquare className="h-4 w-4 mr-2" />
+            Contact Sales
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => navigate("/help")}
+          >
+            <HelpCircle className="h-4 w-4 mr-2" />
+            Help Center
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
 }
-
-const defaultPlans: Plan[] = [
-  {
-    id: "scout",
-    name: "Scout",
-    price: 99,
-    interval: "month",
-    description: "Perfect for individual investors and small teams exploring new markets.",
-    features: [
-      "5 counties",
-      "Weekly email reports",
-      "Basic predictions",
-      "Email support",
-      "7-day data history",
-    ],
-    highlighted: false,
-    cta: "Start Free Trial",
-  },
-  {
-    id: "professional",
-    name: "Professional",
-    price: 249,
-    interval: "month",
-    description: "For growing teams that need deeper intelligence and more coverage.",
-    features: [
-      "25 counties",
-      "Daily alerts + weekly briefings",
-      "Advanced predictions",
-      "API access",
-      "Priority support",
-      "90-day data history",
-    ],
-    highlighted: true,
-    cta: "Start Free Trial",
-  },
-  {
-    id: "business",
-    name: "Business",
-    price: 599,
-    interval: "month",
-    description: "Built for organizations managing multi-market portfolios at scale.",
-    features: [
-      "Unlimited counties",
-      "Real-time alerts",
-      "Custom models",
-      "Full API + webhooks",
-      "SSO & SAML",
-      "Dedicated account manager",
-      "Full historical data",
-    ],
-    highlighted: false,
-    cta: "Start Free Trial",
-  },
-  {
-    id: "enterprise",
-    name: "Enterprise",
-    price: null,
-    interval: "custom",
-    description: "Tailored deployments for large enterprises with custom data needs.",
-    features: [
-      "Everything in Business",
-      "Custom data integrations",
-      "White-label reports",
-      "On-premise option",
-      "SLA guarantees",
-      "24/7 phone support",
-    ],
-    highlighted: false,
-    cta: "Talk to Sales",
-  },
-];
-
-const allFeatures = [
-  { key: "reports", label: "Intelligence Reports", icon: Zap },
-  { key: "alerts", label: "Real-time Alerts", icon: Zap },
-  { key: "counties", label: "County Coverage", icon: Users },
-  { key: "watchlist", label: "Watchlist Items", icon: Users },
-  { key: "api", label: "API Access", icon: Zap },
-  { key: "sso", label: "SSO / SAML", icon: Shield },
-  { key: "support", label: "Priority Support", icon: Users },
-  { key: "analytics", label: "Advanced Analytics", icon: Zap },
-  { key: "whiteglove", label: "White-glove Onboarding", icon: Users },
-];
-
-const faqs = [
-  {
-    question: "Can I change plans at any time?",
-    answer:
-      "Yes. You can upgrade or downgrade your plan at any time from your billing settings. Prorated charges or credits will apply.",
-  },
-  {
-    question: "What's included in each plan?",
-    answer:
-      "Every plan includes core intelligence features. Higher tiers add more reports, alerts, API access, advanced analytics, and priority support. See the comparison table above for full details.",
-  },
-  {
-    question: "Is there a free trial?",
-    answer:
-      "Yes. Every paid plan starts with a 14-day free trial. No credit card required to start. Cancel anytime during the trial and you won't be charged.",
-  },
-  {
-    question: "How do I cancel?",
-    answer:
-      "You can cancel your subscription at any time from your Account → Billing page. Your access continues until the end of your current billing period.",
-  },
-  {
-    question: "Do you offer refunds?",
-    answer:
-      "We offer a 14-day money-back guarantee. If you're not satisfied, contact support within 14 days of your first charge for a full refund.",
-  },
-  {
-    question: "What payment methods do you accept?",
-    answer:
-      "We accept all major credit cards (Visa, Mastercard, American Express), ACH bank transfers for annual plans, and wire transfers for Enterprise customers.",
-  },
-  {
-    question: "Can I add team members to my account?",
-    answer:
-      "Absolutely. Professional plans include up to 5 team members, Business plans include unlimited team members, and Enterprise plans include custom user provisioning with SSO.",
-  },
-];
 
 function FeatureValue({
   plan,
@@ -162,343 +387,55 @@ function FeatureValue({
   plan: { features: string[]; name: string };
   featureKey: string;
 }) {
-  const hasFeature = plan.features.some(
-    (f) =>
-      f.toLowerCase().includes(featureKey) ||
-      (featureKey === "reports" && f.toLowerCase().includes("report")) ||
-      (featureKey === "alerts" && f.toLowerCase().includes("alert")) ||
-      (featureKey === "counties" && f.toLowerCase().includes("count")) ||
-      (featureKey === "watchlist" && f.toLowerCase().includes("watch")) ||
-      (featureKey === "api" && f.toLowerCase().includes("api")) ||
-      (featureKey === "sso" && f.toLowerCase().includes("sso")) ||
-      (featureKey === "support" && f.toLowerCase().includes("support")) ||
-      (featureKey === "analytics" && f.toLowerCase().includes("analytic")) ||
-      (featureKey === "whiteglove" && f.toLowerCase().includes("onboard"))
-  );
+  if (!plan.features || plan.features.length === 0) {
+    return <span className="text-[var(--bs-text-muted)] text-sm">—</span>;
+  }
+
+  const normalizedKey = featureKey.toLowerCase();
+
+  const matchFn = (f: string) => {
+    const lower = f.toLowerCase();
+    switch (normalizedKey) {
+      case "reports":
+        return lower.includes("report");
+      case "alerts":
+        return lower.includes("alert");
+      case "counties":
+        return lower.includes("count");
+      case "watchlist":
+        return lower.includes("watch") || lower.includes("track");
+      case "api":
+        return lower.includes("api");
+      case "sso":
+        return lower.includes("sso") || lower.includes("saml");
+      case "support":
+        return lower.includes("support") || lower.includes("dedicated");
+      case "analytics":
+        return lower.includes("analytic") || lower.includes("dashboard") || lower.includes("insight");
+      case "whiteglove":
+        return lower.includes("onboard") || lower.includes("white-glove") || lower.includes("whiteglove");
+      default:
+        return lower.includes(normalizedKey);
+    }
+  };
+
+  const hasFeature = plan.features.some(matchFn);
 
   if (hasFeature) {
-    const matchingFeature = plan.features.find(
-      (f) =>
-        f.toLowerCase().includes(featureKey) ||
-        (featureKey === "reports" && f.toLowerCase().includes("report")) ||
-        (featureKey === "alerts" && f.toLowerCase().includes("alert")) ||
-        (featureKey === "counties" && f.toLowerCase().includes("count")) ||
-        (featureKey === "watchlist" && f.toLowerCase().includes("watch")) ||
-        (featureKey === "api" && f.toLowerCase().includes("api")) ||
-        (featureKey === "sso" && f.toLowerCase().includes("sso")) ||
-        (featureKey === "support" && f.toLowerCase().includes("support")) ||
-        (featureKey === "analytics" && f.toLowerCase().includes("analytic")) ||
-        (featureKey === "whiteglove" && f.toLowerCase().includes("onboard"))
-    );
+    const matchingFeature = plan.features.find(matchFn);
+    // Show full feature text, but clean up for display
+    const displayText = matchingFeature
+      ?.replace(/^\d+\s*/, "") // Remove leading numbers only
+      .trim() || "";
     return (
-      <div className="flex items-center justify-center gap-1">
-        <Check className="h-4 w-4 text-green-500" />
-        <span className="text-xs text-muted-foreground">
-          {matchingFeature?.replace(/\d+\+?/g, "").trim() || ""}
+      <div className="flex items-center justify-center gap-1.5">
+        <Check className="h-4 w-4 text-[#4ade80] shrink-0" />
+        <span className="text-xs text-[var(--bs-text-secondary)]">
+          {displayText}
         </span>
       </div>
     );
   }
 
-  return <span className="text-muted-foreground text-sm">—</span>;
-}
-
-export function PricingPage() {
-  const navigate = useNavigate();
-  const config = trpc.billing.config.useQuery();
-  const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
-
-  const plans = (config.data?.plans?.length ? config.data.plans : defaultPlans) as Plan[];
-
-  const getAnnualPrice = (price: number | null) => {
-    if (price === null || price === 0) return 0;
-    return Math.round(price * 12 * 0.8);
-  };
-
-  const getPriceDisplay = (plan: { price: number | null; interval: string }) => {
-    if (plan.price === null || plan.price === 0) return { display: "Custom", sub: "" };
-    if (billingCycle === "annual") {
-      const annual = getAnnualPrice(plan.price);
-      return {
-        display: `$${Math.round(annual / 12)}`,
-        sub: "/month billed annually",
-      };
-    }
-    return { display: `$${plan.price}`, sub: `/${plan.interval}` };
-  };
-
-  const handleSelectPlan = (planId: string) => {
-    const plan = plans.find((p) => p.id === planId);
-    trackEvent("purchase_intent", {
-      plan_id: planId,
-      billing_cycle: billingCycle,
-      value: plan?.price,
-      currency: "USD",
-    });
-    navigate(`/signup?plan=${planId}&cycle=${billingCycle}`);
-  };
-
-  return (
-    <div className="min-h-screen bg-[var(--bs-canvas)]">
-      <div className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <Badge variant="secondary" className="mb-4 bg-[var(--bs-surface)] text-[var(--bs-text-secondary)] border-[var(--bs-border)]">
-            <BadgeCheck className="h-3 w-3 mr-1" />
-            14-Day Money-Back Guarantee
-          </Badge>
-          <h1 className="text-4xl font-bold mb-4 text-[var(--bs-text-primary)]">Simple, Transparent Pricing</h1>
-          <p className="text-xl text-[var(--bs-text-secondary)] max-w-2xl mx-auto">
-            Choose the plan that fits your intelligence needs. All plans include a 14-day free trial.
-          </p>
-        </div>
-
-        {/* Billing Toggle */}
-        <div className="flex justify-center mb-12">
-          <Tabs
-            value={billingCycle}
-            onValueChange={(v) => setBillingCycle(v as "monthly" | "annual")}
-          >
-            <TabsList className="bg-[var(--bs-surface)] border border-[var(--bs-border)]">
-              <TabsTrigger value="monthly" className="data-[state=active]:bg-[var(--bs-action)] data-[state=active]:text-white">Monthly</TabsTrigger>
-              <TabsTrigger value="annual" className="relative data-[state=active]:bg-[var(--bs-action)] data-[state=active]:text-white">
-                Annual
-                <Badge
-                  variant="default"
-                  className="absolute -top-2 -right-2 bg-[var(--bs-intelligence)] text-white text-[10px] px-1.5 py-0"
-                >
-                  Save 20%
-                </Badge>
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
-
-        {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-          {plans.map((plan) => {
-            const priceInfo = getPriceDisplay(plan);
-            const isHighlighted = plan.highlighted;
-            const isCustomPrice = plan.price === null || plan.price === 0;
-
-            return (
-              <div
-                key={plan.id}
-                className={cn(
-                  "relative p-6 border rounded-xl transition-all hover:shadow-lg",
-                  isHighlighted
-                    ? "border-[var(--bs-action)] ring-2 ring-[var(--bs-action)] scale-105 bg-[var(--bs-surface)] shadow-md"
-                    : "border-[var(--bs-border)] bg-[var(--bs-surface)]"
-                )}
-              >
-                {isHighlighted && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <Badge className="bg-[var(--bs-action)] text-white px-3 py-1">
-                      <Star className="h-3 w-3 mr-1 fill-current" />
-                      Most Popular
-                    </Badge>
-                  </div>
-                )}
-
-                <h3 className="text-lg font-semibold mt-2 text-[var(--bs-text-primary)]">{plan.name}</h3>
-                <div className="mt-4">
-                  <span className="text-3xl font-bold text-[var(--bs-text-primary)]">{priceInfo.display}</span>
-                  {priceInfo.sub && (
-                    <span className="text-[var(--bs-text-tertiary)] text-sm ml-1">
-                      {priceInfo.sub}
-                    </span>
-                  )}
-                </div>
-                {billingCycle === "annual" && !isCustomPrice && (
-                  <p className="text-xs text-[var(--bs-intelligence)] font-medium mt-1">
-                    ${getAnnualPrice(plan.price)} billed annually
-                  </p>
-                )}
-                <p className="mt-2 text-sm text-[var(--bs-text-secondary)]">{plan.description}</p>
-
-                <ul className="mt-4 space-y-2">
-                  {plan.features.slice(0, 5).map((feature: string) => (
-                    <li key={feature} className="flex items-center gap-2 text-sm text-[var(--bs-text-secondary)]">
-                      <Check className="h-4 w-4 text-[var(--bs-intelligence)] shrink-0" />
-                      <span className="text-sm">{feature}</span>
-                    </li>
-                  ))}
-                  {plan.features.length > 5 && (
-                    <li className="text-xs text-[var(--bs-text-tertiary)] pl-6">
-                      +{plan.features.length - 5} more features
-                    </li>
-                  )}
-                </ul>
-
-                <button
-                  onClick={() => handleSelectPlan(plan.id)}
-                  className={cn(
-                    "mt-6 w-full rounded-lg px-4 py-2.5 text-sm font-medium transition-colors",
-                    isHighlighted
-                      ? "bg-[var(--bs-action)] text-white hover:opacity-90"
-                      : "border border-[var(--bs-border)] bg-[var(--bs-canvas)] text-[var(--bs-text-primary)] hover:bg-[var(--bs-surface-hover)]"
-                  )}
-                >
-                  {plan.cta}
-                </button>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Not sure CTA */}
-        <div className="text-center mb-10">
-          <button
-            onClick={() => navigate("/demo")}
-            className="inline-flex items-center gap-2 text-sm text-[var(--bs-text-secondary)] hover:text-[var(--bs-action)] transition-colors"
-          >
-            <MessageSquare className="h-4 w-4" />
-            Not sure which plan?{" "}
-            <span className="font-medium underline underline-offset-2">
-              Talk to Sales
-            </span>
-            <ArrowRight className="h-3 w-3" />
-          </button>
-        </div>
-
-        {/* Trust Signals */}
-        <div className="flex flex-wrap items-center justify-center gap-6 mb-16 text-sm text-[var(--bs-text-secondary)]">
-          <div className="flex items-center gap-2">
-            <Lock className="h-4 w-4 text-[var(--bs-intelligence)]" />
-            <span>SSL Secure</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <CreditCard className="h-4 w-4 text-[var(--bs-intelligence)]" />
-            <span>PCI Compliant</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Shield className="h-4 w-4 text-[var(--bs-intelligence)]" />
-            <span>No hidden fees</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <BadgeCheck className="h-4 w-4 text-[var(--bs-intelligence)]" />
-            <span>14-Day Money-Back Guarantee</span>
-          </div>
-        </div>
-
-        {/* Comparison Table */}
-        {plans.length > 0 && (
-          <div className="mb-16">
-            <h2 className="text-2xl font-bold text-center mb-8 text-[var(--bs-text-primary)]">Compare All Plans</h2>
-            <div className="overflow-x-auto rounded-xl border border-[var(--bs-border)]">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-[var(--bs-surface-hover)] border-b border-[var(--bs-border)]">
-                    <th className="text-left p-4 font-semibold text-[var(--bs-text-primary)]">Feature</th>
-                    {plans.map((plan) => (
-                      <th
-                        key={plan.id}
-                        className={cn(
-                          "p-4 text-center font-semibold",
-                          plan.highlighted && "bg-[var(--bs-action)]/10 text-[var(--bs-action)]"
-                        )}
-                      >
-                        {plan.name}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {allFeatures.map((feature, idx) => (
-                    <tr
-                      key={feature.key}
-                      className={cn(
-                        "border-b border-[var(--bs-border)]",
-                        idx % 2 === 0 ? "bg-[var(--bs-canvas)]" : "bg-[var(--bs-surface)]/50"
-                      )}
-                    >
-                      <td className="p-4 font-medium text-[var(--bs-text-primary)]">
-                        <div className="flex items-center gap-2">
-                          <feature.icon className="h-4 w-4 text-[var(--bs-text-tertiary)]" />
-                          {feature.label}
-                        </div>
-                      </td>
-                      {plans.map((plan) => (
-                        <td
-                          key={plan.id}
-                          className={cn(
-                            "p-4 text-center",
-                            plan.highlighted && "bg-[var(--bs-action)]/5"
-                          )}
-                        >
-                          <FeatureValue plan={plan} featureKey={feature.key} />
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* FAQ Section */}
-        <div className="max-w-3xl mx-auto mb-16">
-          <h2 className="text-2xl font-bold text-center mb-8 flex items-center justify-center gap-2 text-[var(--bs-text-primary)]">
-            <HelpCircle className="h-6 w-6 text-[var(--bs-action)]" />
-            Frequently Asked Questions
-          </h2>
-          <div className="space-y-3">
-            {faqs.map((faq, idx) => (
-              <div
-                key={idx}
-                className="border border-[var(--bs-border)] rounded-lg overflow-hidden bg-[var(--bs-surface)]"
-              >
-                <button
-                  onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                  className="w-full flex items-center justify-between p-4 text-left hover:bg-[var(--bs-surface-hover)] transition-colors"
-                >
-                  <span className="font-medium text-[var(--bs-text-primary)]">{faq.question}</span>
-                  {openFaq === idx ? (
-                    <ChevronUp className="h-4 w-4 text-[var(--bs-text-tertiary)] shrink-0" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4 text-[var(--bs-text-tertiary)] shrink-0" />
-                  )}
-                </button>
-                {openFaq === idx && (
-                  <div className="px-4 pb-4 text-[var(--bs-text-secondary)] text-sm">
-                    {faq.answer}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Enterprise CTA */}
-        <div className="bg-[var(--bs-surface)] rounded-xl p-8 text-center space-y-4 border border-[var(--bs-border)]">
-          <div className="flex items-center justify-center gap-2 text-[var(--bs-text-secondary)]">
-            <Building2 className="h-5 w-5" />
-            <span className="font-medium">Need a custom solution?</span>
-          </div>
-          <p className="text-sm text-[var(--bs-text-secondary)] max-w-md mx-auto">
-            Contact our sales team for volume pricing, custom integrations, white-label reports, and dedicated support.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-            <button
-              onClick={() => navigate("/demo")}
-              className="inline-flex items-center gap-2 rounded-lg bg-[var(--bs-action)] text-white px-5 py-2.5 text-sm font-medium hover:opacity-90 transition-colors"
-            >
-              Request a Demo
-              <ArrowRight className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => navigate("/contact")}
-              className="inline-flex items-center gap-2 rounded-lg border border-[var(--bs-border)] bg-[var(--bs-canvas)] px-5 py-2.5 text-sm font-medium hover:bg-[var(--bs-surface-hover)] transition-colors text-[var(--bs-text-primary)]"
-            >
-              Contact Sales
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <Footer />
-    </div>
-  );
+  return <span className="text-[var(--bs-text-muted)] text-sm">—</span>;
 }

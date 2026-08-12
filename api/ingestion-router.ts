@@ -4,7 +4,7 @@ import {
   ingestionSources,
   rawRecords,
   ingestionRuns,
-  signalcoreEvents,
+  kestovarCanonicalEvents,
   providerRegistry,
 } from "@db/schema-sqlite";
 import { eq, desc, and, sql } from "drizzle-orm";
@@ -23,439 +23,357 @@ function cyrb53(str: string, seed = 0): string {
   return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(16);
 }
 
-// ─── ArcGIS endpoint resolver ───
-const KNOWN_ENDPOINTS: Record<string, string> = {
-  raleigh_building_permits:
-    "https://services.arcgis.com/v400IkDOw1ad7Yad/arcgis/rest/services/Building_Permits_Pending/FeatureServer/0/query",
-  wake_county_building_permits:
-    "https://maps.wake.gov/arcgis/rest/services/Inspections/Building_Permits/MapServer/0/query",
-};
-
-function resolveEndpoint(providerId: string): string | null {
-  return KNOWN_ENDPOINTS[providerId] || null;
+// ─── Canonical ID generator ───
+function generateCanonicalId(): string {
+  return "kev-" + crypto.randomUUID();
 }
 
-// ─── Attribute helpers ───
-function getAttr(attrs: Record<string, any>, ...keys: string[]): string | undefined {
-  for (const k of keys) {
-    const v = attrs[k];
-    if (v !== undefined && v !== null && String(v).trim() !== "") {
-      return String(v);
-    }
+// ─── Timestamp normalization helper ───
+function toTimestamp(input: unknown): Date | null {
+  if (!input) return null;
+  if (input instanceof Date) return input;
+  if (typeof input === "number") return new Date(input > 1e10 ? input : input * 1000);
+  if (typeof input === "string") {
+    const n = Number(input);
+    if (!isNaN(n)) return new Date(n > 1e10 ? n : n * 1000);
+    const d = new Date(input);
+    return isNaN(d.getTime()) ? null : d;
   }
-  return undefined;
-}
-
-function msToDate(ms: any): Date | undefined {
-  if (typeof ms === "number" && ms > 0) {
-    return new Date(ms);
-  }
-  if (typeof ms === "string") {
-    const n = Number(ms);
-    if (!isNaN(n) && n > 0) return new Date(n);
-  }
-  return undefined;
-}
-
-// ─── Fetch ArcGIS data ───
-async function fetchArcGIS(url: string, limit: number) {
-  const params = new URLSearchParams({
-    where: "1=1",
-    outFields: "*",
-    outSR: "4326",
-    f: "json",
-    resultRecordCount: String(limit),
-  });
-  const res = await fetch(`${url}?${params.toString()}`, {
-    method: "GET",
-    headers: { Accept: "application/json" },
-  });
-  if (!res.ok) {
-    throw new Error(`ArcGIS HTTP ${res.status}: ${res.statusText}`);
-  }
-  const data = await res.json();
-  if (data.error) {
-    throw new Error(`ArcGIS Error ${data.error.code}: ${data.error.message}`);
-  }
-  return data;
+  return null;
 }
 
 export const ingestionRouter = createRouter({
-  // ─── List ingestion sources ───
+  // ── List ingestion sources ─────────────────────────────
   list: publicQuery
     .input(
-      z
-        .object({
-          sourceType: z.string().optional(),
-          jurisdictionLevel: z.string().optional(),
-          isActive: z.boolean().optional(),
-          status: z.enum(["healthy", "degraded", "error", "all"]).optional().default("all"),
-        })
-        .optional()
+      z.object({
+        sourceType: z.string().optional(),
+        jurisdictionLevel: z.string().optional(),
+        isActive: z.boolean().optional(),
+        status: z.string().optional(),
+      }).optional()
     )
-    .query(async ({ ctx, input }) => {
-      const db = getDbFromContext(ctx.env);
+    .query(async ({ input }) => {
+      const db = getDbFromContext();
       const conditions = [];
       if (input?.sourceType) conditions.push(eq(ingestionSources.sourceType, input.sourceType));
       if (input?.jurisdictionLevel) conditions.push(eq(ingestionSources.jurisdictionLevel, input.jurisdictionLevel));
       if (input?.isActive !== undefined) conditions.push(eq(ingestionSources.isActive, input.isActive));
       if (input?.status && input.status !== "all") conditions.push(eq(ingestionSources.status, input.status));
 
-      const results = await db
+      const sources = await db
         .select()
         .from(ingestionSources)
         .where(conditions.length > 0 ? and(...conditions) : undefined)
         .orderBy(desc(ingestionSources.createdAt))
-        .limit(100);
+        .all();
 
-      return { sources: results };
+      return { sources, total: sources.length };
     }),
 
-  // ─── Fetch raw data from ArcGIS ───
-  fetch: publicQuery
+  // ── Get a single ingestion source ──────────────────────
+  get: publicQuery
+    .input(z.object({ id: z.number() }))
+    .query(async ({ input }) => {
+      const db = getDbFromContext();
+      const source = await db
+        .select()
+        .from(ingestionSources)
+        .where(eq(ingestionSources.id, input.id))
+        .get();
+      if (!source) throw new Error("Source not found");
+      return source;
+    }),
+
+  // ── Create a new ingestion source ──────────────────────
+  create: publicQuery
     .input(
       z.object({
-        providerId: z.string().default("raleigh_building_permits"),
-        limit: z.number().min(1).max(500).default(50),
+        name: z.string().min(1),
+        sourceType: z.string().min(1),
+        endpointUrl: z.string().url().optional(),
+        apiKey: z.string().optional(),
+        config: z.string().optional(),
+        schedule: z.string().optional(),
       })
     )
-    .mutation(async ({ ctx, input }) => {
-      const db = getDbFromContext(ctx.env);
-      const overallStart = Date.now();
-      let runId: number | undefined;
-      let recordsObserved = 0;
-      let recordsCreated = 0;
-
-      try {
-        const endpoint = resolveEndpoint(input.providerId);
-        if (!endpoint) {
-          throw new Error(`No endpoint configured for providerId: ${input.providerId}`);
-        }
-
-        // Create ingestion run
-        const now = new Date();
-        const runResult = await db
-          .insert(ingestionRuns)
-          .values({
-            providerId: input.providerId,
-            startedAt: now,
-            status: "running",
-            triggerType: "manual",
-          })
-          .returning();
-        runId = runResult[0]?.id;
-
-        // Fetch from ArcGIS
-        const fetchStart = Date.now();
-        const data = await fetchArcGIS(endpoint, input.limit);
-        const fetchLatency = Date.now() - fetchStart;
-        const features = data.features || [];
-        recordsObserved = features.length;
-
-        // Parse and store raw records
-        const parseStart = Date.now();
-        for (const feature of features) {
-          const attrs = feature.attributes || {};
-          const rawPayload = JSON.stringify(attrs);
-          const contentHash = cyrb53(rawPayload);
-
-          const rawTitle =
-            getAttr(attrs, "workclass", "permitclass", "type", "permit_type") ||
-            `Permit ${getAttr(attrs, "permitnum", "permitnumber", "id", "objectid") || "unknown"}`;
-          const rawDescription = getAttr(attrs, "proposedworkdescription", "description", "workdescription", "comments");
-          const rawLocation = getAttr(attrs, "siteaddress", "address", "fulladdress", "location");
-          const rawStatus = getAttr(attrs, "status", "permitstatus", "permit_status");
-          const rawDates = JSON.stringify({
-            applied: getAttr(attrs, "applieddate", "applied_date", "dateapplied"),
-            issued: getAttr(attrs, "issueddate", "issued_date", "dateissued"),
-            completed: getAttr(attrs, "completeddate", "completed_date", "datecompleted"),
-            expires: getAttr(attrs, "expirationdate", "expiration_date", "expires"),
-          });
-
-          // Check for duplicates
-          const existing = await db
-            .select()
-            .from(rawRecords)
-            .where(
-              and(
-                eq(rawRecords.providerId, input.providerId),
-                eq(rawRecords.rawPayload, rawPayload)
-              )
-            )
-            .limit(1);
-          if (existing.length > 0) {
-            await db
-              .update(rawRecords)
-              .set({ observedAt: now })
-              .where(eq(rawRecords.id, existing[0].id));
-            continue;
-          }
-
-          let rawMetadata: string | undefined;
-          if (feature.geometry) {
-            rawMetadata = JSON.stringify({ geometry: feature.geometry });
-          }
-
-          const sourceRecordId =
-            getAttr(attrs, "permitnum", "permitnumber", "id", "objectid") ||
-            String(attrs["OBJECTID"] || attrs["objectid"] || "");
-
-          await db.insert(rawRecords).values({
-            providerId: input.providerId,
-            sourceRecordId,
-            sourceUrl: endpoint,
-            observedAt: now,
-            ingestedAt: now,
-            rawPayload,
-            rawTitle,
-            rawDescription,
-            rawLocation,
-            rawStatus,
-            rawDates,
-            rawMetadata,
-            ingestionRunId: runId,
-            provenance: "LIVE",
-          });
-          recordsCreated++;
-        }
-        const parseLatency = Date.now() - parseStart;
-        const totalLatency = Date.now() - overallStart;
-
-        // Update run as completed
-        await db
-          .update(ingestionRuns)
-          .set({
-            status: "completed",
-            completedAt: now,
-            recordsObserved,
-            recordsCreated,
-            fetchLatencyMs: fetchLatency,
-            parseLatencyMs: parseLatency,
-            totalLatencyMs: totalLatency,
-            sourceRecordCount: recordsObserved,
-          })
-          .where(eq(ingestionRuns.id, runId));
-
-        return { success: true, runId, recordsObserved, recordsCreated };
-      } catch (err: any) {
-        const errorMsg = err?.message || String(err);
-        if (runId) {
-          await db
-            .update(ingestionRuns)
-            .set({
-              status: "failed",
-              completedAt: new Date(),
-              recordsObserved,
-              recordsCreated,
-              error: errorMsg,
-              errorCode: "FETCH_ERROR",
-              totalLatencyMs: Date.now() - overallStart,
-            })
-            .where(eq(ingestionRuns.id, runId));
-        }
-        return { success: false, runId: runId || 0, recordsObserved, recordsCreated, error: errorMsg };
-      }
+    .mutation(async ({ input }) => {
+      const db = getDbFromContext();
+      const result = await db
+        .insert(ingestionSources)
+        .values({
+          ...input,
+          status: "active",
+          healthStatus: "healthy",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .returning();
+      return result[0];
     }),
 
-  // ─── Normalize raw records to signalcore_events ───
+  // ── Update an ingestion source ─────────────────────────
+  update: publicQuery
+    .input(
+      z.object({
+        id: z.number(),
+        name: z.string().optional(),
+        sourceType: z.string().optional(),
+        endpointUrl: z.string().url().optional(),
+        apiKey: z.string().optional(),
+        config: z.string().optional(),
+        schedule: z.string().optional(),
+        status: z.string().optional(),
+        isActive: z.boolean().optional(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const db = getDbFromContext();
+      const { id, ...updates } = input;
+      const result = await db
+        .update(ingestionSources)
+        .set({ ...updates, updatedAt: new Date() })
+        .where(eq(ingestionSources.id, id))
+        .returning();
+      return result[0];
+    }),
+
+  // ── Delete an ingestion source ─────────────────────────
+  delete: publicQuery
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      const db = getDbFromContext();
+      await db.delete(ingestionSources).where(eq(ingestionSources.id, input.id));
+      return { success: true };
+    }),
+
+  // ── Toggle ingestion source active state ───────────────
+  toggle: publicQuery
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      const db = getDbFromContext();
+      const source = await db
+        .select()
+        .from(ingestionSources)
+        .where(eq(ingestionSources.id, input.id))
+        .get();
+      if (!source) throw new Error("Source not found");
+      const result = await db
+        .update(ingestionSources)
+        .set({ isActive: !source.isActive, updatedAt: new Date() })
+        .where(eq(ingestionSources.id, input.id))
+        .returning();
+      return result[0];
+    }),
+
+  // ── Normalize raw records to canonical events ──────────
   normalize: publicQuery
     .input(
       z.object({
         runId: z.number(),
-        providerId: z.string().default("raleigh_building_permits"),
+        providerId: z.string(),
+        records: z.array(
+          z.object({
+            sourceRecordId: z.string().optional(),
+            sourceUrl: z.string().optional(),
+            eventType: z.string().optional(),
+            title: z.string().optional(),
+            description: z.string().optional(),
+            permitType: z.string().optional(),
+            permitClass: z.string().optional(),
+            workClass: z.string().optional(),
+            county: z.string().optional(),
+            state: z.string().optional(),
+            city: z.string().optional(),
+            zipCode: z.string().optional(),
+            address: z.string().optional(),
+            lat: z.number().optional(),
+            lng: z.number().optional(),
+            parcelId: z.string().optional(),
+            applicationDate: z.string().or(z.number()).optional(),
+            issueDate: z.string().or(z.number()).optional(),
+            status: z.string().optional(),
+            statusMapped: z.string().optional(),
+            value: z.number().optional(),
+            contractorName: z.string().optional(),
+            contractorPhone: z.string().optional(),
+            contractorEmail: z.string().optional(),
+            ownerName: z.string().optional(),
+            rawData: z.string().optional(),
+            publishedAt: z.string().or(z.number()).optional(),
+            confidence: z.number().optional(),
+          })
+        ),
       })
     )
-    .mutation(async ({ ctx, input }) => {
-      const db = getDbFromContext(ctx.env);
-      const normalizeStart = Date.now();
-      let recordsNormalized = 0;
-      let recordsSkipped = 0;
+    .mutation(async ({ input }) => {
+      const db = getDbFromContext();
+      const created = [];
+      const skipped = [];
 
-      try {
-        // Get raw records for this run
-        const rows = await db
+      for (const record of input.records) {
+        const rawPayload = JSON.stringify(record);
+        const contentHash = cyrb53(rawPayload);
+
+        // Deduplication: check if raw record already exists
+        const existing = await db
           .select()
           .from(rawRecords)
           .where(
             and(
-              eq(rawRecords.ingestionRunId, input.runId),
               eq(rawRecords.providerId, input.providerId),
-              eq(rawRecords.isDeleted, false)
+              eq(rawRecords.rawPayload, rawPayload)
             )
-          );
-
-        // Get provider name
-        const providers = await db
-          .select()
-          .from(providerRegistry)
-          .where(
-            sql`${providerRegistry.providerId} = ${input.providerId} OR ${providerRegistry.providerName} = ${input.providerId}`
           )
           .limit(1);
-        const providerName = providers[0]?.providerName || input.providerId;
 
-        for (const row of rows) {
-          if (!row.rawPayload) continue;
-          const attrs = JSON.parse(row.rawPayload);
-          const rawPayload = row.rawPayload;
-          const hash = cyrb53(rawPayload);
-
-          // Check for duplicate
-          const dupCheck = await db
-            .select()
-            .from(signalcoreEvents)
-            .where(eq(signalcoreEvents.contentHash, hash))
-            .limit(1);
-          if (dupCheck.length > 0) {
-            recordsSkipped++;
-            continue;
-          }
-
-          const workClass = getAttr(attrs, "workclass", "permitclass", "type", "permit_type");
-          const workDesc = getAttr(attrs, "proposedworkdescription", "description", "workdescription", "comments");
-          const title =
-            row.rawTitle ||
-            (workClass && workDesc
-              ? `${workClass}: ${workDesc}`
-              : workClass || workDesc || "Building Permit");
-          const description = row.rawDescription || workDesc || "";
-
-          const address = row.rawLocation || getAttr(attrs, "siteaddress", "address", "fulladdress", "location") || "";
-          let lat: string | null = null;
-          let lng: string | null = null;
-
-          if (row.rawMetadata) {
-            try {
-              const meta = JSON.parse(row.rawMetadata);
-              if (meta.geometry?.y) lat = String(meta.geometry.y);
-              if (meta.geometry?.x) lng = String(meta.geometry.x);
-            } catch {
-              // ignore
-            }
-          }
-          if (!lat) lat = getAttr(attrs, "latitude", "lat", "y") || null;
-          if (!lng) lng = getAttr(attrs, "longitude", "lng", "long", "x") || null;
-
-          const appliedDateMs = attrs["applieddate"] || attrs["applied_date"] || attrs["dateapplied"];
-          const publishedAt = msToDate(appliedDateMs);
-
-          let city = getAttr(attrs, "city", "sitecity", "jurisdiction");
-          if (!city && address) {
-            const match = address.match(/,\s*([A-Za-z\s]+),?\s*(?:NC|North Carolina)?/i);
-            if (match) city = match[1].trim();
-          }
-          if (!city) city = "Raleigh";
-
-          const county = getAttr(attrs, "county", "sitecounty") || "Wake";
-          const state = getAttr(attrs, "state", "sitestate") || "NC";
-          const zipCode = getAttr(attrs, "zip", "zipcode", "postalcode", "sitezip") || null;
-
-          await db.insert(signalcoreEvents).values({
-            providerId: row.providerId,
-            externalId: row.sourceRecordId || null,
-            eventType: "building_permit",
-            title,
-            description,
-            county,
-            state,
-            city,
-            zipCode,
-            lat,
-            lng,
-            address,
-            publishedAt,
-            ingestedAt: new Date(),
-            confidence: 70,
-            status: "active",
-            contentHash: hash,
-            rawData: rawPayload,
-            dataSource: providerName,
-            provenance: "LIVE",
-          });
-          recordsNormalized++;
+        if (existing.length > 0) {
+          // Update existing raw record
+          await db
+            .update(rawRecords)
+            .set({ resolvedAt: new Date(), ingestionRunId: input.runId })
+            .where(eq(rawRecords.id, existing[0].id));
+          skipped.push(existing[0].id);
+          continue;
         }
 
-        // Update run
-        await db
-          .update(ingestionRuns)
-          .set({
-            recordsResolved: recordsNormalized,
-            resolveLatencyMs: Date.now() - normalizeStart,
+        // Insert raw record
+        const rawResult = await db
+          .insert(rawRecords)
+          .values({
+            providerId: input.providerId,
+            sourceRecordId: record.sourceRecordId,
+            sourceUrl: record.sourceUrl,
+            rawPayload,
+            rawTitle: record.title,
+            rawDescription: record.description,
+            rawLocation: record.address,
+            rawStatus: record.status,
+            ingestionRunId: input.runId,
+            observedAt: new Date(),
+            resolvedAt: new Date(),
+            provenance: "LIVE",
+            isDeleted: false,
           })
-          .where(eq(ingestionRuns.id, input.runId));
+          .returning();
+        const rawRecord = rawResult[0];
 
-        return { success: true, recordsNormalized, recordsSkipped };
-      } catch (err: any) {
-        return {
-          success: false,
-          recordsNormalized,
-          recordsSkipped,
-          error: err?.message || String(err),
-        };
+        // ── Write to kestovar_canonical_events (NOT signalcore_events) ──
+        const canonicalId = generateCanonicalId();
+        await db.insert(kestovarCanonicalEvents).values({
+          canonicalId,
+          providerId: input.providerId,
+          sourceRecordId: record.sourceRecordId || null,
+          sourceUrl: record.sourceUrl || null,
+          eventType: record.eventType || "permit",
+          title: record.title || "Untitled",
+          description: record.description || null,
+          permitType: record.permitType || null,
+          permitClass: record.permitClass || null,
+          workClass: record.workClass || null,
+          county: record.county || null,
+          state: record.state || null,
+          city: record.city || null,
+          zipCode: record.zipCode || null,
+          address: record.address || null,
+          lat: record.lat || null,
+          lng: record.lng || null,
+          parcelId: record.parcelId || null,
+          applicationDate: toTimestamp(record.applicationDate),
+          issueDate: toTimestamp(record.issueDate),
+          status: record.status || null,
+          statusMapped: record.statusMapped || null,
+          value: record.value || null,
+          contractorName: record.contractorName || null,
+          contractorPhone: record.contractorPhone || null,
+          contractorEmail: record.contractorEmail || null,
+          ownerName: record.ownerName || null,
+          rawData: record.rawData || rawPayload,
+          normalizedData: JSON.stringify(record),
+          contentHash,
+          publishedAt: toTimestamp(record.publishedAt),
+          ingestedAt: new Date(),
+          updatedAt: new Date(),
+          confidence: record.confidence || 0.5,
+          statusCanonical: "active",
+          provenance: "LIVE",
+          lineageVersion: 1,
+        });
+
+        created.push({ rawId: rawRecord.id, canonicalId });
       }
+
+      return { created, skipped, total: input.records.length };
     }),
 
-  // ─── Combined fetch + normalize ───
+  // ── Run a full ingestion cycle ─────────────────────────
   run: publicQuery
     .input(
       z.object({
-        providerId: z.string().default("raleigh_building_permits"),
-        limit: z.number().min(1).max(500).default(50),
+        providerId: z.string(),
+        rawRecords: z.array(
+          z.object({
+            sourceRecordId: z.string().optional(),
+            sourceUrl: z.string().optional(),
+            eventType: z.string().optional(),
+            title: z.string().optional(),
+            description: z.string().optional(),
+            permitType: z.string().optional(),
+            permitClass: z.string().optional(),
+            workClass: z.string().optional(),
+            county: z.string().optional(),
+            state: z.string().optional(),
+            city: z.string().optional(),
+            zipCode: z.string().optional(),
+            address: z.string().optional(),
+            lat: z.number().optional(),
+            lng: z.number().optional(),
+            parcelId: z.string().optional(),
+            applicationDate: z.string().or(z.number()).optional(),
+            issueDate: z.string().or(z.number()).optional(),
+            status: z.string().optional(),
+            statusMapped: z.string().optional(),
+            value: z.number().optional(),
+            contractorName: z.string().optional(),
+            contractorPhone: z.string().optional(),
+            contractorEmail: z.string().optional(),
+            ownerName: z.string().optional(),
+            rawData: z.string().optional(),
+            publishedAt: z.string().or(z.number()).optional(),
+            confidence: z.number().optional(),
+          })
+        ),
+        metadata: z.record(z.unknown()).optional(),
       })
     )
-    .mutation(async ({ ctx, input }) => {
-      const db = getDbFromContext(ctx.env);
-      const overallStart = Date.now();
-      let runId: number | undefined;
-      let recordsObserved = 0;
+    .mutation(async ({ input }) => {
+      const db = getDbFromContext();
+      const start = Date.now();
+
+      // Create ingestion run record
+      const runResult = await db
+        .insert(ingestionRuns)
+        .values({
+          providerId: input.providerId,
+          startedAt: new Date(),
+          status: "running",
+          triggerType: "api",
+          recordsObserved: input.rawRecords.length,
+          provenance: "LIVE",
+        })
+        .returning();
+      const run = runResult[0];
+
       let recordsCreated = 0;
-      let recordsNormalized = 0;
       let recordsSkipped = 0;
+      let recordsFailed = 0;
 
-      try {
-        // FETCH PHASE
-        const endpoint = resolveEndpoint(input.providerId);
-        if (!endpoint) {
-          throw new Error(`No endpoint configured for providerId: ${input.providerId}`);
-        }
-
-        const now = new Date();
-        const runResult = await db
-          .insert(ingestionRuns)
-          .values({
-            providerId: input.providerId,
-            startedAt: now,
-            status: "running",
-            triggerType: "manual",
-          })
-          .returning();
-        runId = runResult[0]?.id;
-
-        const fetchStart = Date.now();
-        const data = await fetchArcGIS(endpoint, input.limit);
-        const fetchLatency = Date.now() - fetchStart;
-        const features = data.features || [];
-        recordsObserved = features.length;
-
-        const parseStart = Date.now();
-        for (const feature of features) {
-          const attrs = feature.attributes || {};
-          const rawPayload = JSON.stringify(attrs);
+      for (const record of input.rawRecords) {
+        try {
+          const rawPayload = JSON.stringify(record);
           const contentHash = cyrb53(rawPayload);
 
-          const rawTitle =
-            getAttr(attrs, "workclass", "permitclass", "type", "permit_type") ||
-            `Permit ${getAttr(attrs, "permitnum", "permitnumber", "id", "objectid") || "unknown"}`;
-          const rawDescription = getAttr(attrs, "proposedworkdescription", "description", "workdescription", "comments");
-          const rawLocation = getAttr(attrs, "siteaddress", "address", "fulladdress", "location");
-          const rawStatus = getAttr(attrs, "status", "permitstatus", "permit_status");
-          const rawDates = JSON.stringify({
-            applied: getAttr(attrs, "applieddate", "applied_date", "dateapplied"),
-            issued: getAttr(attrs, "issueddate", "issued_date", "dateissued"),
-            completed: getAttr(attrs, "completeddate", "completed_date", "datecompleted"),
-            expires: getAttr(attrs, "expirationdate", "expiration_date", "expires"),
-          });
-
+          // Deduplication
           const existing = await db
             .select()
             .from(rawRecords)
@@ -466,244 +384,160 @@ export const ingestionRouter = createRouter({
               )
             )
             .limit(1);
+
           if (existing.length > 0) {
             await db
               .update(rawRecords)
-              .set({ observedAt: now })
+              .set({ resolvedAt: new Date(), ingestionRunId: run.id })
               .where(eq(rawRecords.id, existing[0].id));
-            continue;
-          }
-
-          let rawMetadata: string | undefined;
-          if (feature.geometry) {
-            rawMetadata = JSON.stringify({ geometry: feature.geometry });
-          }
-
-          const sourceRecordId =
-            getAttr(attrs, "permitnum", "permitnumber", "id", "objectid") ||
-            String(attrs["OBJECTID"] || attrs["objectid"] || "");
-
-          await db.insert(rawRecords).values({
-            providerId: input.providerId,
-            sourceRecordId,
-            sourceUrl: endpoint,
-            observedAt: now,
-            ingestedAt: now,
-            rawPayload,
-            rawTitle,
-            rawDescription,
-            rawLocation,
-            rawStatus,
-            rawDates,
-            rawMetadata,
-            ingestionRunId: runId,
-            provenance: "LIVE",
-          });
-          recordsCreated++;
-        }
-        const parseLatency = Date.now() - parseStart;
-
-        // NORMALIZE PHASE
-        const normalizeStart = Date.now();
-        const rawRows = await db
-          .select()
-          .from(rawRecords)
-          .where(
-            and(
-              eq(rawRecords.ingestionRunId, runId),
-              eq(rawRecords.providerId, input.providerId),
-              eq(rawRecords.isDeleted, false)
-            )
-          );
-
-        const providers = await db
-          .select()
-          .from(providerRegistry)
-          .where(
-            sql`${providerRegistry.providerId} = ${input.providerId} OR ${providerRegistry.providerName} = ${input.providerId}`
-          )
-          .limit(1);
-        const providerName = providers[0]?.providerName || input.providerId;
-
-        for (const row of rawRows) {
-          if (!row.rawPayload) continue;
-          const attrs = JSON.parse(row.rawPayload);
-          const rawPayload = row.rawPayload;
-          const hash = cyrb53(rawPayload);
-
-          const dupCheck = await db
-            .select()
-            .from(signalcoreEvents)
-            .where(eq(signalcoreEvents.contentHash, hash))
-            .limit(1);
-          if (dupCheck.length > 0) {
             recordsSkipped++;
             continue;
           }
 
-          const workClass = getAttr(attrs, "workclass", "permitclass", "type", "permit_type");
-          const workDesc = getAttr(attrs, "proposedworkdescription", "description", "workdescription", "comments");
-          const title =
-            row.rawTitle ||
-            (workClass && workDesc
-              ? `${workClass}: ${workDesc}`
-              : workClass || workDesc || "Building Permit");
-          const description = row.rawDescription || workDesc || "";
-
-          const address = row.rawLocation || getAttr(attrs, "siteaddress", "address", "fulladdress", "location") || "";
-          let lat: string | null = null;
-          let lng: string | null = null;
-
-          if (row.rawMetadata) {
-            try {
-              const meta = JSON.parse(row.rawMetadata);
-              if (meta.geometry?.y) lat = String(meta.geometry.y);
-              if (meta.geometry?.x) lng = String(meta.geometry.x);
-            } catch {
-              // ignore
-            }
-          }
-          if (!lat) lat = getAttr(attrs, "latitude", "lat", "y") || null;
-          if (!lng) lng = getAttr(attrs, "longitude", "lng", "long", "x") || null;
-
-          const appliedDateMs = attrs["applieddate"] || attrs["applied_date"] || attrs["dateapplied"];
-          const publishedAt = msToDate(appliedDateMs);
-
-          let city = getAttr(attrs, "city", "sitecity", "jurisdiction");
-          if (!city && address) {
-            const match = address.match(/,\s*([A-Za-z\s]+),?\s*(?:NC|North Carolina)?/i);
-            if (match) city = match[1].trim();
-          }
-          if (!city) city = "Raleigh";
-
-          const county = getAttr(attrs, "county", "sitecounty") || "Wake";
-          const state = getAttr(attrs, "state", "sitestate") || "NC";
-          const zipCode = getAttr(attrs, "zip", "zipcode", "postalcode", "sitezip") || null;
-
-          await db.insert(signalcoreEvents).values({
-            providerId: row.providerId,
-            externalId: row.sourceRecordId || null,
-            eventType: "building_permit",
-            title,
-            description,
-            county,
-            state,
-            city,
-            zipCode,
-            lat,
-            lng,
-            address,
-            publishedAt,
-            ingestedAt: new Date(),
-            confidence: 70,
-            status: "active",
-            contentHash: hash,
-            rawData: rawPayload,
-            dataSource: providerName,
-            provenance: "LIVE",
-          });
-          recordsNormalized++;
-        }
-        const resolveLatency = Date.now() - normalizeStart;
-        const totalLatency = Date.now() - overallStart;
-
-        // Update run
-        await db
-          .update(ingestionRuns)
-          .set({
-            status: "completed",
-            completedAt: now,
-            recordsObserved,
-            recordsCreated,
-            recordsResolved: recordsNormalized,
-            fetchLatencyMs: fetchLatency,
-            parseLatencyMs: parseLatency,
-            resolveLatencyMs: resolveLatency,
-            totalLatencyMs: totalLatency,
-            sourceRecordCount: recordsObserved,
-          })
-          .where(eq(ingestionRuns.id, runId));
-
-        return {
-          success: true,
-          runId,
-          recordsObserved,
-          recordsCreated,
-          recordsNormalized,
-          recordsSkipped,
-          totalLatencyMs: totalLatency,
-        };
-      } catch (err: any) {
-        const fetchError = err?.message || String(err);
-        if (runId) {
-          await db
-            .update(ingestionRuns)
-            .set({
-              status: "failed",
-              completedAt: new Date(),
-              recordsObserved,
-              recordsCreated,
-              recordsResolved: recordsNormalized,
-              error: fetchError,
-              errorCode: "RUN_ERROR",
-              totalLatencyMs: Date.now() - overallStart,
+          // Insert raw record
+          const rawResult = await db
+            .insert(rawRecords)
+            .values({
+              providerId: input.providerId,
+              sourceRecordId: record.sourceRecordId,
+              sourceUrl: record.sourceUrl,
+              rawPayload,
+              rawTitle: record.title,
+              rawDescription: record.description,
+              rawLocation: record.address,
+              rawStatus: record.status,
+              ingestionRunId: run.id,
+              observedAt: new Date(),
+              resolvedAt: new Date(),
+              provenance: "LIVE",
+              isDeleted: false,
             })
-            .where(eq(ingestionRuns.id, runId));
+            .returning();
+          const rawRecord = rawResult[0];
+
+          // ── Write to kestovar_canonical_events (CANONICAL) ──
+          const canonicalId = generateCanonicalId();
+          await db.insert(kestovarCanonicalEvents).values({
+            canonicalId,
+            providerId: input.providerId,
+            sourceRecordId: record.sourceRecordId || null,
+            sourceUrl: record.sourceUrl || null,
+            eventType: record.eventType || "permit",
+            title: record.title || "Untitled",
+            description: record.description || null,
+            permitType: record.permitType || null,
+            permitClass: record.permitClass || null,
+            workClass: record.workClass || null,
+            county: record.county || null,
+            state: record.state || null,
+            city: record.city || null,
+            zipCode: record.zipCode || null,
+            address: record.address || null,
+            lat: record.lat || null,
+            lng: record.lng || null,
+            parcelId: record.parcelId || null,
+            applicationDate: toTimestamp(record.applicationDate),
+            issueDate: toTimestamp(record.issueDate),
+            status: record.status || null,
+            statusMapped: record.statusMapped || null,
+            value: record.value || null,
+            contractorName: record.contractorName || null,
+            contractorPhone: record.contractorPhone || null,
+            contractorEmail: record.contractorEmail || null,
+            ownerName: record.ownerName || null,
+            rawData: record.rawData || rawPayload,
+            normalizedData: JSON.stringify(record),
+            contentHash,
+            publishedAt: toTimestamp(record.publishedAt),
+            ingestedAt: new Date(),
+            updatedAt: new Date(),
+            confidence: record.confidence || 0.5,
+            statusCanonical: "active",
+            provenance: "LIVE",
+            lineageVersion: 1,
+          });
+
+          recordsCreated++;
+        } catch (e) {
+          recordsFailed++;
+          console.error(`[Ingestion] Failed to process record: ${e}`);
         }
-        return {
-          success: false,
-          runId: runId || 0,
-          recordsObserved,
+      }
+
+      // Update ingestion run
+      await db
+        .update(ingestionRuns)
+        .set({
+          completedAt: new Date(),
+          status: recordsFailed > 0 ? "partial" : "success",
           recordsCreated,
-          recordsNormalized,
-          recordsSkipped,
-          error: fetchError,
-        };
-      }
-    }),
-
-  // ─── Get ingestion status ───
-  status: publicQuery
-    .input(
-      z
-        .object({
-          runId: z.number().optional(),
+          recordsResolved: recordsCreated,
+          recordsFailed,
+          totalLatencyMs: Date.now() - start,
+          metadata: JSON.stringify(input.metadata || {}),
         })
-        .optional()
-    )
-    .query(async ({ ctx, input }) => {
-      const db = getDbFromContext(ctx.env);
-
-      if (input?.runId) {
-        const runs = await db
-          .select()
-          .from(ingestionRuns)
-          .where(eq(ingestionRuns.id, input.runId))
-          .limit(1);
-        if (runs.length === 0) {
-          return { found: false, run: null };
-        }
-        return { found: true, run: runs[0] };
-      }
-
-      // Return latest runs summary
-      const latestRuns = await db
-        .select()
-        .from(ingestionRuns)
-        .orderBy(desc(ingestionRuns.startedAt))
-        .limit(20);
-
-      const totalRuns = latestRuns.length;
-      const completed = latestRuns.filter((r) => r.status === "completed").length;
-      const failed = latestRuns.filter((r) => r.status === "failed").length;
-      const running = latestRuns.filter((r) => r.status === "running").length;
-      const totalObserved = latestRuns.reduce((sum, r) => sum + (r.recordsObserved || 0), 0);
-      const totalCreated = latestRuns.reduce((sum, r) => sum + (r.recordsCreated || 0), 0);
-      const totalResolved = latestRuns.reduce((sum, r) => sum + (r.recordsResolved || 0), 0);
+        .where(eq(ingestionRuns.id, run.id));
 
       return {
-        summary: { totalRuns, completed, failed, running, totalObserved, totalCreated, totalResolved },
-        latestRuns,
+        runId: run.id,
+        recordsObserved: input.rawRecords.length,
+        recordsCreated,
+        recordsSkipped,
+        recordsFailed,
+        durationMs: Date.now() - start,
       };
     }),
+
+  // ── Get ingestion runs ─────────────────────────────────
+  runs: publicQuery
+    .input(
+      z.object({
+        providerId: z.string().optional(),
+        limit: z.number().min(1).max(100).default(50),
+        offset: z.number().min(0).default(0),
+      }).optional()
+    )
+    .query(async ({ input }) => {
+      const db = getDbFromContext();
+      const conditions = [];
+      if (input?.providerId) conditions.push(eq(ingestionRuns.providerId, input.providerId));
+
+      const runs = await db
+        .select()
+        .from(ingestionRuns)
+        .where(conditions.length > 0 ? and(...conditions) : undefined)
+        .orderBy(desc(ingestionRuns.startedAt))
+        .limit(input?.limit || 50)
+        .offset(input?.offset || 0);
+
+      return { runs, total: runs.length };
+    }),
+
+  // ── Get ingestion stats ────────────────────────────────
+  stats: publicQuery.query(async () => {
+    const db = getDbFromContext();
+    const totalRuns = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(ingestionRuns)
+      .get();
+    const totalSources = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(ingestionSources)
+      .get();
+    const totalRecords = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(rawRecords)
+      .get();
+    const totalCanonical = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(kestovarCanonicalEvents)
+      .get();
+
+    return {
+      totalRuns: totalRuns?.count || 0,
+      totalSources: totalSources?.count || 0,
+      totalRawRecords: totalRecords?.count || 0,
+      totalCanonicalRecords: totalCanonical?.count || 0,
+    };
+  }),
 });
