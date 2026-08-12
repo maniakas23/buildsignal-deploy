@@ -30,15 +30,15 @@ import {
 
 // ─── Color Palette ───────────────────────────────────────────────────
 const COLORS = {
-  deepNavy: '#0B1F33',
-  signalBlue: '#1F5EFF',
-  insightTeal: '#18A999',
-  opportunityAmber: '#F4A261',
-  white: '#FFFFFF',
-  lightGrey: '#F5F5F5',
-  darkGrey: '#333333',
-  errorRed: '#D32F2F',
-  borderGrey: '#E2E8F0',
+  deepNavy: 'var(--bs-text-primary)',
+  signalBlue: 'var(--bs-action)',
+  insightTeal: 'var(--bs-intelligence)',
+  opportunityAmber: 'var(--bs-opportunity)',
+  white: 'var(--bs-surface)',
+  lightGrey: 'var(--bs-surface-hover)',
+  darkGrey: 'var(--bs-text-primary)',
+  errorRed: 'var(--bs-error)',
+  borderGrey: 'var(--bs-border)',
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────
@@ -86,9 +86,9 @@ function getNotificationBorderColor(type: string) {
 
 function getNotificationBgColor(type: string) {
   const t = type.toLowerCase()
-  if (t.includes('critical') || t.includes('error')) return 'bg-red-50/50'
-  if (t.includes('warn')) return 'bg-amber-50/50'
-  return 'bg-blue-50/50'
+  if (t.includes('critical') || t.includes('error')) return 'bg-red-500/5'
+  if (t.includes('warn')) return 'bg-amber-500/5'
+  return 'bg-blue-500/5'
 }
 
 function getConfidenceColor(confidence: number) {
@@ -100,7 +100,7 @@ function getConfidenceColor(confidence: number) {
 // ─── Skeleton Components ─────────────────────────────────────────────
 function StatCardSkeleton() {
   return (
-    <div className="rounded-lg border border-[#E2E8F0] bg-white p-4">
+    <div className="rounded-lg border border-[var(--bs-border)] bg-[var(--bs-surface)] p-4">
       <Skeleton className="h-4 w-28 bg-ink-tertiary/10 mb-2" />
       <Skeleton className="h-8 w-20 bg-ink-tertiary/10 mb-1" />
       <Skeleton className="h-3 w-32 bg-ink-tertiary/10 mt-1" />
@@ -110,7 +110,7 @@ function StatCardSkeleton() {
 
 function ChartPlaceholderSkeleton() {
   return (
-    <Card className="rounded-lg border border-[#E2E8F0] bg-white">
+    <Card className="rounded-lg border border-[var(--bs-border)] bg-[var(--bs-surface)]">
       <CardHeader className="p-4 pb-0">
         <Skeleton className="h-6 w-32 bg-ink-tertiary/10" />
       </CardHeader>
@@ -123,7 +123,7 @@ function ChartPlaceholderSkeleton() {
 
 function OpportunityRowSkeleton() {
   return (
-    <div className="grid grid-cols-12 gap-4 items-center px-4 py-3 border-b border-[#E2E8F0]">
+    <div className="grid grid-cols-12 gap-4 items-center px-4 py-3 border-b border-[var(--bs-border)]">
       <div className="col-span-4"><Skeleton className="h-4 w-full bg-ink-tertiary/10" /></div>
       <div className="col-span-3 hidden sm:block"><Skeleton className="h-4 w-20 bg-ink-tertiary/10" /></div>
       <div className="col-span-2 hidden md:block"><Skeleton className="h-5 w-16 bg-ink-tertiary/10" /></div>
@@ -135,7 +135,7 @@ function OpportunityRowSkeleton() {
 
 function AlertItemSkeleton() {
   return (
-    <div className="rounded-lg border border-[#E2E8F0] p-3">
+    <div className="rounded-lg border border-[var(--bs-border)] p-3">
       <div className="flex items-start gap-3">
         <Skeleton className="h-2 w-2 rounded-full mt-1.5 shrink-0 bg-ink-tertiary/10" />
         <div className="flex-1 space-y-2">
@@ -150,7 +150,7 @@ function AlertItemSkeleton() {
 // ─── Error Card ──────────────────────────────────────────────────────
 function ErrorCard({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
-    <div className="rounded-lg border border-[#E2E8F0] bg-white p-4 text-center">
+    <div className="rounded-lg border border-[var(--bs-border)] bg-[var(--bs-surface)] p-4 text-center">
       <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-canvas flex items-center justify-center">
         <AlertTriangle className="w-5 h-5 text-accent-amber" />
       </div>
@@ -180,7 +180,7 @@ function EmptyCard({
   description: string
 }) {
   return (
-    <div className="rounded-lg border border-[#E2E8F0] bg-white p-6 text-center">
+    <div className="rounded-lg border border-[var(--bs-border)] bg-[var(--bs-surface)] p-6 text-center">
       <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-canvas flex items-center justify-center">
         {icon}
       </div>
@@ -260,11 +260,11 @@ export function Dashboard() {
         </div>
         <div className="flex items-center gap-3">
           <button
-            className="inline-flex items-center gap-2 rounded-md border border-[#E2E8F0] bg-white px-3 py-2 text-sm font-medium text-[#333333] transition-all duration-200 hover:bg-[#F5F5F5] motion-reduce:transition-none"
+            className="inline-flex items-center gap-2 rounded-md border border-[var(--bs-border)] bg-[var(--bs-surface)] px-3 py-2 text-sm font-medium text-[var(--bs-text-primary)] transition-all duration-200 hover:bg-[var(--bs-surface-hover)] motion-reduce:transition-none"
             type="button"
           >
             Last 30 days
-            <ChevronDown className="h-4 w-4 text-[#9AA5B1]" />
+            <ChevronDown className="h-4 w-4 text-[var(--bs-text-tertiary)]" />
           </button>
           <button
             className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] motion-reduce:transition-none motion-reduce:hover:scale-100"
@@ -285,7 +285,7 @@ export function Dashboard() {
 
       {/* ─── Data Freshness / Health Banner ─────────────────────────── */}
       {healthLoading ? (
-        <div className="mb-6 rounded-lg border border-[#E2E8F0] bg-white p-4">
+        <div className="mb-6 rounded-lg border border-[var(--bs-border)] bg-[var(--bs-surface)] p-4">
           <div className="flex items-center gap-4 flex-wrap">
             <Skeleton className="h-6 w-28 bg-ink-tertiary/10" />
             <Skeleton className="h-6 w-24 bg-ink-tertiary/10" />
@@ -306,7 +306,7 @@ export function Dashboard() {
           </div>
         </div>
       ) : healthScore ? (
-        <div className="mb-6 rounded-lg border border-[#E2E8F0] bg-white p-4 transition-all duration-200 hover:shadow-sm">
+        <div className="mb-6 rounded-lg border border-[var(--bs-border)] bg-[var(--bs-surface)] p-4 transition-all duration-200 hover:shadow-sm">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
             <div className="flex items-center gap-2">
               <Activity className="h-4 w-4 text-accent-indigo" />
@@ -360,7 +360,7 @@ export function Dashboard() {
           />
         ) : (
           <div
-            className="rounded-lg border border-[#E2E8F0] bg-white p-4 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+            className="rounded-lg border border-[var(--bs-border)] bg-[var(--bs-surface)] p-4 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0"
             style={{ borderLeftWidth: '4px', borderLeftColor: COLORS.signalBlue }}
           >
             <p
@@ -373,12 +373,12 @@ export function Dashboard() {
               <p className="font-mono text-2xl font-medium md:text-[32px]" style={{ color: COLORS.deepNavy }}>
                 {countySummary?.total ?? 0}
               </p>
-              <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+              <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-semibold text-emerald-400">
                 <TrendingUp className="mr-1 h-3 w-3" />
                 {countySummary?.active ?? 0} active
               </span>
             </div>
-            <p className="mt-1 text-xs text-[#9AA5B1]">counties across all coverage tiers</p>
+            <p className="mt-1 text-xs text-[var(--bs-text-tertiary)]">counties across all coverage tiers</p>
           </div>
         )}
 
@@ -392,7 +392,7 @@ export function Dashboard() {
           />
         ) : (
           <div
-            className="rounded-lg border border-[#E2E8F0] bg-white p-4 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+            className="rounded-lg border border-[var(--bs-border)] bg-[var(--bs-surface)] p-4 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0"
             style={{ borderLeftWidth: '4px', borderLeftColor: COLORS.opportunityAmber }}
           >
             <p
@@ -405,12 +405,12 @@ export function Dashboard() {
               <p className="font-mono text-2xl font-medium md:text-[32px]" style={{ color: COLORS.deepNavy }}>
                 {patternData?.total ?? 0}
               </p>
-              <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">
+              <span className="inline-flex items-center rounded-full bg-blue-500/10 px-2 py-0.5 text-xs font-semibold text-blue-400">
                 <AlertCircle className="mr-1 h-3 w-3" />
                 Intelligence
               </span>
             </div>
-            <p className="mt-1 text-xs text-[#9AA5B1]">across all monitored counties</p>
+            <p className="mt-1 text-xs text-[var(--bs-text-tertiary)]">across all monitored counties</p>
           </div>
         )}
 
@@ -424,7 +424,7 @@ export function Dashboard() {
           />
         ) : (
           <div
-            className="rounded-lg border border-[#E2E8F0] bg-white p-4 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+            className="rounded-lg border border-[var(--bs-border)] bg-[var(--bs-surface)] p-4 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0"
             style={{ borderLeftWidth: '4px', borderLeftColor: COLORS.insightTeal }}
           >
             <p
@@ -437,15 +437,15 @@ export function Dashboard() {
               <p className="font-mono text-2xl font-medium md:text-[32px]" style={{ color: COLORS.deepNavy }}>
                 {countySummary?.totalEvents ?? 0}
               </p>
-              <span className="text-xs font-medium text-[#9AA5B1]">events</span>
+              <span className="text-xs font-medium text-[var(--bs-text-tertiary)]">events</span>
             </div>
-            <p className="mt-1 text-xs text-[#9AA5B1]">from all active data feeds</p>
+            <p className="mt-1 text-xs text-[var(--bs-text-tertiary)]">from all active data feeds</p>
           </div>
         )}
 
         {/* Pipeline Value */}
         <div
-          className="rounded-lg border border-[#E2E8F0] bg-white p-4 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+          className="rounded-lg border border-[var(--bs-border)] bg-[var(--bs-surface)] p-4 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0"
           style={{ borderLeftWidth: '4px', borderLeftColor: COLORS.deepNavy }}
         >
           <p
@@ -463,7 +463,7 @@ export function Dashboard() {
               Coming soon
             </Badge>
           </div>
-          <p className="mt-1 text-xs text-[#9AA5B1]">Live financial data incoming</p>
+          <p className="mt-1 text-xs text-[var(--bs-text-tertiary)]">Live financial data incoming</p>
         </div>
       </div>
 
@@ -473,7 +473,7 @@ export function Dashboard() {
         {countyLoading ? (
           <ChartPlaceholderSkeleton />
         ) : (
-          <Card className="rounded-lg border border-[#E2E8F0] bg-white transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+          <Card className="rounded-lg border border-[var(--bs-border)] bg-[var(--bs-surface)] transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0">
             <CardHeader className="flex flex-row items-center justify-between p-4 pb-0">
               <CardTitle
                 className="text-lg font-semibold"
@@ -504,7 +504,7 @@ export function Dashboard() {
         {countyLoading ? (
           <ChartPlaceholderSkeleton />
         ) : (
-          <Card className="rounded-lg border border-[#E2E8F0] bg-white transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+          <Card className="rounded-lg border border-[var(--bs-border)] bg-[var(--bs-surface)] transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0">
             <CardHeader className="flex flex-row items-center justify-between p-4 pb-0">
               <CardTitle
                 className="text-lg font-semibold"
@@ -536,7 +536,7 @@ export function Dashboard() {
       <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Recent Opportunities Feed */}
         <div className="lg:col-span-2">
-          <Card className="rounded-lg border border-[#E2E8F0] bg-white transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+          <Card className="rounded-lg border border-[var(--bs-border)] bg-[var(--bs-surface)] transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0">
             <CardHeader className="flex flex-row items-center justify-between p-4 pb-2">
               <div>
                 <CardTitle
@@ -545,7 +545,7 @@ export function Dashboard() {
                 >
                   Recent Patterns
                 </CardTitle>
-                <p className="mt-1 text-xs text-[#9AA5B1]">Latest intelligence from monitored counties</p>
+                <p className="mt-1 text-xs text-[var(--bs-text-tertiary)]">Latest intelligence from monitored counties</p>
               </div>
               <Badge
                 variant="outline"
@@ -556,7 +556,7 @@ export function Dashboard() {
             </CardHeader>
             <CardContent className="p-0 pt-2">
               {/* Header row */}
-              <div className="grid grid-cols-12 gap-4 border-b border-[#E2E8F0] px-4 pb-2 text-xs font-semibold uppercase tracking-[0.5px] text-[#9AA5B1]">
+              <div className="grid grid-cols-12 gap-4 border-b border-[var(--bs-border)] px-4 pb-2 text-xs font-semibold uppercase tracking-[0.5px] text-[var(--bs-text-tertiary)]">
                 <div className="col-span-4">Pattern</div>
                 <div className="col-span-3 hidden sm:block">Location</div>
                 <div className="col-span-2 hidden md:block">Type</div>
@@ -601,34 +601,34 @@ export function Dashboard() {
                     <div
                       key={opp.id}
                       className={`grid grid-cols-12 gap-4 items-center px-4 py-3 transition-colors duration-200 ${
-                        hoveredOpportunity === opp.id ? 'bg-[#F5F5F5]' : ''
+                        hoveredOpportunity === opp.id ? 'bg-[var(--bs-surface-hover)]' : ''
                       }`}
-                      style={{ borderBottom: '1px solid #E2E8F0' }}
+                      style={{ borderBottom: '1px solid var(--bs-border)' }}
                       onMouseEnter={() => setHoveredOpportunity(opp.id)}
                       onMouseLeave={() => setHoveredOpportunity(null)}
                     >
                       <div className="col-span-4">
-                        <p className="truncate text-sm font-semibold text-[#0B1F33]">
+                        <p className="truncate text-sm font-semibold text-[var(--bs-text-primary)]">
                           {opp.title}
                         </p>
-                        <p className="truncate text-xs text-[#9AA5B1] mt-0.5">
+                        <p className="truncate text-xs text-[var(--bs-text-tertiary)] mt-0.5">
                           {opp.description?.slice(0, 60)}{opp.description && opp.description.length > 60 ? '...' : ''}
                         </p>
                       </div>
                       <div className="col-span-3 hidden sm:block">
-                        <p className="text-sm text-[#9AA5B1] flex items-center gap-1">
+                        <p className="text-sm text-[var(--bs-text-tertiary)] flex items-center gap-1">
                           <MapPin className="h-3 w-3 shrink-0" />
                           {opp.county}{opp.state ? `, ${opp.state}` : ''}
                         </p>
                       </div>
                       <div className="col-span-2 hidden md:block">
-                        <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium bg-[#1F5EFF]/10 text-[#1F5EFF] border-[#1F5EFF]/20">
+                        <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium bg-[var(--bs-action)]/10 text-[var(--bs-action)] border-[var(--bs-action)]/20">
                           {opp.type ?? 'Pattern'}
                         </span>
                       </div>
                       <div className="col-span-2 text-center">
                         <div className="flex items-center justify-center gap-2">
-                          <div className="h-1.5 w-16 overflow-hidden rounded-full bg-[#E2E8F0]">
+                          <div className="h-1.5 w-16 overflow-hidden rounded-full bg-[var(--bs-border)]">
                             <div
                               className="h-full rounded-full transition-all duration-500"
                               style={{
@@ -637,13 +637,13 @@ export function Dashboard() {
                               }}
                             />
                           </div>
-                          <span className="font-mono text-xs font-medium text-[#333333]">
+                          <span className="font-mono text-xs font-medium text-[var(--bs-text-primary)]">
                             {opp.confidence ?? 0}%
                           </span>
                         </div>
                       </div>
                       <div className="col-span-3 text-right sm:col-span-1">
-                        <p className="text-xs text-[#9AA5B1] font-mono">#{opp.id}</p>
+                        <p className="text-xs text-[var(--bs-text-tertiary)] font-mono">#{opp.id}</p>
                       </div>
                     </div>
                   ))}
@@ -655,7 +655,7 @@ export function Dashboard() {
 
         {/* Alert Summary */}
         <div>
-          <Card className="h-full rounded-lg border border-[#E2E8F0] bg-white transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+          <Card className="h-full rounded-lg border border-[var(--bs-border)] bg-[var(--bs-surface)] transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0">
             <CardHeader className="flex flex-row items-center justify-between p-4 pb-2">
               <CardTitle
                 className="text-lg font-semibold"
@@ -722,7 +722,7 @@ export function Dashboard() {
                             {alert.message}
                           </p>
                           <div className="flex items-center gap-2 mt-1.5">
-                            <span className="inline-flex items-center rounded-full border px-1.5 py-0.5 text-[10px] font-medium bg-white/60 text-ink-secondary border-ink-tertiary/10">
+                            <span className="inline-flex items-center rounded-full border px-1.5 py-0.5 text-[10px] font-medium bg-[var(--bs-surface)]/60 text-ink-secondary border-ink-tertiary/10">
                               {alert.type}
                             </span>
                             <p className="text-[10px] text-ink-tertiary">{relativeTime(alert.createdAt)}</p>
@@ -755,19 +755,19 @@ export function Dashboard() {
           View All Opportunities
         </Button>
         <Button
-          className="border border-[#0B1F33] bg-white text-[#0B1F33] transition-all duration-200 hover:scale-[1.02] hover:bg-[#F5F5F5] active:scale-[0.98] motion-reduce:transition-none motion-reduce:hover:scale-100"
+          className="border border-[var(--bs-text-primary)] bg-[var(--bs-surface)] text-[var(--bs-text-primary)] transition-all duration-200 hover:scale-[1.02] hover:bg-[var(--bs-surface-hover)] active:scale-[0.98] motion-reduce:transition-none motion-reduce:hover:scale-100"
         >
           <Bell className="mr-2 h-4 w-4" />
           Manage Alerts
         </Button>
         <Button
-          className="border border-[#0B1F33] bg-white text-[#0B1F33] transition-all duration-200 hover:scale-[1.02] hover:bg-[#F5F5F5] active:scale-[0.98] motion-reduce:transition-none motion-reduce:hover:scale-100"
+          className="border border-[var(--bs-text-primary)] bg-[var(--bs-surface)] text-[var(--bs-text-primary)] transition-all duration-200 hover:scale-[1.02] hover:bg-[var(--bs-surface-hover)] active:scale-[0.98] motion-reduce:transition-none motion-reduce:hover:scale-100"
         >
           <Download className="mr-2 h-4 w-4" />
           Export Report
         </Button>
         <Button
-          className="border border-[#0B1F33] bg-white text-[#0B1F33] transition-all duration-200 hover:scale-[1.02] hover:bg-[#F5F5F5] active:scale-[0.98] motion-reduce:transition-none motion-reduce:hover:scale-100"
+          className="border border-[var(--bs-text-primary)] bg-[var(--bs-surface)] text-[var(--bs-text-primary)] transition-all duration-200 hover:scale-[1.02] hover:bg-[var(--bs-surface-hover)] active:scale-[0.98] motion-reduce:transition-none motion-reduce:hover:scale-100"
         >
           <Plus className="mr-2 h-4 w-4" />
           Add to Watchlist
