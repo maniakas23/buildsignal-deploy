@@ -74,30 +74,30 @@ export function NotificationBell() {
         className={cn(
           "relative p-2 rounded-lg transition-colors",
           open
-            ? "bg-[rgba(31,94,255,0.08)] text-[#1F5EFF]"
-            : "text-[#6B7B8F] hover:text-[#0B1F33] hover:bg-[#F5F5F5]"
+            ? "bg-[var(--bs-action)]/8 text-[var(--bs-action)]"
+            : "text-[var(--bs-text-tertiary)] hover:text-[var(--bs-text-primary)] hover:bg-[var(--bs-surface-hover)]"
         )}
         aria-label="Notifications"
       >
         <Bell className="h-5 w-5" />
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 h-4.5 min-w-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center border-2 border-white">
+          <span className="absolute -top-0.5 -right-0.5 h-4.5 min-w-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center border-2 border-[var(--bs-surface)]">
             {unreadCount > 99 ? "99+" : unreadCount}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-[360px] bg-white rounded-xl shadow-lg border border-[#F5F5F5] z-50 overflow-hidden">
+        <div className="absolute right-0 mt-2 w-[360px] bg-[var(--bs-surface)] rounded-xl shadow-lg border border-[var(--bs-border)] z-50 overflow-hidden">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-[#F5F5F5]">
-            <h3 className="font-semibold text-sm text-[#0B1F33]">Notifications</h3>
+          <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--bs-border)]">
+            <h3 className="font-semibold text-sm text-[var(--bs-text-primary)]">Notifications</h3>
             <div className="flex items-center gap-1">
               {unreadCount > 0 && (
                 <button
                   onClick={handleMarkAllRead}
                   disabled={markAllRead.isPending}
-                  className="text-xs text-[#1F5EFF] hover:underline font-medium px-2 py-1 rounded hover:bg-[rgba(31,94,255,0.04)] transition-colors"
+                  className="text-xs text-[var(--bs-action)] hover:underline font-medium px-2 py-1 rounded hover:bg-[var(--bs-action)]/4 transition-colors"
                   title="Mark all as read"
                 >
                   {markAllRead.isPending ? (
@@ -109,7 +109,7 @@ export function NotificationBell() {
               )}
               <button
                 onClick={() => setOpen(false)}
-                className="p-1 rounded hover:bg-[#F5F5F5] text-[#6B7B8F] transition-colors"
+                className="p-1 rounded hover:bg-[var(--bs-surface-hover)] text-[var(--bs-text-tertiary)] transition-colors"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -120,33 +120,33 @@ export function NotificationBell() {
           <div className="max-h-[360px] overflow-y-auto">
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-5 w-5 animate-spin text-[#1F5EFF]" />
+                <Loader2 className="h-5 w-5 animate-spin text-[var(--bs-action)]" />
               </div>
             ) : data?.items && data.items.length > 0 ? (
-              <div className="divide-y divide-[#F5F5F5]">
+              <div className="divide-y divide-[var(--bs-border)]">
                 {data.items.map((item) => (
                   <div
                     key={item.id}
                     className={cn(
                       "px-4 py-3 flex gap-3 group transition-colors",
-                      !item.read ? "bg-[rgba(31,94,255,0.02)]" : "bg-white",
-                      "hover:bg-[#F7F9FC]"
+                      !item.read ? "bg-[var(--bs-action)]/[0.02]" : "bg-[var(--bs-surface)]",
+                      "hover:bg-[var(--bs-surface-hover)]"
                     )}
                   >
                     <div
                       className={cn(
                         "mt-0.5 h-2 w-2 rounded-full shrink-0",
-                        !item.read ? "bg-[#1F5EFF]" : "bg-transparent"
+                        !item.read ? "bg-[var(--bs-action)]" : "bg-transparent"
                       )}
                     />
                     <div className="flex-1 min-w-0">
-                      <p className={cn("text-sm", !item.read ? "font-medium text-[#0B1F33]" : "text-[#0B1F33]")}>
+                      <p className={cn("text-sm", !item.read ? "font-medium text-[var(--bs-text-primary)]" : "text-[var(--bs-text-primary)]")}>
                         {item.title}
                       </p>
-                      <p className="text-xs text-[#6B7B8F] mt-0.5 line-clamp-2">
+                      <p className="text-xs text-[var(--bs-text-tertiary)] mt-0.5 line-clamp-2">
                         {item.message}
                       </p>
-                      <p className="text-[10px] text-[#6B7B8F] mt-1">
+                      <p className="text-[10px] text-[var(--bs-text-tertiary)] mt-1">
                         {formatTime(item.createdAt)}
                       </p>
                     </div>
@@ -154,7 +154,7 @@ export function NotificationBell() {
                       {!item.read && (
                         <button
                           onClick={(e) => handleMarkRead(e, item.id)}
-                          className="p-1 rounded hover:bg-[#F5F5F5] text-[#6B7B8F] hover:text-[#1F5EFF] transition-colors"
+                          className="p-1 rounded hover:bg-[var(--bs-surface-hover)] text-[var(--bs-text-tertiary)] hover:text-[var(--bs-action)] transition-colors"
                           title="Mark as read"
                         >
                           <Check className="h-3.5 w-3.5" />
@@ -162,7 +162,7 @@ export function NotificationBell() {
                       )}
                       <button
                         onClick={(e) => handleDelete(e, item.id)}
-                        className="p-1 rounded hover:bg-red-50 text-[#6B7B8F] hover:text-red-500 transition-colors"
+                        className="p-1 rounded hover:bg-red-500/10 text-[var(--bs-text-tertiary)] hover:text-red-400 transition-colors"
                         title="Delete"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -172,19 +172,19 @@ export function NotificationBell() {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8 text-[#6B7B8F]">
-                <Bell className="h-8 w-8 mx-auto mb-2 text-[#E5E5E5]" />
+              <div className="text-center py-8 text-[var(--bs-text-tertiary)]">
+                <Bell className="h-8 w-8 mx-auto mb-2 text-[var(--bs-text-tertiary)]" />
                 <p className="text-sm">No notifications yet</p>
               </div>
             )}
           </div>
 
           {/* Footer */}
-          <div className="border-t border-[#F5F5F5] px-4 py-2.5 bg-[#F7F9FC]">
+          <div className="border-t border-[var(--bs-border)] px-4 py-2.5 bg-[var(--bs-canvas)]">
             <Link
               to="/settings"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2 text-xs text-[#1F5EFF] hover:underline font-medium"
+              className="flex items-center gap-2 text-xs text-[var(--bs-action)] hover:underline font-medium"
             >
               <Settings className="h-3.5 w-3.5" />
               Notification Settings
