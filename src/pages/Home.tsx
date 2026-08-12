@@ -1,8 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { Card, CardContent } from "@/components/ui/card";
 import { NewsletterSignup } from "@/components/marketing/NewsletterSignup";
 import { Footer } from "@/components/ui-custom/Footer";
 import {
@@ -179,25 +177,25 @@ export function Home() {
   ];
 
   return (
-    <div className="min-h-screen bg-white font-sans motion-reduce:transition-none">
+    <div className="min-h-screen bg-[var(--bs-canvas)] font-sans motion-reduce:transition-none">
       {/* ============================================================= */}
       {/*  HERO                                                         */}
       {/* ============================================================= */}
-      <section className="bg-white py-12 md:py-20">
+      <section className="bg-[var(--bs-canvas)] py-12 md:py-20">
         <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
           <div className="max-w-3xl space-y-6">
-            <div className="inline-flex items-center gap-2 rounded-full bg-[#F5F5F5] px-3 py-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-[#1F5EFF]" />
-              <span className="text-[12px] font-semibold uppercase tracking-[0.5px] text-[#333333]">
+            <div className="inline-flex items-center gap-2 rounded-full bg-[var(--bs-surface-hover)] px-3 py-1.5">
+              <Sparkles className="h-3.5 w-3.5 text-[var(--bs-action)]" />
+              <span className="text-[12px] font-semibold uppercase tracking-[0.5px] text-[var(--bs-text-secondary)]">
                 Infrastructure Intelligence Platform
               </span>
             </div>
 
-            <h1 className="text-[32px] font-bold leading-tight tracking-tight text-[#0B1F33] md:text-[42px]">
+            <h1 className="text-[32px] font-bold leading-tight tracking-tight text-[var(--bs-text-primary)] md:text-[42px]">
               Predict Construction Surges Before Your Competitors
             </h1>
 
-            <p className="max-w-2xl text-[16px] leading-[1.5] text-[#333333]">
+            <p className="max-w-2xl text-[16px] leading-[1.5] text-[var(--bs-text-secondary)]">
               AI-powered infrastructure intelligence for construction markets.
               Get actionable permit insights, growth forecasts, and market
               opportunities delivered to your inbox.
@@ -206,56 +204,56 @@ export function Home() {
             <div className="flex flex-col sm:flex-row items-start gap-4 pt-2">
               <Button
                 onClick={() => navigate("/signup")}
-                className="cursor-pointer rounded-[4px] bg-[#1F5EFF] px-6 py-3 text-[14px] font-semibold text-white transition-all duration-200 ease-out hover:scale-105 hover:bg-[#1F5EFF]/90 active:scale-95"
+                className="cursor-pointer rounded-[4px] bg-[var(--bs-action)] px-6 py-3 text-[14px] font-semibold text-white transition-all duration-200 ease-out hover:scale-105 hover:bg-[var(--bs-action)]/90 active:scale-95"
               >
                 Start Your Free Trial
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
               <Button
                 onClick={() => navigate("/pricing")}
-                className="cursor-pointer rounded-[4px] border border-[#0B1F33] bg-white px-6 py-3 text-[14px] font-semibold text-[#0B1F33] transition-all duration-200 ease-out hover:bg-[#F5F5F5] active:scale-95"
+                className="cursor-pointer rounded-[4px] border border-[var(--bs-text-primary)] bg-[var(--bs-surface)] px-6 py-3 text-[14px] font-semibold text-[var(--bs-text-primary)] transition-all duration-200 ease-out hover:bg-[var(--bs-surface-hover)] active:scale-95"
               >
                 View Pricing
               </Button>
             </div>
 
             <div className="flex flex-wrap items-center gap-4 pt-2">
-              <div className="flex items-center gap-1.5 text-[14px] text-[#333333]">
-                <CheckCircle className="h-4 w-4 text-[#18A999]" />
+              <div className="flex items-center gap-1.5 text-[14px] text-[var(--bs-text-secondary)]">
+                <CheckCircle className="h-4 w-4 text-[var(--bs-intelligence)]" />
                 <span>No credit card required</span>
               </div>
-              <div className="flex items-center gap-1.5 text-[14px] text-[#333333]">
-                <CheckCircle className="h-4 w-4 text-[#18A999]" />
+              <div className="flex items-center gap-1.5 text-[14px] text-[var(--bs-text-secondary)]">
+                <CheckCircle className="h-4 w-4 text-[var(--bs-intelligence)]" />
                 <span>14-day free trial</span>
               </div>
-              <div className="flex items-center gap-1.5 text-[14px] text-[#333333]">
-                <CheckCircle className="h-4 w-4 text-[#18A999]" />
+              <div className="flex items-center gap-1.5 text-[14px] text-[var(--bs-text-secondary)]">
+                <CheckCircle className="h-4 w-4 text-[var(--bs-intelligence)]" />
                 <span>Cancel anytime</span>
               </div>
             </div>
 
             <div className="flex items-center gap-2 pt-2">
-              <Shield className="h-4 w-4 text-[#18A999]" />
-              <span className="text-[12px] font-semibold uppercase tracking-[0.5px] text-[#333333]">
-                SOC 2 Type II In Progress · 256-bit Encryption
+              <Shield className="h-4 w-4 text-[var(--bs-intelligence)]" />
+              <span className="text-[12px] font-semibold uppercase tracking-[0.5px] text-[var(--bs-text-secondary)]">
+                SOC 2 Type II In Progress &middot; 256-bit Encryption
               </span>
             </div>
           </div>
         </div>
       </section>
 
-      <div className="h-px bg-[#F5F5F5]" />
+      <div className="h-px bg-[var(--bs-border)]" />
 
       {/* ============================================================= */}
       {/*  HOW BUILDSIGNAL WORKS                                        */}
       {/* ============================================================= */}
-      <section className="bg-white py-12 md:py-16">
+      <section className="bg-[var(--bs-canvas)] py-12 md:py-16">
         <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
           <div className="mb-10 space-y-3">
-            <span className="text-[12px] font-semibold uppercase tracking-[0.5px] text-[#333333]">
+            <span className="text-[12px] font-semibold uppercase tracking-[0.5px] text-[var(--bs-text-secondary)]">
               How BuildSignal Works
             </span>
-            <h2 className="text-[24px] font-semibold text-[#0B1F33]">
+            <h2 className="text-[24px] font-semibold text-[var(--bs-text-primary)]">
               From Data to Decision in Three Steps
             </h2>
           </div>
@@ -265,22 +263,22 @@ export function Home() {
               <div key={step.number} className="relative">
                 {/* Connector line between steps */}
                 {idx < steps.length - 1 && (
-                  <div className="hidden md:block absolute top-6 left-[calc(100%-16px)] w-[calc(100%-32px)] h-[2px] bg-[#F5F5F5]" />
+                  <div className="hidden md:block absolute top-6 left-[calc(100%-16px)] w-[calc(100%-32px)] h-[2px] bg-[var(--bs-border)]" />
                 )}
 
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-[8px] bg-[#F5F5F5]">
-                      <step.icon className="h-5 w-5 text-[#0B1F33]" />
+                    <div className="flex h-12 w-12 items-center justify-center rounded-[8px] bg-[var(--bs-surface-hover)]">
+                      <step.icon className="h-5 w-5 text-[var(--bs-text-primary)]" />
                     </div>
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#1F5EFF] text-[12px] font-bold text-white font-mono">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--bs-action)] text-[12px] font-bold text-white font-mono">
                       {step.number}
                     </div>
                   </div>
-                  <h3 className="text-[18px] font-semibold text-[#0B1F33]">
+                  <h3 className="text-[18px] font-semibold text-[var(--bs-text-primary)]">
                     {step.title}
                   </h3>
-                  <p className="text-[16px] leading-[1.5] text-[#333333]">
+                  <p className="text-[16px] leading-[1.5] text-[var(--bs-text-secondary)]">
                     {step.description}
                   </p>
                 </div>
@@ -290,21 +288,21 @@ export function Home() {
         </div>
       </section>
 
-      <div className="h-px bg-[#F5F5F5]" />
+      <div className="h-px bg-[var(--bs-border)]" />
 
       {/* ============================================================= */}
       {/*  PLATFORM CAPABILITIES                                        */}
       {/* ============================================================= */}
-      <section className="bg-[#F5F5F5] py-12 md:py-16">
+      <section className="bg-[var(--bs-surface)] py-12 md:py-16">
         <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
           <div className="mb-10 space-y-3">
-            <span className="text-[12px] font-semibold uppercase tracking-[0.5px] text-[#333333]">
+            <span className="text-[12px] font-semibold uppercase tracking-[0.5px] text-[var(--bs-text-secondary)]">
               Platform Capabilities
             </span>
-            <h2 className="text-[24px] font-semibold text-[#0B1F33]">
+            <h2 className="text-[24px] font-semibold text-[var(--bs-text-primary)]">
               What BuildSignal Delivers
             </h2>
-            <p className="max-w-xl text-[16px] leading-[1.5] text-[#333333]">
+            <p className="max-w-xl text-[16px] leading-[1.5] text-[var(--bs-text-secondary)]">
               Core capabilities of the platform. Actual coverage and performance
               metrics are available to authenticated users.
             </p>
@@ -314,14 +312,14 @@ export function Home() {
             {capabilities.map((cap) => (
               <Card
                 key={cap.title}
-                className="cursor-pointer rounded-[8px] border border-[#E5E5E5] bg-white p-4 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md"
+                className="cursor-pointer rounded-[8px] border border-[var(--bs-border)] bg-[var(--bs-surface)] p-4 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/20"
               >
                 <CardContent className="p-0 space-y-3">
-                  <cap.icon className="h-5 w-5 text-[#0B1F33]" />
-                  <h3 className="text-[18px] font-semibold text-[#0B1F33]">
+                  <cap.icon className="h-5 w-5 text-[var(--bs-text-primary)]" />
+                  <h3 className="text-[18px] font-semibold text-[var(--bs-text-primary)]">
                     {cap.title}
                   </h3>
-                  <p className="text-[16px] leading-[1.5] text-[#333333]">
+                  <p className="text-[16px] leading-[1.5] text-[var(--bs-text-secondary)]">
                     {cap.description}
                   </p>
                 </CardContent>
@@ -331,18 +329,18 @@ export function Home() {
         </div>
       </section>
 
-      <div className="h-px bg-[#F5F5F5]" />
+      <div className="h-px bg-[var(--bs-border)]" />
 
       {/* ============================================================= */}
       {/*  USE CASES                                                    */}
       {/* ============================================================= */}
-      <section className="bg-white py-12 md:py-16">
+      <section className="bg-[var(--bs-canvas)] py-12 md:py-16">
         <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
           <div className="mb-10 space-y-3">
-            <span className="text-[12px] font-semibold uppercase tracking-[0.5px] text-[#333333]">
+            <span className="text-[12px] font-semibold uppercase tracking-[0.5px] text-[var(--bs-text-secondary)]">
               Use Cases
             </span>
-            <h2 className="text-[24px] font-semibold text-[#0B1F33]">
+            <h2 className="text-[24px] font-semibold text-[var(--bs-text-primary)]">
               Built for Every Player in the Construction Ecosystem
             </h2>
           </div>
@@ -351,17 +349,17 @@ export function Home() {
             {useCases.map((uc) => (
               <Card
                 key={uc.title}
-                className="cursor-pointer rounded-[8px] border border-[#E5E5E5] bg-white p-4 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md"
+                className="cursor-pointer rounded-[8px] border border-[var(--bs-border)] bg-[var(--bs-surface)] p-4 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/20"
               >
                 <CardContent className="p-0 flex items-start gap-4">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[8px] bg-[#F5F5F5]">
-                    <uc.icon className="h-5 w-5 text-[#0B1F33]" />
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[8px] bg-[var(--bs-surface-hover)]">
+                    <uc.icon className="h-5 w-5 text-[var(--bs-text-primary)]" />
                   </div>
                   <div className="space-y-2">
-                    <h3 className="text-[18px] font-semibold text-[#0B1F33]">
+                    <h3 className="text-[18px] font-semibold text-[var(--bs-text-primary)]">
                       {uc.title}
                     </h3>
-                    <p className="text-[16px] leading-[1.5] text-[#333333]">
+                    <p className="text-[16px] leading-[1.5] text-[var(--bs-text-secondary)]">
                       {uc.description}
                     </p>
                   </div>
@@ -372,40 +370,40 @@ export function Home() {
         </div>
       </section>
 
-      <div className="h-px bg-[#F5F5F5]" />
+      <div className="h-px bg-[var(--bs-border)]" />
 
       {/* ============================================================= */}
       {/*  PLATFORM IN ACTION — Dashboard Mockup                        */}
       {/* ============================================================= */}
-      <section className="bg-[#F5F5F5] py-12 md:py-16">
+      <section className="bg-[var(--bs-surface)] py-12 md:py-16">
         <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
           <div className="mb-10 space-y-3">
-            <span className="text-[12px] font-semibold uppercase tracking-[0.5px] text-[#333333]">
+            <span className="text-[12px] font-semibold uppercase tracking-[0.5px] text-[var(--bs-text-secondary)]">
               Platform in Action
             </span>
-            <h2 className="text-[24px] font-semibold text-[#0B1F33]">
+            <h2 className="text-[24px] font-semibold text-[var(--bs-text-primary)]">
               See What BuildSignal Delivers
             </h2>
-            <p className="max-w-xl text-[16px] leading-[1.5] text-[#333333]">
+            <p className="max-w-xl text-[16px] leading-[1.5] text-[var(--bs-text-secondary)]">
               A preview of the intelligence dashboard. All data shown is sample
               data for demonstration purposes.
             </p>
           </div>
 
-          <div className="rounded-[8px] border border-[#E5E5E5] bg-white p-4 shadow-sm md:p-6">
+          <div className="rounded-[8px] border border-[var(--bs-border)] bg-[var(--bs-surface)] p-4 shadow-sm md:p-6">
             {/* Dashboard header */}
             <div className="mb-6 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
               <div>
-                <h3 className="text-[18px] font-semibold text-[#0B1F33]">
+                <h3 className="text-[18px] font-semibold text-[var(--bs-text-primary)]">
                   Market Overview
                 </h3>
-                <p className="text-[14px] text-[#333333]">
+                <p className="text-[14px] text-[var(--bs-text-secondary)]">
                   Sample dashboard preview
                 </p>
               </div>
-              <div className="inline-flex items-center gap-1.5 self-start rounded-[4px] bg-[#F4A261]/15 px-2 py-1">
-                <AlertTriangle className="h-3.5 w-3.5 text-[#F4A261]" />
-                <span className="text-[12px] font-semibold uppercase tracking-[0.5px] text-[#F4A261]">
+              <div className="inline-flex items-center gap-1.5 self-start rounded-[4px] bg-[var(--bs-opportunity)]/15 px-2 py-1">
+                <AlertTriangle className="h-3.5 w-3.5 text-[var(--bs-opportunity)]" />
+                <span className="text-[12px] font-semibold uppercase tracking-[0.5px] text-[var(--bs-opportunity)]">
                   Sample
                 </span>
               </div>
@@ -441,26 +439,26 @@ export function Home() {
               ].map((stat) => (
                 <div
                   key={stat.label}
-                  className="rounded-[4px] border border-[#E5E5E5] bg-white p-4"
+                  className="rounded-[4px] border border-[var(--bs-border)] bg-[var(--bs-canvas)] p-4"
                 >
                   <div className="mb-2 flex items-center justify-between">
-                    <span className="text-[12px] font-semibold uppercase tracking-[0.5px] text-[#333333]">
+                    <span className="text-[12px] font-semibold uppercase tracking-[0.5px] text-[var(--bs-text-secondary)]">
                       {stat.label}
                     </span>
-                    <span className="rounded-[4px] bg-[#F5F5F5] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.5px] text-[#333333]">
+                    <span className="rounded-[4px] bg-[var(--bs-surface-hover)] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.5px] text-[var(--bs-text-secondary)]">
                       Sample
                     </span>
                   </div>
-                  <div className="font-mono text-[24px] font-medium text-[#0B1F33]">
+                  <div className="font-mono text-[24px] font-medium text-[var(--bs-text-primary)]">
                     {stat.value}
                   </div>
                   <div
                     className={`text-[12px] font-semibold ${
                       stat.up === true
-                        ? "text-[#18A999]"
+                        ? "text-[var(--bs-intelligence)]"
                         : stat.up === false
-                          ? "text-[#D32F2F]"
-                          : "text-[#333333]"
+                          ? "text-[var(--bs-error)]"
+                          : "text-[var(--bs-text-secondary)]"
                     }`}
                   >
                     {stat.change}
@@ -472,12 +470,12 @@ export function Home() {
             {/* Chart area + alert */}
             <div className="grid gap-4 lg:grid-cols-3">
               {/* Chart mockup */}
-              <div className="rounded-[4px] border border-[#E5E5E5] bg-white p-4 lg:col-span-2">
+              <div className="rounded-[4px] border border-[var(--bs-border)] bg-[var(--bs-canvas)] p-4 lg:col-span-2">
                 <div className="mb-4 flex items-center justify-between">
-                  <span className="text-[12px] font-semibold uppercase tracking-[0.5px] text-[#333333]">
+                  <span className="text-[12px] font-semibold uppercase tracking-[0.5px] text-[var(--bs-text-secondary)]">
                     Permit Volume Trend
                   </span>
-                  <span className="rounded-[4px] bg-[#F5F5F5] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.5px] text-[#333333]">
+                  <span className="rounded-[4px] bg-[var(--bs-surface-hover)] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.5px] text-[var(--bs-text-secondary)]">
                     Sample
                   </span>
                 </div>
@@ -489,29 +487,29 @@ export function Home() {
                   >
                     <polyline
                       fill="none"
-                      stroke="#1F5EFF"
+                      stroke="var(--bs-action)"
                       strokeWidth="2"
                       points="0,80 40,70 80,75 120,60 160,55 200,45 240,50 280,35 320,40 360,25 400,20"
                     />
                     <polyline
                       fill="none"
-                      stroke="#18A999"
+                      stroke="var(--bs-intelligence)"
                       strokeWidth="2"
                       strokeDasharray="4,4"
                       points="0,85 40,78 80,80 120,68 160,62 200,52 240,58 280,42 320,48 360,32 400,28"
                     />
-                    <circle cx="360" cy="25" r="4" fill="#1F5EFF" />
-                    <circle cx="400" cy="20" r="4" fill="#1F5EFF" />
+                    <circle cx="360" cy="25" r="4" fill="var(--bs-action)" />
+                    <circle cx="400" cy="20" r="4" fill="var(--bs-action)" />
                   </svg>
                 </div>
                 <div className="mt-2 flex items-center gap-4">
                   <div className="flex items-center gap-1.5">
-                    <div className="h-2 w-2 rounded-full bg-[#1F5EFF]" />
-                    <span className="text-[12px] text-[#333333]">Actual</span>
+                    <div className="h-2 w-2 rounded-full bg-[var(--bs-action)]" />
+                    <span className="text-[12px] text-[var(--bs-text-secondary)]">Actual</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <div className="h-2 w-2 rounded-full bg-[#18A999]" />
-                    <span className="text-[12px] text-[#333333]">
+                    <div className="h-2 w-2 rounded-full bg-[var(--bs-intelligence)]" />
+                    <span className="text-[12px] text-[var(--bs-text-secondary)]">
                       Predicted
                     </span>
                   </div>
@@ -519,36 +517,36 @@ export function Home() {
               </div>
 
               {/* Alert preview */}
-              <div className="rounded-[4px] border border-[#E5E5E5] bg-white p-4">
+              <div className="rounded-[4px] border border-[var(--bs-border)] bg-[var(--bs-canvas)] p-4">
                 <div className="mb-3 flex items-center justify-between">
-                  <span className="text-[12px] font-semibold uppercase tracking-[0.5px] text-[#333333]">
+                  <span className="text-[12px] font-semibold uppercase tracking-[0.5px] text-[var(--bs-text-secondary)]">
                     Latest Alert
                   </span>
-                  <span className="rounded-[4px] bg-[#F5F5F5] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.5px] text-[#333333]">
+                  <span className="rounded-[4px] bg-[var(--bs-surface-hover)] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.5px] text-[var(--bs-text-secondary)]">
                     Sample
                   </span>
                 </div>
-                <div className="mb-3 rounded-[4px] bg-[#F4A261]/10 p-3">
+                <div className="mb-3 rounded-[4px] bg-[var(--bs-opportunity)]/10 p-3">
                   <div className="flex items-start gap-2">
-                    <Zap className="h-4 w-4 shrink-0 text-[#F4A261]" />
+                    <Zap className="h-4 w-4 shrink-0 text-[var(--bs-opportunity)]" />
                     <div>
-                      <p className="text-[14px] font-semibold text-[#0B1F33]">
+                      <p className="text-[14px] font-semibold text-[var(--bs-text-primary)]">
                         Surge Detected
                       </p>
-                      <p className="text-[12px] text-[#333333]">
+                      <p className="text-[12px] text-[var(--bs-text-secondary)]">
                         Dallas County permit filings up 34% month-over-month.
                       </p>
                     </div>
                   </div>
                 </div>
-                <div className="rounded-[4px] bg-[#18A999]/10 p-3">
+                <div className="rounded-[4px] bg-[var(--bs-intelligence)]/10 p-3">
                   <div className="flex items-start gap-2">
-                    <TrendingUp className="h-4 w-4 shrink-0 text-[#18A999]" />
+                    <TrendingUp className="h-4 w-4 shrink-0 text-[var(--bs-intelligence)]" />
                     <div>
-                      <p className="text-[14px] font-semibold text-[#0B1F33]">
+                      <p className="text-[14px] font-semibold text-[var(--bs-text-primary)]">
                         Trend Up
                       </p>
-                      <p className="text-[12px] text-[#333333]">
+                      <p className="text-[12px] text-[var(--bs-text-secondary)]">
                         Travis County commercial permits accelerating.
                       </p>
                     </div>
@@ -560,7 +558,7 @@ export function Home() {
             <div className="mt-6">
               <Button
                 onClick={() => navigate("/sample-report")}
-                className="cursor-pointer rounded-[4px] bg-[#1F5EFF] px-6 py-3 text-[14px] font-semibold text-white transition-all duration-200 ease-out hover:bg-[#1F5EFF]/90"
+                className="cursor-pointer rounded-[4px] bg-[var(--bs-action)] px-6 py-3 text-[14px] font-semibold text-white transition-all duration-200 ease-out hover:bg-[var(--bs-action)]/90"
               >
                 See Sample Report
                 <ArrowRight className="ml-2 h-4 w-4" />
@@ -570,21 +568,21 @@ export function Home() {
         </div>
       </section>
 
-      <div className="h-px bg-[#F5F5F5]" />
+      <div className="h-px bg-[var(--bs-border)]" />
 
       {/* ============================================================= */}
       {/*  PRICING TIERS                                                */}
       {/* ============================================================= */}
-      <section className="bg-white py-12 md:py-16">
+      <section className="bg-[var(--bs-canvas)] py-12 md:py-16">
         <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
           <div className="mb-10 space-y-3">
-            <span className="text-[12px] font-semibold uppercase tracking-[0.5px] text-[#333333]">
+            <span className="text-[12px] font-semibold uppercase tracking-[0.5px] text-[var(--bs-text-secondary)]">
               Pricing
             </span>
-            <h2 className="text-[24px] font-semibold text-[#0B1F33]">
+            <h2 className="text-[24px] font-semibold text-[var(--bs-text-primary)]">
               Simple Pricing, Powerful Results
             </h2>
-            <p className="max-w-xl text-[16px] leading-[1.5] text-[#333333]">
+            <p className="max-w-xl text-[16px] leading-[1.5] text-[var(--bs-text-secondary)]">
               Start with a 14-day free trial. No credit card required. Upgrade
               or cancel anytime.
             </p>
@@ -596,13 +594,13 @@ export function Home() {
                 key={plan.name}
                 className={`relative flex flex-col cursor-pointer rounded-[8px] border p-4 transition-all duration-200 ease-out ${
                   plan.highlighted
-                    ? "border-[#1F5EFF] shadow-lg ring-1 ring-[#1F5EFF]/20"
-                    : "border-[#E5E5E5] hover:-translate-y-0.5 hover:shadow-md"
+                    ? "border-[var(--bs-action)] shadow-lg shadow-[var(--bs-action)]/10 ring-1 ring-[var(--bs-action)]/20"
+                    : "border-[var(--bs-border)] hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/20"
                 }`}
               >
                 {plan.highlighted && (
                   <div className="absolute -top-3 left-4">
-                    <div className="rounded-[4px] bg-[#1F5EFF] px-3 py-1 text-[12px] font-semibold text-white">
+                    <div className="rounded-[4px] bg-[var(--bs-action)] px-3 py-1 text-[12px] font-semibold text-white">
                       Most Popular
                     </div>
                   </div>
@@ -610,18 +608,18 @@ export function Home() {
 
                 <CardContent className="flex flex-1 flex-col space-y-6 p-0">
                   <div className="space-y-2">
-                    <h3 className="text-[18px] font-semibold text-[#0B1F33]">
+                    <h3 className="text-[18px] font-semibold text-[var(--bs-text-primary)]">
                       {plan.name}
                     </h3>
                     <div className="flex items-baseline gap-1">
-                      <span className="font-mono text-[32px] font-bold text-[#0B1F33]">
+                      <span className="font-mono text-[32px] font-bold text-[var(--bs-text-primary)]">
                         {plan.price}
                       </span>
-                      <span className="text-[14px] text-[#333333]">
+                      <span className="text-[14px] text-[var(--bs-text-secondary)]">
                         {plan.period}
                       </span>
                     </div>
-                    <p className="text-[14px] leading-[1.5] text-[#333333]">
+                    <p className="text-[14px] leading-[1.5] text-[var(--bs-text-secondary)]">
                       {plan.description}
                     </p>
                   </div>
@@ -630,9 +628,9 @@ export function Home() {
                     {plan.features.map((f) => (
                       <li
                         key={f}
-                        className="flex items-start gap-2 text-[14px] text-[#333333]"
+                        className="flex items-start gap-2 text-[14px] text-[var(--bs-text-secondary)]"
                       >
-                        <CheckCircle className="h-4 w-4 shrink-0 text-[#18A999]" />
+                        <CheckCircle className="h-4 w-4 shrink-0 text-[var(--bs-intelligence)]" />
                         <span>{f}</span>
                       </li>
                     ))}
@@ -641,8 +639,8 @@ export function Home() {
                   <Button
                     className={`w-full cursor-pointer rounded-[4px] px-6 py-3 text-[14px] font-semibold transition-all duration-200 ease-out ${
                       plan.highlighted
-                        ? "bg-[#1F5EFF] text-white hover:scale-105 hover:bg-[#1F5EFF]/90 active:scale-95"
-                        : "border border-[#0B1F33] bg-white text-[#0B1F33] hover:bg-[#F5F5F5] active:scale-95"
+                        ? "bg-[var(--bs-action)] text-white hover:scale-105 hover:bg-[var(--bs-action)]/90 active:scale-95"
+                        : "border border-[var(--bs-text-primary)] bg-[var(--bs-surface)] text-[var(--bs-text-primary)] hover:bg-[var(--bs-surface-hover)] active:scale-95"
                     }`}
                     onClick={() => navigate("/signup")}
                   >
@@ -656,7 +654,7 @@ export function Home() {
           <div className="mt-8">
             <button
               onClick={() => navigate("/pricing")}
-              className="inline-flex cursor-pointer items-center gap-1 text-[14px] font-semibold text-[#1F5EFF] transition-colors duration-200 hover:underline"
+              className="inline-flex cursor-pointer items-center gap-1 text-[14px] font-semibold text-[var(--bs-action)] transition-colors duration-200 hover:underline"
             >
               See Full Pricing Details
               <ArrowUpRight className="h-4 w-4" />
@@ -665,92 +663,92 @@ export function Home() {
         </div>
       </section>
 
-      <div className="h-px bg-[#F5F5F5]" />
+      <div className="h-px bg-[var(--bs-border)]" />
 
       {/* ============================================================= */}
       {/*  NEWSLETTER SIGNUP                                            */}
       {/* ============================================================= */}
-      <section className="bg-white py-12 md:py-16">
+      <section className="bg-[var(--bs-canvas)] py-12 md:py-16">
         <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
           <NewsletterSignup />
         </div>
       </section>
 
-      <div className="h-px bg-[#F5F5F5]" />
+      <div className="h-px bg-[var(--bs-border)]" />
 
       {/* ============================================================= */}
       {/*  TRUST AND CONTACT                                            */}
       {/* ============================================================= */}
-      <section className="bg-[#F5F5F5] py-12 md:py-16">
+      <section className="bg-[var(--bs-surface)] py-12 md:py-16">
         <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
           <div className="mb-10 space-y-3">
-            <span className="text-[12px] font-semibold uppercase tracking-[0.5px] text-[#333333]">
+            <span className="text-[12px] font-semibold uppercase tracking-[0.5px] text-[var(--bs-text-secondary)]">
               Trust and Contact
             </span>
-            <h2 className="text-[24px] font-semibold text-[#0B1F33]">
+            <h2 className="text-[24px] font-semibold text-[var(--bs-text-primary)]">
               Enterprise-Grade Security and Support
             </h2>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <Card className="rounded-[8px] border border-[#E5E5E5] bg-white p-4">
+            <Card className="rounded-[8px] border border-[var(--bs-border)] bg-[var(--bs-surface)] p-4">
               <CardContent className="p-0 space-y-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-[8px] bg-[#F5F5F5]">
-                  <Shield className="h-5 w-5 text-[#0B1F33]" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-[8px] bg-[var(--bs-surface-hover)]">
+                  <Shield className="h-5 w-5 text-[var(--bs-text-primary)]" />
                 </div>
-                <h3 className="text-[18px] font-semibold text-[#0B1F33]">
+                <h3 className="text-[18px] font-semibold text-[var(--bs-text-primary)]">
                   SOC 2 Type II (In Progress)
                 </h3>
-                <p className="text-[16px] leading-[1.5] text-[#333333]">
+                <p className="text-[16px] leading-[1.5] text-[var(--bs-text-secondary)]">
                   Security controls aligned to SOC 2 Type II. Certification audit
                   not yet completed — not verified.
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="rounded-[8px] border border-[#E5E5E5] bg-white p-4">
+            <Card className="rounded-[8px] border border-[var(--bs-border)] bg-[var(--bs-surface)] p-4">
               <CardContent className="p-0 space-y-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-[8px] bg-[#F5F5F5]">
-                  <Lock className="h-5 w-5 text-[#0B1F33]" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-[8px] bg-[var(--bs-surface-hover)]">
+                  <Lock className="h-5 w-5 text-[var(--bs-text-primary)]" />
                 </div>
-                <h3 className="text-[18px] font-semibold text-[#0B1F33]">
+                <h3 className="text-[18px] font-semibold text-[var(--bs-text-primary)]">
                   256-bit Encryption
                 </h3>
-                <p className="text-[16px] leading-[1.5] text-[#333333]">
+                <p className="text-[16px] leading-[1.5] text-[var(--bs-text-secondary)]">
                   AES-256 encryption at rest and in transit. Your data is never
                   sold or shared with third parties.
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="rounded-[8px] border border-[#E5E5E5] bg-white p-4">
+            <Card className="rounded-[8px] border border-[var(--bs-border)] bg-[var(--bs-surface)] p-4">
               <CardContent className="p-0 space-y-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-[8px] bg-[#F5F5F5]">
-                  <Database className="h-5 w-5 text-[#0B1F33]" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-[8px] bg-[var(--bs-surface-hover)]">
+                  <Database className="h-5 w-5 text-[var(--bs-text-primary)]" />
                 </div>
-                <h3 className="text-[18px] font-semibold text-[#0B1F33]">
+                <h3 className="text-[18px] font-semibold text-[var(--bs-text-primary)]">
                   No Data Selling
                 </h3>
-                <p className="text-[16px] leading-[1.5] text-[#333333]">
+                <p className="text-[16px] leading-[1.5] text-[var(--bs-text-secondary)]">
                   We never sell, rent, or share your proprietary data with
                   external parties. Your intelligence stays yours.
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="rounded-[8px] border border-[#E5E5E5] bg-white p-4">
+            <Card className="rounded-[8px] border border-[var(--bs-border)] bg-[var(--bs-surface)] p-4">
               <CardContent className="p-0 space-y-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-[8px] bg-[#F5F5F5]">
-                  <Mail className="h-5 w-5 text-[#0B1F33]" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-[8px] bg-[var(--bs-surface-hover)]">
+                  <Mail className="h-5 w-5 text-[var(--bs-text-primary)]" />
                 </div>
-                <h3 className="text-[18px] font-semibold text-[#0B1F33]">
+                <h3 className="text-[18px] font-semibold text-[var(--bs-text-primary)]">
                   Email Support
                 </h3>
-                <p className="text-[16px] leading-[1.5] text-[#333333]">
+                <p className="text-[16px] leading-[1.5] text-[var(--bs-text-secondary)]">
                   Reach our team at{" "}
                   <a
                     href="mailto:support@buildsignal.net"
-                    className="font-semibold text-[#1F5EFF] hover:underline"
+                    className="font-semibold text-[var(--bs-action)] hover:underline"
                   >
                     support@buildsignal.net
                   </a>
@@ -759,36 +757,36 @@ export function Home() {
               </CardContent>
             </Card>
 
-            <Card className="rounded-[8px] border border-[#E5E5E5] bg-white p-4">
+            <Card className="rounded-[8px] border border-[var(--bs-border)] bg-[var(--bs-surface)] p-4">
               <CardContent className="p-0 space-y-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-[8px] bg-[#F5F5F5]">
-                  <Phone className="h-5 w-5 text-[#0B1F33]" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-[8px] bg-[var(--bs-surface-hover)]">
+                  <Phone className="h-5 w-5 text-[var(--bs-text-primary)]" />
                 </div>
-                <h3 className="text-[18px] font-semibold text-[#0B1F33]">
+                <h3 className="text-[18px] font-semibold text-[var(--bs-text-primary)]">
                   Phone Support
                 </h3>
-                <p className="text-[16px] leading-[1.5] text-[#333333]">
+                <p className="text-[16px] leading-[1.5] text-[var(--bs-text-secondary)]">
                   Available for Business plan customers. Contact support to
                   schedule a call with our team.
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="rounded-[8px] border border-[#E5E5E5] bg-white p-4">
+            <Card className="rounded-[8px] border border-[var(--bs-border)] bg-[var(--bs-surface)] p-4">
               <CardContent className="p-0 space-y-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-[8px] bg-[#F5F5F5]">
-                  <ArrowRight className="h-5 w-5 text-[#0B1F33]" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-[8px] bg-[var(--bs-surface-hover)]">
+                  <ArrowRight className="h-5 w-5 text-[var(--bs-text-primary)]" />
                 </div>
-                <h3 className="text-[18px] font-semibold text-[#0B1F33]">
+                <h3 className="text-[18px] font-semibold text-[var(--bs-text-primary)]">
                   Contact Page
                 </h3>
-                <p className="text-[16px] leading-[1.5] text-[#333333]">
+                <p className="text-[16px] leading-[1.5] text-[var(--bs-text-secondary)]">
                   Visit our contact page for general inquiries, partnership
                   requests, and media relations.
                 </p>
                 <button
                   onClick={() => navigate("/contact")}
-                  className="inline-flex cursor-pointer items-center gap-1 text-[14px] font-semibold text-[#1F5EFF] transition-colors duration-200 hover:underline"
+                  className="inline-flex cursor-pointer items-center gap-1 text-[14px] font-semibold text-[var(--bs-action)] transition-colors duration-200 hover:underline"
                 >
                   Go to Contact
                   <ArrowUpRight className="h-4 w-4" />
