@@ -2,7 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { TRPCProvider } from "./providers/trpc";
 import { usePageTracking } from "./hooks/usePageTracking";
 import { useAuth } from "./hooks/useAuth";
-import { Home } from "./pages/Home";
+import Home from "./pages/Home";
 import { Login } from "./pages/Login";
 import { SignupPage } from "./pages/SignupPage";
 import { WelcomePage } from "./pages/WelcomePage";
@@ -36,41 +36,17 @@ import AuthLayout from "./components/AuthLayout";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeSwitcher } from "./components/theme/ThemeSwitcher";
 
-function AuthenticatedRedirect({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuth();
-  if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
-  }
-  return <>{children}</>;
-}
-
-// BuildSignal v1.3.0 — Theme System & Design System
 function App() {
   usePageTracking();
 
   return (
     <TRPCProvider>
+      <Toaster />
       <ThemeSwitcher />
       <Routes>
-        {/* Public routes */}
         <Route path="/" element={<Home />} />
-        <Route
-          path="/login"
-          element={
-            <AuthenticatedRedirect>
-              <Login />
-            </AuthenticatedRedirect>
-          }
-        />
-        <Route
-          path="/signup"
-          element={
-            <AuthenticatedRedirect>
-              <SignupPage />
-            </AuthenticatedRedirect>
-          }
-        />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignupPage />} />
         <Route path="/welcome" element={<WelcomePage />} />
         <Route path="/pricing" element={<PricingPage />} />
         <Route path="/help" element={<HelpPage />} />
@@ -84,26 +60,23 @@ function App() {
         <Route path="/sample-report" element={<SampleReportPage />} />
         <Route path="/roadmap" element={<RoadmapPage />} />
         <Route path="/email-preview" element={<EmailPreviewPage />} />
-        <Route path="/palettes" element={<PaletteShowcasePage />} />
-
-        {/* Auth-gated routes */}
+        <Route path="/palette" element={<PaletteShowcasePage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route element={<AuthLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/opportunities" element={<OpportunityDashboard />} />
-          <Route path="/counties" element={<CountyCoveragePage />} />
           <Route path="/counties/:id" element={<CountyDetail />} />
+          <Route path="/county-coverage" element={<CountyCoveragePage />} />
           <Route path="/watchlist" element={<WatchlistPage />} />
-          <Route path="/recommendations" element={<RecommendationsPage />} />
           <Route path="/alerts" element={<AlertsPage />} />
+          <Route path="/recommendations" element={<RecommendationsPage />} />
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/billing" element={<BillingPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/sso" element={<SSOPage />} />
         </Route>
-
         <Route path="*" element={<NotFound />} />
       </Routes>
-      <Toaster />
     </TRPCProvider>
   );
 }
