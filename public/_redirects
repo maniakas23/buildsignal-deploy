@@ -4,8 +4,12 @@ www.buildsignal.net/*  https://buildsignal.net/:splat  301
 # Ingestion endpoints — handle directly via Pages Functions
 /api/ingestion/*  /api/ingestion/:splat  200
 
-# API proxy — forward all other API calls directly to Worker (preserve /api prefix)
-/api/*  https://api.buildsignal.net/api/:splat  200
+# API proxy — handled by Cloudflare Functions (functions/api/[[path]].ts)
+# Do NOT use external URLs in _redirects proxy rules
+# /api/*  https://api.buildsignal.net/api/:splat  200  <- REMOVED (not allowed)
+
+# Static assets — serve directly
+/assets/*  /assets/:splat  200
 
 # BuildSignal SPA Routing — redirect all remaining paths to index.html for client-side routing
 /*    /index.html   200
