@@ -30,6 +30,22 @@ The script is a single self-contained ES module (`gateway.js`). Deploy via the
 Cloudflare Workers Scripts API (multipart upload, `main_module: gateway.js`)
 with the bindings listed above, or via wrangler with an equivalent config.
 
+**D1 gotcha:** bound parameters do not receive column-affinity coercion.
+Always bind user ids as strings so they match both TEXT and INTEGER columns
+(see `handleDeleteAccount`, v1.1.1).
+
+## Regression
+
+`test/regression.sh` is the production security regression suite. It covers
+the IDOR lockdown, ops lockdown, tenant isolation (two live users), the
+watchlist entitlement gate, checkout guards, passthrough integrity, and
+self-service account deletion (it creates and deletes its own test users).
+Run it after every deploy:
+
+```
+BASE=https://api.buildsignal.net OPS_KEY=... bash test/regression.sh
+```
+
 ## Rollback
 
 Re-point zone route `074a4c99ba69482785e09597d806ff75`
