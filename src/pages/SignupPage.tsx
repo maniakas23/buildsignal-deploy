@@ -48,7 +48,7 @@ const defaultPlans: Plan[] = [
     description: "Perfect for individual investors and small teams exploring new markets.",
     features: ["5 counties", "Weekly email reports", "Basic predictions", "Email support"],
     highlighted: false,
-    cta: "Start Free Trial",
+    cta: "Get Started",
   },
   {
     id: "professional",
@@ -58,7 +58,7 @@ const defaultPlans: Plan[] = [
     description: "For growing teams that need deeper intelligence and more coverage.",
     features: ["25 counties", "Daily alerts + weekly briefings", "Advanced predictions", "API access", "Priority support"],
     highlighted: true,
-    cta: "Start Free Trial",
+    cta: "Get Started",
   },
   {
     id: "business",
@@ -68,7 +68,7 @@ const defaultPlans: Plan[] = [
     description: "Built for organizations managing multi-market portfolios at scale.",
     features: ["Unlimited counties", "Real-time alerts", "Custom models", "Full API + webhooks", "SSO & SAML", "Dedicated account manager"],
     highlighted: false,
-    cta: "Start Free Trial",
+    cta: "Get Started",
   },
   {
     id: "enterprise",
@@ -393,30 +393,6 @@ export function SignupPage() {
                           </div>
                         )}
 
-                        <div className="flex items-center justify-center gap-2 mb-4">
-                          <Button
-                            type="button"
-                            variant={billingCycle === "monthly" ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setBillingCycle("monthly")}
-                            className={billingCycle === "monthly" ? "bg-[var(--bs-action)]" : ""}
-                          >
-                            Monthly
-                          </Button>
-                          <Button
-                            type="button"
-                            variant={billingCycle === "annual" ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setBillingCycle("annual")}
-                            className={billingCycle === "annual" ? "bg-[var(--bs-action)]" : ""}
-                          >
-                            Annual
-                            <Badge className="ml-1.5 bg-[var(--bs-intelligence)] text-white text-[10px] hover:bg-[var(--bs-intelligence)]">
-                              Save 20%
-                            </Badge>
-                          </Button>
-                        </div>
-
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           {plans.map((plan) => (
                             <button
@@ -453,10 +429,6 @@ export function SignupPage() {
                                   </span>
                                 )}
                               </div>
-                              {billingCycle === "annual" && plan.price > 0 && (
-                                <p className="text-xs text-[var(--bs-intelligence)] mt-1 font-medium">
-                                  ${Math.round(plan.price * 12 * 0.8)} billed annually</p>
-                              )}
                               <p className="text-xs text-[var(--bs-text-tertiary)] mt-1 line-clamp-2">
                                 {plan.description}
                               </p>
@@ -509,7 +481,7 @@ export function SignupPage() {
                                   {selectedPlanData.name}
                                 </span>
                                 <Badge variant="secondary" className="bg-[var(--bs-surface-hover)] text-[var(--bs-text-primary)]">
-                                  {billingCycle === "annual" ? "Annual" : "Monthly"}
+                                  Monthly
                                 </Badge>
                               </div>
                               <div className="text-2xl font-bold text-[var(--bs-text-primary)]">
@@ -522,13 +494,6 @@ export function SignupPage() {
                                   </span>
                                 )}
                               </div>
-                              {billingCycle === "annual" &&
-                                selectedPlanData.price > 0 && (
-                                  <p className="text-xs text-[var(--bs-intelligence)] mt-1 font-medium">
-                                    ${Math.round(selectedPlanData.price * 12 * 0.8)}{" "}
-                                    billed annually (Save 20%)
-                                  </p>
-                                )}
                             </div>
                           )}
 
@@ -642,10 +607,10 @@ export function SignupPage() {
                 <div className="bg-[var(--bs-action)]/4 border border-[var(--bs-action)]/10 rounded-xl p-5">
                   <div className="flex items-center gap-2 mb-3">
                     <Sparkles className="h-5 w-5 text-[var(--bs-action)]" />
-                    <span className="font-semibold text-[var(--bs-text-primary)]">Start with a 14-Day Free Trial</span>
+                    <span className="font-semibold text-[var(--bs-text-primary)]">Get Started in Minutes</span>
                   </div>
                   <p className="text-sm text-[var(--bs-text-tertiary)]">
-                    Full access to all features. No credit card required. Cancel anytime.
+                    Immediate access to your plan’s features with simple monthly billing. Cancel anytime.
                     Get actionable intelligence for your markets within minutes.
                   </p>
                 </div>
