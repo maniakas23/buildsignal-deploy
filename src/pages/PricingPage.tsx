@@ -38,41 +38,39 @@ export function PricingPage() {
 
   const plans = plansData || [
     {
-      id: "scout",
+      id: "starter",
       name: "Scout",
-      price: 49,
+      price: 99,
       interval: "month",
-      description: "For individual sales professionals getting started",
-      features: ["3 counties", "10 alerts/day", "Email notifications", "Basic analytics"],
+      description: "Perfect for individual investors",
+      features: ["1 County", "3 Alerts/Day", "30-Day History", "Email Support"],
     },
     {
-      id: "pro",
+      id: "professional",
       name: "Pro",
-      price: 149,
+      price: 249,
       interval: "month",
-      description: "For growing teams with territory coverage",
+      description: "For serious investors & small teams",
       features: [
-        "10 counties",
-        "50 alerts/day",
-        "Email + SMS notifications",
-        "Advanced analytics",
-        "Watchlist (50 projects)",
-        "API access",
+        "10 Counties",
+        "50 Alerts/Day",
+        "Watchlists",
+        "Basic Analytics",
+        "Priority Support",
       ],
     },
     {
       id: "business",
       name: "Business",
-      price: 399,
+      price: 599,
       interval: "month",
-      description: "For organizations with multiple markets",
+      description: "For teams & organizations",
       features: [
-        "Unlimited counties",
-        "Unlimited alerts",
-        "Priority support",
-        "Custom integrations",
+        "All Counties",
+        "Unlimited Alerts",
+        "Advanced Analytics",
         "SSO",
-        "White-glove onboarding",
+        "Dedicated Support",
       ],
     },
     {
@@ -121,23 +119,8 @@ export function PricingPage() {
           Simple, transparent pricing
         </h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Start free, upgrade when you're ready. No hidden fees, cancel anytime.
+          Straightforward monthly billing. No hidden fees, cancel anytime.
         </p>
-      </div>
-
-      {/* Billing Toggle */}
-      <div className="flex justify-center">
-        <Tabs defaultValue="monthly" className="w-auto">
-          <TabsList>
-            <TabsTrigger value="monthly">Monthly</TabsTrigger>
-            <TabsTrigger value="annual">
-              Annual
-              <Badge variant="secondary" className="ml-2 text-xs">
-                Save 15%
-              </Badge>
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
       </div>
 
       {/* Plans */}
@@ -150,12 +133,12 @@ export function PricingPage() {
             <Card
               key={plan.id}
               className={`relative flex flex-col ${
-                plan.id === "pro"
+                plan.id === "professional"
                   ? "border-primary shadow-lg"
                   : "border-border"
               }`}
             >
-              {plan.id === "pro" && (
+              {plan.id === "professional" && (
                 <Badge
                   variant="default"
                   className="absolute -top-2 -right-2 bg-[#4ade80] text-[#081018] text-[10px] px-1.5 py-0 font-semibold"
@@ -190,7 +173,7 @@ export function PricingPage() {
                 </div>
                 <Button
                   className="w-full"
-                  variant={plan.id === "pro" ? "default" : "outline"}
+                  variant={plan.id === "professional" ? "default" : "outline"}
                   onClick={() => {
                     trackEvent("pricing_cta_click", { plan: plan.id });
                     navigate(`/signup?plan=${plan.id}`);
@@ -203,13 +186,6 @@ export function PricingPage() {
             </Card>
           );
         })}
-      </div>
-
-      {/* Annual pricing note */}
-      <div className="text-center">
-        <p className="text-sm text-muted-foreground">
-          Annual plans save 15%. All plans include a 14-day free trial.
-        </p>
       </div>
 
       <Separator />
@@ -248,7 +224,7 @@ export function PricingPage() {
                       <th
                         key={plan.id}
                         className={`text-center p-4 font-medium ${
-                          plan.id === "pro" ? "bg-primary/5" : ""
+                          plan.id === "professional" ? "bg-primary/5" : ""
                         }`}
                       >
                         {plan.name}
@@ -264,7 +240,7 @@ export function PricingPage() {
                         <td
                           key={plan.id}
                           className={`text-center p-4 ${
-                            plan.id === "pro" ? "bg-primary/5" : ""
+                            plan.id === "professional" ? "bg-primary/5" : ""
                           }`}
                         >
                           <FeatureValue plan={plan as any} featureKey={feature} />
@@ -289,11 +265,12 @@ export function PricingPage() {
         <Accordion type="single" collapsible className="max-w-2xl mx-auto">
           <AccordionItem value="trial">
             <AccordionTrigger>
-              Can I try before I buy?
+              Can I see the product before subscribing?
             </AccordionTrigger>
             <AccordionContent>
-              Yes! Every plan includes a 14-day free trial with full access to
-              all features. No credit card required to start.
+              Yes — request a demo and our team will walk you through the
+              platform. Subscriptions are billed monthly with immediate access,
+              and you can cancel anytime.
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="cancel">
@@ -345,7 +322,7 @@ export function PricingPage() {
         </div>
         <div className="flex items-center gap-2">
           <BadgeCheck className="h-4 w-4 text-[#4ade80]" />
-          <span>SOC 2 Type II</span>
+          <span>SOC 2 Program In Progress</span>
         </div>
       </div>
 
