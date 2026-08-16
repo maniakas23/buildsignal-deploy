@@ -111,16 +111,6 @@ export default function CountyCoveragePage() {
 
   return (
     <div className="bg-canvas min-h-screen pb-12">
-      {/* Top banner indicating sample data */}
-      <div className="bg-accent-indigo/5 border-b border-accent-indigo/10">
-        <div className="max-w-content mx-auto px-6 py-2 flex items-center gap-2">
-          <Info className="w-4 h-4 text-accent-indigo" />
-          <span className="text-sm text-accent-indigo font-medium">
-            Sample Data — All counties and metrics shown below are placeholder examples for UI demonstration.
-          </span>
-        </div>
-      </div>
-
       <div className="max-w-content mx-auto px-6 py-8">
         {/* Header */}
         <div className="mb-8">
