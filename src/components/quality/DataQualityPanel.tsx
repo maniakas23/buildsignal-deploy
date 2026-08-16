@@ -51,6 +51,9 @@ export default function DataQualityPanel() {
 
   return (
     <div className="bg-surface rounded-xl border border-ink-wash overflow-hidden">
+      <div className="px-3 py-2 bg-amber-50 border-b border-amber-200">
+        <span className="text-sm text-amber-700 font-medium">Sample Data — Figures shown are illustrative placeholders. Not live data-quality metrics.</span>
+      </div>
       <button
         onClick={() => setExpanded(!expanded)}
         className="w-full flex items-center gap-3 p-4 text-left hover:bg-canvas/30 transition-colors"
