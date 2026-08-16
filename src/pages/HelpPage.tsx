@@ -70,14 +70,14 @@ const faqs = [
     category: "getting-started",
     question: "How do I get started?",
     answer:
-      "Sign up for a free trial at buildsignal.net. Once registered, select your target counties, set up alert preferences, and start receiving permit signals within minutes. Our onboarding wizard will guide you through each step.",
+      "Create an account at buildsignal.net and choose the plan that fits your team. Once registered, select your target counties, set up alert preferences, and start receiving permit signals. Our onboarding wizard will guide you through each step.",
   },
   {
     id: "gs-3",
     category: "getting-started",
-    question: "Is there a free trial?",
+    question: "What plans are available?",
     answer:
-      "Yes! Every plan includes a 14-day free trial with full access to all features. No credit card is required to start your trial.",
+      "BuildSignal offers Scout ($99/month), Professional ($249/month), and Business ($599/month) plans with simple monthly billing. You can upgrade, downgrade, or cancel anytime from your billing settings.",
   },
   {
     id: "gs-4",
@@ -112,14 +112,14 @@ const faqs = [
     category: "data",
     question: "How accurate is the permit data?",
     answer:
-      "We source data directly from official county and municipal government databases. Our AI extraction achieves 95%+ accuracy on key fields like project value, contractor name, and address. Each signal includes a confidence score so you can prioritize high-confidence leads.",
+      "We source data from official county and municipal government records. Each signal includes a confidence score based on data volume, consistency, and source reliability, so you can prioritize higher-confidence opportunities. Confidence scores reflect data strength, not a guarantee of outcomes.",
   },
   {
     id: "data-2",
     category: "data",
     question: "How often is data updated?",
     answer:
-      "Most counties are updated daily, with some high-volume markets updated multiple times per day. The refresh frequency depends on how often the source county publishes new permits. Check the Providers page for each county's update schedule.",
+      "Update frequency varies by data source and county. Many supported markets are checked on a daily or weekly basis, though some sources update less frequently depending on the county's publication schedule.",
   },
   {
     id: "data-3",
@@ -133,14 +133,14 @@ const faqs = [
     category: "integrations",
     question: "Does BuildSignal integrate with CRMs?",
     answer:
-      "Yes! We offer native integrations with Salesforce, HubSpot, Pipedrive, and Zoho CRM. You can also use our API to build custom integrations with any CRM or sales tool.",
+      "Native CRM integrations are not yet available. Business-plan features such as API access and webhooks are intended to support custom integrations; contact us to discuss your integration needs.",
   },
   {
     id: "integrations-2",
     category: "integrations",
     question: "Can I export data?",
     answer:
-      "Yes, you can export signals and watchlists to CSV or Excel format. Business and Enterprise plans also support API access for programmatic data retrieval.",
+      "Export functionality is not yet available in the product. Business-plan API access is intended to support programmatic retrieval; contact us for details.",
   },
 ];
 
@@ -283,18 +283,9 @@ export function HelpPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Explore our documentation for detailed guides and API references.
+              Want a guided walkthrough of the platform? Request a demo and our team will reach out.
             </p>
             <div className="space-y-2">
-              <Button
-                variant="ghost"
-                className="w-full justify-start text-sm"
-                onClick={() => navigate("/docs")}
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                API Documentation
-                <ExternalLink className="h-3 w-3 ml-auto" />
-              </Button>
               <Button
                 variant="ghost"
                 className="w-full justify-start text-sm"
@@ -308,35 +299,6 @@ export function HelpPage() {
           </CardContent>
         </Card>
       </div>
-
-      <Separator />
-
-      {/* Status */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CheckCircle2 className="h-5 w-5 text-[#4ade80]" />
-            System Status
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className="h-2.5 w-2.5 rounded-full bg-[#4ade80]" />
-              <span className="text-sm">All systems operational</span>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-xs"
-              onClick={() => navigate("/status")}
-            >
-              View status page
-              <ExternalLink className="h-3 w-3 ml-1" />
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
