@@ -58,17 +58,31 @@ export function WatchlistsPage() {
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
 
   const {
-    data: watchlists,
+    data: rawWatchlists,
     isLoading,
     error,
     refetch,
   } = trpc.watchlist.list.useQuery();
 
+  // The watchlist API stores a single state/county string per row; the UI
+  // works with arrays. Normalize at the boundary (comma-joined values are
+  // split back into arrays). createdAt arrives as unix seconds.
+  const watchlists = useMemo(() => {
+    if (!Array.isArray(rawWatchlists)) return rawWatchlists;
+    return rawWatchlists.map((w) => ({
+      ...w,
+      states: typeof w.state === "string" && w.state ? w.state.split(",").map((s) => s.trim()).filter(Boolean) : [],
+      counties: typeof w.county === "string" && w.county ? w.county.split(",").map((s) => s.trim()).filter(Boolean) : [],
+      eventTypes: Array.isArray(w.eventTypes) ? w.eventTypes : [],
+      updatedAt: w.updatedAt ?? (typeof w.createdAt === "number" ? w.createdAt * 1000 : null),
+    }));
+  }, [rawWatchlists]);
+
   const { data: alertsData } = trpc.watchlist.checkAlerts.useQuery();
 
   const alertMap = useMemo(() => {
     const map = new Map<number, number>();
-    if (!alertsData) return map;
+    if (!Array.isArray(alertsData)) return map;
     for (const entry of alertsData) {
       map.set(entry.watchlist.id, entry.alertCount);
     }
@@ -146,11 +160,12 @@ export function WatchlistsPage() {
       return;
     }
 
+    // API contract: single state/county string per watchlist (comma-joined
+    // for multiple values); eventTypes is not yet supported server-side.
     const payload = {
       name: form.name.trim(),
-      states,
-      counties: parseCommaList(form.counties),
-      eventTypes: parseCommaList(form.eventTypes),
+      state: states.join(", "),
+      county: parseCommaList(form.counties).join(", "),
       alertEnabled: form.alertEnabled,
     };
 
@@ -190,12 +205,6 @@ export function WatchlistsPage() {
   return (
     <div className="min-h-screen bg-canvas">
       <div className="container mx-auto py-8 px-4 max-w-content">
-        {/* Sample data banner */}
-        <div className="alert-amber mb-6 flex items-center gap-2 text-sm">
-          <AlertTriangle className="h-4 w-4 shrink-0" />
-          <span>Sample Data — Illustrative Example</span>
-        </div>
-
         <Button
           variant="ghost"
           onClick={() => navigate("/")}
@@ -540,12 +549,13 @@ export function WatchlistsPage() {
                 <label className="text-sm font-medium text-ink-primary">
                   Event Types
                   <span className="text-ink-tertiary font-normal ml-1">
-                    (comma-separated, optional)
+                    (coming soon — not yet saved)
                   </span>
                 </label>
                 <Input
                   placeholder="PERMIT, INSPECTION, COMPLETION"
                   value={form.eventTypes}
+                  disabled
                   onChange={(e) => setForm((f) => ({ ...f, eventTypes: e.target.value }))}
                 />
               </div>
