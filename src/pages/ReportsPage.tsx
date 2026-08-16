@@ -127,37 +127,92 @@ export function ReportsPage() {
 
   /* Derive reports from brief sections */
   const reports: ReportItem[] = useMemo(() => {
-    if (!brief || !brief.sections || brief.sections.length === 0) return [];
+    if (!brief || !brief.sections) return [];
     const generatedDate = formatBriefDate(brief.date || brief.generatedAt);
     const items: ReportItem[] = [];
-    brief.sections.forEach((section) => {
-      if (!section.items || section.items.length === 0) {
-        /* Section with no items still counts as a report category */
-        items.push({
-          id: `${section.id}-overview`,
-          title: section.title,
-          description: section.summary || 'Daily intelligence briefing section.',
-          type: mapSectionTypeToReportType(section.type),
-          lastGenerated: generatedDate,
-          status: 'available',
-          scheduled: false,
-          sectionId: section.id,
-        });
-      } else {
-        section.items.forEach((item) => {
+
+    if (Array.isArray(brief.sections)) {
+      /* Legacy array-of-sections shape */
+      const sections = brief.sections as any[];
+      sections.forEach((section) => {
+        if (!section.items || section.items.length === 0) {
           items.push({
-            id: item.id || `${section.id}-${Math.random().toString(36).slice(2, 8)}`,
-            title: item.title || section.title,
-            description: item.description || section.summary || 'Intelligence report entry.',
+            id: `${section.id}-overview`,
+            title: section.title,
+            description: section.summary || 'Daily intelligence briefing section.',
             type: mapSectionTypeToReportType(section.type),
             lastGenerated: generatedDate,
             status: 'available',
             scheduled: false,
             sectionId: section.id,
           });
+        } else {
+          section.items.forEach((item) => {
+            items.push({
+              id: String(item.id || `${section.id}-${Math.random().toString(36).slice(2, 8)}`),
+              title: item.title || section.title,
+              description: item.description || section.summary || 'Intelligence report entry.',
+              type: mapSectionTypeToReportType(section.type),
+              lastGenerated: generatedDate,
+              status: 'available',
+              scheduled: false,
+              sectionId: section.id,
+            });
+          });
+        }
+      });
+      return items;
+    }
+
+    /* Current brief.today shape: sections is an object of keyed arrays
+       (opportunities, counties, providers, trends, meetings). */
+    const sections = brief.sections as Record<string, unknown>;
+    const pushAll = (
+      arr: unknown,
+      sectionId: string,
+      type: ReportType,
+      toItem: (x: any, i: number) => { title: string; description: string }
+    ) => {
+      if (!Array.isArray(arr)) return;
+      arr.forEach((x, i) => {
+        const mapped = toItem(x, i);
+        items.push({
+          id: String(x?.id ?? `${sectionId}-${i}`),
+          title: mapped.title,
+          description: mapped.description,
+          type,
+          lastGenerated: generatedDate,
+          status: 'available',
+          scheduled: false,
+          sectionId,
         });
-      }
-    });
+      });
+    };
+
+    pushAll(sections.opportunities, 'opportunities', 'Market', (o) => ({
+      title: o?.label || o?.title || 'Opportunity',
+      description:
+        o?.detail ||
+        o?.description ||
+        [o?.county, o?.state].filter(Boolean).join(', ') ||
+        'Identified opportunity.',
+    }));
+    pushAll(sections.counties, 'counties', 'Market', (c) => ({
+      title: c?.name || c?.county || c?.label || 'County activity',
+      description: c?.detail || c?.description || c?.summary || 'County intelligence entry.',
+    }));
+    pushAll(sections.providers, 'providers', 'Summary', (p) => ({
+      title: p?.name || p?.providerName || p?.label || 'Data provider',
+      description: p?.detail || p?.description || p?.status || 'Provider status entry.',
+    }));
+    pushAll(sections.trends, 'trends', 'Market', (t) => ({
+      title: t?.label || t?.title || 'Trend',
+      description: t?.detail || t?.description || 'Trend entry.',
+    }));
+    pushAll(sections.meetings, 'meetings', 'Zoning', (m) => ({
+      title: m?.label || m?.title || 'Upcoming meeting',
+      description: m?.detail || m?.description || 'Meeting entry.',
+    }));
     return items;
   }, [brief]);
 
