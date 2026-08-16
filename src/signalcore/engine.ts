@@ -10,12 +10,12 @@ const DEMO_FLAG = 'BUILDSIGNAL_DEMO_MODE';
 export function isDemoMode(): boolean {
   if (typeof window !== 'undefined') {
     const localFlag = localStorage.getItem(DEMO_FLAG);
-    if (localFlag === 'true') return true;
+    if (localFlag !== null) return localFlag === 'true';
   }
   if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_DEMO_MODE === 'true') {
     return true;
   }
-  return true; // Default to demo mode for now
+  return false; // Live intelligence by default; demo mode is opt-in only
 }
 
 export function setDemoMode(enabled: boolean): void {
@@ -62,10 +62,10 @@ function wrapMeta<T>(data: T, overrides: Partial<EngineResponse<T>['meta']> = {}
   return {
     data,
     meta: {
-      confidence: 94,
+      confidence: 0,
       evidenceSummary: 'Aggregated from monitored public data sources including permits, utilities, zoning, and public records.',
       lastUpdated: new Date().toISOString(),
-      relatedSignals: 2847,
+      relatedSignals: 0,
       source: isDemoMode() ? 'Demo Data' : 'SignalCore Intelligence',
       ...overrides,
     },
@@ -76,10 +76,10 @@ function wrapListMeta<T>(data: T[], overrides: Partial<EngineListResponse<T>['me
   return {
     data,
     meta: {
-      confidence: 94,
+      confidence: 0,
       evidenceSummary: 'Aggregated from monitored public data sources including permits, utilities, zoning, and public records.',
       lastUpdated: new Date().toISOString(),
-      relatedSignals: 2847,
+      relatedSignals: 0,
       total: data.length, page: 1, perPage: data.length,
       source: isDemoMode() ? 'Demo Data' : 'SignalCore Intelligence',
       ...overrides,
@@ -88,6 +88,70 @@ function wrapListMeta<T>(data: T[], overrides: Partial<EngineListResponse<T>['me
 }
 
 export type LoadingState = 'idle' | 'loading' | 'success' | 'error';
+
+// ─── Live API access (tRPC batch protocol) ───
+async function trpcQuery<T>(proc: string): Promise<T> {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+  const res = await fetch(`/api/trpc/${proc}?batch=1`, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify({ '0': { json: null } }),
+  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new EngineError(`API request failed (${res.status})`, res.status, body);
+  }
+  const items = await res.json();
+  const item = Array.isArray(items) ? items[0] : items;
+  if (item?.error) {
+    throw new EngineError(item.error.message || 'API error', 0, JSON.stringify(item.error));
+  }
+  return item?.result?.data as T;
+}
+
+interface ApiPattern {
+  id: number;
+  name: string;
+  patternType: string;
+  description: string;
+  county: string;
+  state: string;
+  confidence: number;
+  evidenceCount: number;
+  status: string;
+  summary: string;
+  recommendedAction: string;
+  impactScore?: number;
+  geographicReach?: string;
+  lastDetectedAt: number;
+  provenance: string;
+}
+
+interface CountySummaryData {
+  total: number;
+  active: number;
+  avgCoverage: number;
+  totalEvents: number;
+  totalPatterns: number;
+  totalRecommendations: number;
+}
+
+interface HealthScoreData {
+  overall: number;
+  status: string;
+}
+
+function livePatterns(res: { patterns?: ApiPattern[] } | null): ApiPattern[] {
+  return (res?.patterns ?? []).filter((p) => p.provenance === 'LIVE');
+}
+
+function humanizePatternType(t: string): string {
+  return (t || 'Pattern').replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 
 // ─── Demo Data ───
 const DEMO_ZONES: Zone[] = [
@@ -170,14 +234,51 @@ export interface DashboardMetrics {
 }
 
 export async function fetchDashboard(): Promise<EngineResponse<DashboardMetrics>> {
+  const [county, patternsRes, health] = await Promise.all([
+    trpcQuery<CountySummaryData>('county.summary').catch(() => null),
+    trpcQuery<{ patterns?: ApiPattern[] }>('pattern.list').catch(() => null),
+    trpcQuery<HealthScoreData>('analytics.healthScore').catch(() => null),
+  ]);
+  if (!county && !patternsRes && !health) {
+    throw new EngineError('Live intelligence endpoints are unavailable', 0, 'county.summary, pattern.list and analytics.healthScore all failed');
+  }
+  const patterns = livePatterns(patternsRes);
+  const byCounty = new Map<string, ApiPattern[]>();
+  for (const p of patterns) {
+    const key = `${p.county} County, ${p.state}`;
+    byCounty.set(key, [...(byCounty.get(key) ?? []), p]);
+  }
+  const zones: Zone[] = [...byCounty.entries()]
+    .map(([name, ps], i) => ({
+      id: String(i + 1),
+      name,
+      signalCount: ps.reduce((sum, p) => sum + (p.evidenceCount || 0), 0),
+      projectCount: ps.length,
+      sparklineData: [] as number[],
+    }))
+    .sort((a, b) => b.signalCount - a.signalCount);
   const data: DashboardMetrics = {
-    activeSignals: 2847, projectsTracked: 1032,
-    patternsActive: DEMO_PATTERNS.filter((p) => p.status === 'active').length,
-    alertsUnread: 4,
-    confidenceScore: 94, zones: DEMO_ZONES, recentSurges: DEMO_SURGES,
-    summary: DEMO_SUMMARY, patterns: DEMO_PATTERNS,
+    activeSignals: county?.totalEvents ?? 0,
+    projectsTracked: county?.totalRecommendations ?? 0,
+    patternsActive: patterns.filter((p) => p.status === 'active').length,
+    alertsUnread: 0,
+    confidenceScore: health?.overall ?? 0,
+    zones,
+    recentSurges: [],
+    summary: null,
+    patterns: patterns.map((p) => ({
+      id: String(p.id),
+      name: p.name,
+      description: p.description,
+      confidence: p.confidence,
+      maturity: p.confidence,
+      status: p.status === 'active' ? 'active' : 'learning',
+    })),
   };
-  return wrapMeta(data);
+  return wrapMeta(data, {
+    confidence: health?.overall ?? 0,
+    relatedSignals: county?.totalEvents ?? 0,
+  });
 }
 
 // ─── Recommendations API ───
@@ -238,7 +339,7 @@ export interface Recommendation {
   title: string;
   description: string;
   category: string;
-  roi: number;
+  roi?: number;
   confidence: number;
   evidenceSummary: string;
   lastUpdated: string;
@@ -255,7 +356,30 @@ export interface Recommendation {
 }
 
 export async function fetchRecommendations(): Promise<EngineListResponse<Recommendation>> {
-  return wrapListMeta(DEMO_RECOMMENDATIONS);
+  const res = await trpcQuery<{ patterns?: ApiPattern[] }>('pattern.list');
+  const patterns = livePatterns(res).sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
+  const recommendations: Recommendation[] = patterns.map((p) => ({
+    id: `pattern-${p.id}`,
+    title: p.name,
+    description: p.description,
+    category: humanizePatternType(p.patternType),
+    confidence: p.confidence ?? 0,
+    evidenceSummary: p.summary || p.description,
+    lastUpdated: new Date(p.lastDetectedAt || Date.now()).toISOString(),
+    relatedSignals: p.evidenceCount ?? 0,
+    sourceCount: 0,
+    sources: [],
+    lifecycleStage: 'new',
+    contributingSignals: [],
+    riskFactors: [],
+    impact: p.impactScore != null ? `Score ${p.impactScore}` : 'Not scored',
+    why: p.summary || p.description,
+    nextAction: (p.recommendedAction || 'Monitor for further activity').split('|')[0].trim(),
+  }));
+  return wrapListMeta(recommendations, {
+    relatedSignals: patterns.reduce((sum, p) => sum + (p.evidenceCount || 0), 0),
+    source: 'Kestovar Pattern Intelligence',
+  });
 }
 
 // ─── Projects API ───
