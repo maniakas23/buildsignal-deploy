@@ -89,6 +89,9 @@ function TrendIcon({ trend }: { trend: string }) {
 export default function OperationsCenter() {
   return (
     <div className="space-y-6">
+      <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg">
+        <span className="text-sm text-amber-700 font-medium">Sample Data — All figures below are illustrative placeholders for UI demonstration. Not live operational metrics.</span>
+      </div>
       {/* System Health Banner */}
       <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5">
         <div className="flex items-center justify-between mb-3">
