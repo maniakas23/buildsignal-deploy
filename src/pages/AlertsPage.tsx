@@ -100,7 +100,7 @@ export default function AlertsPage() {
     },
   });
 
-  const markAllReadMutation = trpc.stripe.markAllRead.useMutation({
+  const markAllReadMutation = trpc.notification.markAllRead.useMutation({
     onSuccess: () => {
       utils.notification.history.invalidate();
     },
@@ -132,14 +132,6 @@ export default function AlertsPage() {
   return (
     <div className="bg-canvas min-h-screen">
       <div className="max-w-content mx-auto px-6 py-8">
-        {/* Sample Data Banner */}
-        <div className="mb-6 p-3 rounded-lg bg-accent-amber/10 border border-accent-amber/20 flex items-center gap-2">
-          <AlertTriangle className="w-4 h-4 text-accent-amber shrink-0" />
-          <p className="text-sm text-accent-amber font-medium">
-            Sample Data — Illustrative Example
-          </p>
-        </div>
-
         {/* Page Header */}
         <div className="mb-8">
           <h1 className="section-title text-ink-primary mb-2">Alerts</h1>
