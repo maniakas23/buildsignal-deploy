@@ -151,9 +151,9 @@ export function ROICalculator() {
             <div className="text-center">
               <a href="/signup" className="inline-flex items-center justify-center px-8 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition-colors"
                 onClick={() => trackEvent("signup_clicked", { source: "roi_calculator" })}>
-                Start Your 14-Day Free Trial
+                Get Started
               </a>
-              <p className="text-sm text-muted mt-2">No credit card required. Cancel anytime.</p>
+              <p className="text-sm text-muted mt-2">Simple monthly billing. Cancel anytime.</p>
             </div>
           </div>
         </div>
