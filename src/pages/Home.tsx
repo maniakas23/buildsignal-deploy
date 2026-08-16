@@ -17,16 +17,16 @@ export default function Home() {
   const steps = [
     { number: "01", title: "Capture", description: "Select counties, metros, and asset classes. Our system monitors municipal permits, zoning filings, and infrastructure investments across your target markets.", icon: Search },
     { number: "02", title: "Filter", description: "Apply intelligent filters by permit type, project value, timeline, and geography. Set custom alert thresholds to surface only the opportunities that match your strategy.", icon: Filter },
-    { number: "03", title: "Present", description: "Receive actionable reports with confidence scores, trend visualizations, and clear next steps. Export to PDF, share with your team, or integrate via API.", icon: Presentation },
+    { number: "03", title: "Present", description: "Receive actionable intelligence briefs with confidence scores, trend context, and clear next steps, delivered to your dashboard.", icon: Presentation },
   ];
 
   const capabilities = [
     { icon: MapPin, title: "County Coverage", description: "Monitor construction activity across covered US counties with daily data aggregation and automated coverage expansion." },
-    { icon: FileText, title: "Permit Tracking", description: "Track municipal building permits in real time. Filter by type, value, and geography to find relevant opportunities." },
+    { icon: FileText, title: "Permit Tracking", description: "Track municipal building permits as they are published. Filter by type, value, and geography to find relevant opportunities." },
     { icon: BarChart3, title: "AI Predictions", description: "Machine learning models forecast construction surges with confidence scores. Methodology documented and transparent." },
     { icon: Users, title: "User Analytics", description: "Per-account metrics and reporting dashboards. Track your research activity, saved searches, and team engagement." },
     { icon: Zap, title: "ROI Tools", description: "Investment analysis and market comparison tools. Evaluate opportunity costs and projected returns across target regions." },
-    { icon: Download, title: "Reports & Exports", description: "Generate polished PDF and API exports with one click. Custom branding, charts, and narrative summaries included." },
+    { icon: Download, title: "Reports", description: "Generate intelligence briefs with charts and narrative summaries from your dashboard." },
   ];
 
   const useCases = [
@@ -50,7 +50,7 @@ export default function Home() {
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-sm font-medium mb-6">
             <TrendingUp className="w-4 h-4" />
-            <span>Now tracking 3,200+ US counties</span>
+            <span>Live permit intelligence in covered US markets</span>
           </div>
           <h1 className="text-4xl md:text-6xl font-bold text-ink mb-6 tracking-tight">
             Predict Construction Surges<br className="hidden md:block" /> Before Your Competitors
@@ -60,13 +60,13 @@ export default function Home() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/signup" className="inline-flex items-center justify-center px-8 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition-colors">
-              Start 14-Day Free Trial<ArrowRight className="w-4 h-4 ml-2" />
+              Get Started<ArrowRight className="w-4 h-4 ml-2" />
             </Link>
-            <button className="inline-flex items-center justify-center px-8 py-3 bg-surface hover:bg-surface-hover text-ink font-semibold rounded-lg border border-border transition-colors">
+            <Link to="/demo" className="inline-flex items-center justify-center px-8 py-3 bg-surface hover:bg-surface-hover text-ink font-semibold rounded-lg border border-border transition-colors">
               Watch Demo
-            </button>
+            </Link>
           </div>
-          <p className="text-sm text-muted mt-4">No credit card required. Cancel anytime.</p>
+          <p className="text-sm text-muted mt-4">Plans from $99/month. Cancel anytime.</p>
         </div>
       </section>
 
@@ -154,7 +154,7 @@ export default function Home() {
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-ink mb-4">Pricing</h2>
             <p className="text-lg text-muted">Simple Pricing, Powerful Results</p>
-            <p className="text-sm text-muted mt-2">Start with a 14-day free trial. No credit card required. Upgrade or cancel anytime.</p>
+            <p className="text-sm text-muted mt-2">Simple monthly billing. Upgrade or cancel anytime.</p>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
             {plans.map((plan) => (
@@ -176,7 +176,7 @@ export default function Home() {
                   ))}
                 </ul>
                 <Link to="/signup" className={`block w-full text-center px-4 py-2 rounded-lg font-semibold transition-colors ${plan.highlighted ? "bg-emerald-500 hover:bg-emerald-600 text-white" : "bg-canvas hover:bg-surface-hover text-ink border border-border"}`}>
-                  Start Free Trial
+                  Get Started
                 </Link>
               </div>
             ))}
@@ -191,11 +191,8 @@ export default function Home() {
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold text-ink mb-4">Stay Ahead of the Market</h2>
           <p className="text-muted mb-8">Get weekly insights on construction market trends and new feature updates.</p>
-          <form className="flex flex-col sm:flex-row gap-3" onSubmit={(e) => { e.preventDefault(); }}>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Enter your email"
-              className="flex-1 px-4 py-3 bg-canvas border border-border rounded-lg text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-emerald-500" />
-            <button type="submit" className="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition-colors">Subscribe</button>
-          </form>
+          <p className="text-sm text-muted mb-6">Email updates are not yet available — reach out and we will keep you posted.</p>
+          <Link to="/contact" className="inline-flex items-center justify-center px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition-colors">Contact Us</Link>
         </div>
       </section>
 
