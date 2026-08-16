@@ -55,7 +55,7 @@ const topNavItems: NavItem[] = [
   },
   {
     label: "Counties",
-    to: "/counties",
+    to: "/county-coverage",
     icon: MapPin,
     ariaLabel: "Navigate to Counties",
   },
@@ -110,9 +110,9 @@ export default function AppSidebar({
   const { user, isLoading, logout } = useAuth();
 
   const isActive = (to: string) => {
-    if (to === "/counties") {
+    if (to === "/county-coverage") {
       return (
-        location.pathname === "/counties" ||
+        location.pathname === "/county-coverage" ||
         location.pathname.startsWith("/counties/")
       );
     }
