@@ -85,15 +85,21 @@ export function BillingPage() {
 
   const { data: subscription, isLoading: subLoading } =
     trpc.stripe.getSubscription.useQuery();
-  const { data: plans } = trpc.stripe.plans.useQuery();
-  const { data: billingHistory, isLoading: historyLoading } =
+  const { data: plansData } = trpc.stripe.plans.useQuery();
+  // stripe.plans returns { plans: [...], annual, trial, ... } — unwrap it
+  const plans = plansData?.plans;
+  const { data: billingHistoryData, isLoading: historyLoading } =
     trpc.billing.history.useQuery();
+  // billing.history returns { invoices: [...] } — unwrap it
+  const billingHistory = billingHistoryData?.invoices;
   const { data: usage, isLoading: usageLoading } =
     trpc.billing.usage.useQuery();
 
   const checkout = trpc.stripe.createCheckoutSession.useMutation({
     onSuccess: (data) => {
-      if (data.url) window.location.href = data.url;
+      // API returns { checkoutUrl, sessionId }
+      const url = data.checkoutUrl || data.url;
+      if (url) window.location.href = url;
     },
   });
 
@@ -394,8 +400,8 @@ export function BillingPage() {
                             {config.name}
                           </p>
                           <p className="text-xs text-[var(--bs-text-tertiary)]">
-                            {plan.amount > 0
-                              ? `${formatCurrency(plan.amount)}/mo`
+                            {plan.price > 0
+                              ? `${formatCurrency(plan.price)}/mo`
                               : "Free"}
                           </p>
                         </div>
