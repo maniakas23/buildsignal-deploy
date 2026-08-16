@@ -152,6 +152,12 @@ function humanizePatternType(t: string): string {
   return (t || 'Pattern').replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+// Pattern timestamps arrive in mixed units (some unix seconds, some ms).
+function patternMs(t?: number): number {
+  if (!t) return Date.now();
+  return t < 1e12 ? t * 1000 : t;
+}
+
 
 // ─── Demo Data ───
 const DEMO_ZONES: Zone[] = [
@@ -353,6 +359,8 @@ export interface Recommendation {
   why: string;
   nextAction: string;
   completeness?: number;
+  county?: string;
+  state?: string;
 }
 
 export async function fetchRecommendations(): Promise<EngineListResponse<Recommendation>> {
@@ -365,7 +373,9 @@ export async function fetchRecommendations(): Promise<EngineListResponse<Recomme
     category: humanizePatternType(p.patternType),
     confidence: p.confidence ?? 0,
     evidenceSummary: p.summary || p.description,
-    lastUpdated: new Date(p.lastDetectedAt || Date.now()).toISOString(),
+    lastUpdated: new Date(patternMs(p.lastDetectedAt)).toISOString(),
+    county: p.county || '',
+    state: p.state || '',
     relatedSignals: p.evidenceCount ?? 0,
     sourceCount: 0,
     sources: [],
@@ -380,6 +390,36 @@ export async function fetchRecommendations(): Promise<EngineListResponse<Recomme
     relatedSignals: patterns.reduce((sum, p) => sum + (p.evidenceCount || 0), 0),
     source: 'Kestovar Pattern Intelligence',
   });
+}
+
+// ─── Recent live signal activity (for activity feeds) ───
+export interface RecentSignal {
+  id: string;
+  title: string;
+  category: string;
+  county: string;
+  state: string;
+  confidence: number;
+  evidenceCount: number;
+  detectedAt: string;
+}
+
+export async function fetchRecentSignals(limit = 10): Promise<RecentSignal[]> {
+  const res = await trpcQuery<{ patterns?: ApiPattern[] }>('pattern.list');
+  return livePatterns(res)
+    .slice()
+    .sort((a, b) => patternMs(b.lastDetectedAt) - patternMs(a.lastDetectedAt))
+    .slice(0, limit)
+    .map((p) => ({
+      id: `pattern-${p.id}`,
+      title: p.name,
+      category: humanizePatternType(p.patternType),
+      county: p.county || '',
+      state: p.state || '',
+      confidence: p.confidence ?? 0,
+      evidenceCount: p.evidenceCount ?? 0,
+      detectedAt: new Date(patternMs(p.lastDetectedAt)).toISOString(),
+    }));
 }
 
 // ─── Projects API ───
