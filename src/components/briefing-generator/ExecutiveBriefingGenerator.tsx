@@ -102,6 +102,9 @@ export default function ExecutiveBriefingGenerator() {
 
   return (
     <div className="space-y-5">
+      <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg">
+        <span className="text-sm text-amber-700 font-medium">Sample Data — All figures below are illustrative placeholders for UI demonstration. Not live briefing data.</span>
+      </div>
       {/* Controls */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1 p-1 bg-canvas border border-ink-wash rounded-xl w-fit">
