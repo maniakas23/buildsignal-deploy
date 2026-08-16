@@ -22,7 +22,7 @@ const WORKFLOW_STEPS: WorkflowStep[] = [
     description: 'Choose geographic areas to monitor',
     icon: MapPin,
     page: 'onboarding',
-    completed: true,
+    completed: false,
     priority: 'high',
   },
   {
@@ -31,7 +31,7 @@ const WORKFLOW_STEPS: WorkflowStep[] = [
     description: 'Search for projects in your area',
     icon: Search,
     page: 'search',
-    completed: true,
+    completed: false,
     priority: 'high',
   },
   {
