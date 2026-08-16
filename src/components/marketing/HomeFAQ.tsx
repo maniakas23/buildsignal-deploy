@@ -37,8 +37,8 @@ const faqData: FAQItem[] = [
     answer: <p><strong>No.</strong> BuildSignal is a research tool that surfaces public development activity. It does not replace legal, financial, or physical due diligence. Always conduct your own independent analysis before making investment or business decisions. BuildSignal provides intelligence, not advice.</p>,
   },
   {
-    question: "How does the 14-day trial work?",
-    answer: <p>You can start a 14-day free trial without providing a credit card. During the trial, you have full access to the features included in your selected plan. If you choose not to continue, your account will simply expire at the end of the 14 days. You can upgrade to a paid plan at any time during or after the trial.</p>,
+    question: "How does billing work?",
+    answer: <p>BuildSignal plans are billed monthly, starting at $99/month for Scout. You get immediate access to the features included in your selected plan, and you can upgrade, downgrade, or cancel at any time from your billing settings.</p>,
   },
 ];
 
