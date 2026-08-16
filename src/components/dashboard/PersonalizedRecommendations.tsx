@@ -1,87 +1,53 @@
+import { useEffect, useState } from 'react';
 import { useStore } from '@/store/useStore';
 import { trackEvent } from '@/hooks/useTelemetry';
+import { fetchRecommendations, type Recommendation } from '@/signalcore/engine';
 import {
   Sparkles, TrendingUp, MapPin, ArrowRight, Eye,
-  Building2, HardHat, Zap, Target, Clock
+  Building2, HardHat, Zap, Target
 } from 'lucide-react';
 
-interface Recommendation {
-  id: string;
-  title: string;
-  description: string;
-  reason: string;
-  confidence: number;
-  type: string;
-  county: string;
-  signals: number;
-  icon: React.ElementType;
-  iconColor: string;
-  action: string;
+function iconFor(category: string): { icon: React.ElementType; iconColor: string } {
+  const c = (category || '').toLowerCase();
+  if (c.includes('util') || c.includes('power') || c.includes('electric')) {
+    return { icon: Zap, iconColor: 'text-accent-amber' };
+  }
+  if (c.includes('industrial') || c.includes('construction') || c.includes('permit') || c.includes('dwelling')) {
+    return { icon: HardHat, iconColor: 'text-accent-violet' };
+  }
+  if (c.includes('commercial') || c.includes('mixed') || c.includes('development')) {
+    return { icon: Building2, iconColor: 'text-accent-indigo' };
+  }
+  return { icon: TrendingUp, iconColor: 'text-accent-teal' };
 }
-
-const RECOMMENDATIONS: Recommendation[] = [
-  {
-    id: 'rec-1',
-    title: 'Apex Town Center Phase 2',
-    description: '42-acre mixed-use development with strong permit velocity and utility expansion signals.',
-    reason: 'Matches your monitored counties and high confidence threshold',
-    confidence: 92,
-    type: 'mixed-use',
-    county: 'Wake County, NC',
-    signals: 47,
-    icon: Building2,
-    iconColor: 'text-accent-indigo',
-    action: 'View Opportunity',
-  },
-  {
-    id: 'rec-2',
-    title: 'Morrisville Station District',
-    description: 'Transit-adjacent commercial development with strong early signals.',
-    reason: 'Based on your interest in transportation projects',
-    confidence: 78,
-    type: 'transit',
-    county: 'Wake County, NC',
-    signals: 31,
-    icon: TrendingUp,
-    iconColor: 'text-accent-teal',
-    action: 'Explore',
-  },
-  {
-    id: 'rec-3',
-    title: 'Duke Energy Regional Substation',
-    description: 'Major electrical infrastructure upgrade serving Research Triangle.',
-    reason: 'Utility projects you have been tracking',
-    confidence: 85,
-    type: 'utility',
-    county: 'Durham County, NC',
-    signals: 23,
-    icon: Zap,
-    iconColor: 'text-accent-amber',
-    action: 'Investigate',
-  },
-  {
-    id: 'rec-4',
-    title: 'Garner Industrial Park Expansion',
-    description: 'Industrial zoning change with environmental clearance and road access.',
-    reason: 'New in your monitored area — early signal',
-    confidence: 72,
-    type: 'industrial',
-    county: 'Wake County, NC',
-    signals: 18,
-    icon: HardHat,
-    iconColor: 'text-accent-violet',
-    action: 'Review',
-  },
-];
 
 export default function PersonalizedRecommendations() {
   const { setCurrentPage } = useStore();
+  const [recs, setRecs] = useState<Recommendation[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchRecommendations()
+      .then((res) => {
+        if (!cancelled) setRecs((res.data || []).slice(0, 4));
+      })
+      .catch(() => {
+        if (!cancelled) setRecs([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleAction = (rec: Recommendation) => {
     trackEvent('opportunity_click', {
       recommendationId: rec.id,
       confidence: rec.confidence,
-      type: rec.type,
+      type: rec.category,
     });
     setCurrentPage('dashboard');
   };
@@ -96,14 +62,30 @@ export default function PersonalizedRecommendations() {
         </div>
         <span className="flex items-center gap-1 text-[10px] text-ink-tertiary">
           <Target className="w-3 h-3" />
-          AI-personalized
+          Live intelligence
         </span>
       </div>
 
       {/* Recommendations list */}
       <div className="divide-y divide-ink-wash/30">
-        {RECOMMENDATIONS.map((rec) => {
-          const Icon = rec.icon;
+        {loading && (
+          <div className="px-4 py-6 text-center text-[11px] text-ink-tertiary">
+            Loading live recommendations…
+          </div>
+        )}
+        {!loading && recs.length === 0 && (
+          <div className="px-4 py-6 text-center">
+            <p className="text-[11px] text-ink-secondary">
+              No live recommendations yet.
+            </p>
+            <p className="text-[10px] text-ink-tertiary mt-1">
+              Recommendations appear here as verified patterns are detected in your monitored counties.
+            </p>
+          </div>
+        )}
+        {!loading && recs.map((rec) => {
+          const { icon: Icon, iconColor } = iconFor(rec.category);
+          const location = [rec.county, rec.state].filter(Boolean).join(', ');
           return (
             <div
               key={rec.id}
@@ -111,7 +93,7 @@ export default function PersonalizedRecommendations() {
             >
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-lg bg-canvas flex items-center justify-center shrink-0">
-                  <Icon className={`w-4 h-4 ${rec.iconColor}`} />
+                  <Icon className={`w-4 h-4 ${iconColor}`} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
@@ -133,24 +115,23 @@ export default function PersonalizedRecommendations() {
                   <p className="text-[11px] text-ink-secondary leading-relaxed mb-1">
                     {rec.description}
                   </p>
-                  <p className="text-[10px] text-ink-tertiary mb-2">
-                    {rec.reason}
-                  </p>
                   <div className="flex items-center gap-3 text-[10px] text-ink-tertiary mb-2">
-                    <span className="flex items-center gap-1">
-                      <MapPin className="w-3 h-3" />
-                      {rec.county}
-                    </span>
+                    {location && (
+                      <span className="flex items-center gap-1">
+                        <MapPin className="w-3 h-3" />
+                        {location}
+                      </span>
+                    )}
                     <span className="flex items-center gap-1">
                       <Eye className="w-3 h-3" />
-                      {rec.signals} signals
+                      {rec.relatedSignals} signals
                     </span>
                   </div>
                   <button
                     onClick={() => handleAction(rec)}
                     className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-accent-indigo/10 text-[11px] font-medium text-accent-indigo hover:bg-accent-indigo/20 transition-colors"
                   >
-                    {rec.action}
+                    {rec.nextAction || 'View details'}
                     <ArrowRight className="w-3 h-3" />
                   </button>
                 </div>

@@ -10,59 +10,29 @@ interface Notification {
   read: boolean;
 }
 
-const SAMPLE_NOTIFICATIONS: Notification[] = [
-  {
-    id: '1',
-    type: 'trend',
-    title: 'New High-Confidence Opportunity',
-    message: 'Mixed-Use Development in Travis County — 94% confidence',
-    timestamp: Date.now() - 3600000,
-    read: false,
-  },
-  {
-    id: '2',
-    type: 'success',
-    title: 'Data Refresh Complete',
-    message: 'All counties updated with latest permit filings',
-    timestamp: Date.now() - 7200000,
-    read: false,
-  },
-  {
-    id: '3',
-    type: 'info',
-    title: 'Weekly Digest Ready',
-    message: 'Your weekly intelligence summary is available',
-    timestamp: Date.now() - 86400000,
-    read: true,
-  },
-  {
-    id: '4',
-    type: 'warning',
-    title: 'Signal Surge Detected',
-    message: 'Harris County showing 40% increase in utility requests',
-    timestamp: Date.now() - 172800000,
-    read: false,
-  },
-];
+// Notifications are only shown when a real backend event creates them.
+// No sample/placeholder notifications are ever fabricated for the user.
+const STORAGE_KEY = 'buildsignal_notifications_v2';
 
 export default function InAppNotifications() {
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   useEffect(() => {
-    // Load from localStorage or use samples
-    const stored = localStorage.getItem('buildsignal_notifications');
+    // Clear legacy sample notifications written by earlier versions.
+    localStorage.removeItem('buildsignal_notifications');
+    const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
-      setNotifications(JSON.parse(stored));
-    } else {
-      setNotifications(SAMPLE_NOTIFICATIONS);
+      try {
+        setNotifications(JSON.parse(stored));
+      } catch {
+        setNotifications([]);
+      }
     }
   }, []);
 
   useEffect(() => {
-    if (notifications.length > 0) {
-      localStorage.setItem('buildsignal_notifications', JSON.stringify(notifications));
-    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(notifications));
   }, [notifications]);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
