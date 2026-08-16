@@ -264,7 +264,7 @@ function ActionBadge({ action }: { action: string }) {
 
 function RecommendationCard({ rec, index }: { rec: Recommendation; index: number }) {
   const handleClick = () => { track({ type: 'recommendation_clicked', recId: rec.id, category: rec.category }); recordFirstOpportunity(); };
-  const explainItems = [rec.why, `${rec.relatedSignals} correlated signals detected`, `${rec.sourceCount} verified data sources`, `${rec.roi}% projected ROI`];
+  const explainItems = [rec.why, `${rec.relatedSignals} correlated signals detected`, `${rec.sourceCount} verified data sources`, ...(rec.roi != null ? [`${rec.roi}% projected ROI`] : [])];
   const marketContext = useMemo(() => {
     if (!rec.contributingSignals?.length) return null;
     const signals = rec.contributingSignals;
@@ -293,7 +293,7 @@ function RecommendationCard({ rec, index }: { rec: Recommendation; index: number
     return rec.contributingSignals.filter(s => s.type === 'utility' || s.type === 'transportation' || s.type === 'project').sort((a, b) => b.influence - a.influence);
   }, [rec.contributingSignals]);
 
-  const completeness = rec.completeness ?? (() => { let score = 0; const checks = [rec.title?.length > 0, rec.description?.length > 0, rec.confidence > 0, rec.roi > 0, rec.why?.length > 0, (rec.sources?.length ?? 0) > 0, (rec.contributingSignals?.length ?? 0) > 0, (rec.riskFactors?.length ?? 0) > 0, rec.nextAction?.length > 0, rec.impact?.length > 0]; checks.forEach(passed => { if (passed) score += 10; }); return score; })();
+  const completeness = rec.completeness ?? (() => { let score = 0; const checks = [rec.title?.length > 0, rec.description?.length > 0, rec.confidence > 0, (rec.roi ?? 0) > 0, rec.why?.length > 0, (rec.sources?.length ?? 0) > 0, (rec.contributingSignals?.length ?? 0) > 0, (rec.riskFactors?.length ?? 0) > 0, rec.nextAction?.length > 0, rec.impact?.length > 0]; checks.forEach(passed => { if (passed) score += 10; }); return score; })();
   const completenessLabel = completeness >= 90 ? 'Complete' : completeness >= 70 ? 'Strong' : completeness >= 50 ? 'Moderate' : 'Partial';
 
   return (
@@ -310,8 +310,7 @@ function RecommendationCard({ rec, index }: { rec: Recommendation; index: number
           <span className="text-[11px] text-ink-tertiary"><strong className="text-ink-primary">{rec.relatedSignals}</strong> signals</span>
           <span className="w-px h-3 bg-ink-wash" />
           <span className="text-[11px] text-ink-tertiary"><strong className="text-ink-primary">{rec.sourceCount}</strong> sources</span>
-          <span className="w-px h-3 bg-ink-wash" />
-          <span className="text-[11px] text-ink-tertiary">{rec.roi}% ROI</span>
+          {rec.roi != null && (<><span className="w-px h-3 bg-ink-wash" /><span className="text-[11px] text-ink-tertiary">{rec.roi}% ROI</span></>)}
         </div>
         <div className="flex items-center gap-2 px-1">
           <div className="flex-1 h-1 bg-canvas rounded-full overflow-hidden"><div className={`h-full rounded-full ${completeness >= 90 ? 'bg-accent-teal' : completeness >= 70 ? 'bg-accent-indigo' : completeness >= 50 ? 'bg-accent-amber' : 'bg-accent-crimson'}`} style={{ width: `${completeness}%` }} /></div>
@@ -321,7 +320,7 @@ function RecommendationCard({ rec, index }: { rec: Recommendation; index: number
       <div className="mb-4">
         <p className="text-[11px] text-ink-tertiary uppercase tracking-wider mb-2">Opportunity overview</p>
         <div className="grid grid-cols-2 gap-2">
-          <div className="bg-canvas rounded-lg p-2.5 border border-ink-wash"><span className="text-[10px] text-ink-tertiary uppercase tracking-wider">Projected ROI</span><p className="font-mono text-lg text-accent-indigo">{rec.roi}%</p></div>
+          {rec.roi != null && (<div className="bg-canvas rounded-lg p-2.5 border border-ink-wash"><span className="text-[10px] text-ink-tertiary uppercase tracking-wider">Projected ROI</span><p className="font-mono text-lg text-accent-indigo">{rec.roi}%</p></div>)}
           <div className="bg-canvas rounded-lg p-2.5 border border-ink-wash"><span className="text-[10px] text-ink-tertiary uppercase tracking-wider">Impact</span><p className="text-sm font-medium text-ink-primary truncate">{rec.impact}</p></div>
           <div className="bg-canvas rounded-lg p-2.5 border border-ink-wash"><span className="text-[10px] text-ink-tertiary uppercase tracking-wider">Signals</span><p className="font-mono text-lg text-accent-teal">{rec.relatedSignals}</p></div>
           <div className="bg-canvas rounded-lg p-2.5 border border-ink-wash"><span className="text-[10px] text-ink-tertiary uppercase tracking-wider">Sources</span><p className="font-mono text-lg text-accent-teal">{rec.sourceCount}</p></div>
