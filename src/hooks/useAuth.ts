@@ -43,11 +43,17 @@ async function trpcCall<T = unknown>(proc: string, input: unknown): Promise<T> {
 }
 
 async function fetchMe(token: string): Promise<User | null> {
-  const res = await fetch("/api/auth.me", {
-    headers: { Authorization: `Bearer ${token}` },
+  // The session endpoint is the tRPC auth.me procedure; there is no REST
+  // /api/auth.me route (it 404s and previously caused valid sessions to be
+  // discarded on every page load).
+  const res = await fetch("/api/trpc/auth.me?batch=1", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ "0": { json: null } }),
   });
-  const data = await res.json().catch(() => null);
-  return data?.user ?? null;
+  const payload = await res.json().catch(() => null);
+  const item = Array.isArray(payload) ? payload[0] : payload;
+  return item?.result?.data ?? null;
 }
 
 export function useAuth() {
@@ -66,13 +72,10 @@ export function useAuth() {
       return;
     }
 
-    fetch("/api/auth.me", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.user) {
-          setUser(data.user);
+    fetchMe(token)
+      .then((me) => {
+        if (me) {
+          setUser(me);
         } else {
           localStorage.removeItem("auth_token");
         }
