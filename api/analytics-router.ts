@@ -3,7 +3,7 @@
  */
 
 import { z } from "zod";
-import { createRouter, publicQuery } from "./middleware";
+import { createRouter, publicQuery, authedQuery } from "./middleware";
 
 function getD1(ctx: any): D1Database | null {
   return (ctx.env?.DB as D1Database) || null;
@@ -121,7 +121,7 @@ export const analyticsRouter = createRouter({
     } catch { return { cohorts: [], avgRetention: 0, churnRate: 0 }; }
   }),
 
-  healthScore: publicQuery.query(async ({ ctx }) => {
+  healthScore: authedQuery.query(async ({ ctx }) => {
     const d1 = getD1(ctx);
     if (!d1) return { overall: 0, providerHealth: 0, coverageHealth: 0, errorHealth: 0, apiLatency: 0, uptime: 0, status: "unknown" as const };
     try {
