@@ -36,7 +36,14 @@ export function PricingPage() {
 
   const { data: plansData } = trpc.billing.plans.useQuery();
 
-  const plans = plansData || [
+  const rawPlans = (plansData as any)?.plans ?? plansData;
+  // Enterprise is custom pricing ("Contact Sales") — never display a fixed monthly price for it
+  const apiPlans = Array.isArray(rawPlans)
+    ? rawPlans.map((pl: any) =>
+        pl && pl.id === "enterprise" ? { ...pl, price: null, interval: "custom" } : pl
+      )
+    : rawPlans;
+  const plans = (Array.isArray(apiPlans) && apiPlans.length ? apiPlans : null) || [
     {
       id: "starter",
       name: "Scout",

@@ -79,6 +79,18 @@ function formatCurrency(amount: number | null | undefined) {
   }).format(amount / 100);
 }
 
+// stripe.plans returns plan prices in DOLLARS (unlike invoice amounts, which
+// are cents) — do not divide these by 100.
+function formatPlanPrice(amount: number | null | undefined) {
+  if (amount === null || amount === undefined) return "Custom";
+  if (amount === 0) return "Free";
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
 export function BillingPage() {
   const navigate = useNavigate();
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
@@ -400,9 +412,9 @@ export function BillingPage() {
                             {config.name}
                           </p>
                           <p className="text-xs text-[var(--bs-text-tertiary)]">
-                            {plan.price > 0
-                              ? `${formatCurrency(plan.price)}/mo`
-                              : "Free"}
+                            {plan.id === "enterprise" || plan.price === null
+                              ? "Custom pricing"
+                              : `${formatPlanPrice(plan.price)}/mo`}
                           </p>
                         </div>
                       </div>
@@ -423,7 +435,20 @@ export function BillingPage() {
                         </li>
                       ))}
                     </ul>
-                    {!isCurrent && plan.id !== "starter" && (
+                    {!isCurrent && plan.id !== "starter" && plan.id === "enterprise" && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => {
+                          window.location.href = "mailto:support@buildsignal.net?subject=Enterprise%20plan%20inquiry";
+                        }}
+                      >
+                        Contact Sales
+                        <ExternalLink className="h-3 w-3 ml-1" />
+                      </Button>
+                    )}
+                    {!isCurrent && plan.id !== "starter" && plan.id !== "enterprise" && (
                       <Button
                         size="sm"
                         className="w-full bg-[var(--bs-action)] hover:bg-[var(--bs-action)]/90"

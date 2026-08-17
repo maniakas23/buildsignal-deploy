@@ -200,7 +200,7 @@ export function WatchlistsPage() {
   }, [watchlists, searchQuery]);
 
   const alertEnabledCount = watchlists?.filter((w) => w.alertEnabled).length ?? 0;
-  const totalAlerts = alertsData?.reduce((sum, a) => sum + a.alertCount, 0) ?? 0;
+  const totalAlerts = Array.isArray(alertsData) ? alertsData.reduce((sum, a) => sum + a.alertCount, 0) : 0;
 
   return (
     <div className="min-h-screen bg-canvas">

@@ -23,14 +23,10 @@ import {
   FileText,
   Calendar,
   Clock,
-  Download,
   Search,
   FileBarChart,
   Layers,
   Archive,
-  FileSpreadsheet,
-  FileDigit,
-  ChevronRight,
   RefreshCw,
   AlertCircle,
   MapPin,
@@ -283,7 +279,7 @@ export function ReportsPage() {
         <div className="mb-8">
           <h1 className="section-title text-ink-primary mb-2">Reports</h1>
           <p className="text-body text-ink-secondary">
-            Generate, schedule, and download intelligence reports
+            Intelligence reports derived from your daily brief
           </p>
         </div>
 
@@ -403,7 +399,7 @@ export function ReportsPage() {
               Once your monitored counties begin generating signals, reports will appear here automatically.
             </p>
             <Button
-              onClick={() => navigate('/counties')}
+              onClick={() => navigate('/county-coverage')}
               className="bg-accent-indigo hover:bg-accent-indigo/90 text-white"
             >
               <MapPin className="w-4 h-4 mr-2" />
@@ -440,22 +436,6 @@ export function ReportsPage() {
                 </Select>
               </div>
 
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  className="border-border text-ink-secondary hover:bg-surface hover:text-ink-primary"
-                >
-                  <FileDigit className="w-4 h-4 mr-2" />
-                  Export PDF
-                </Button>
-                <Button
-                  variant="outline"
-                  className="border-border text-ink-secondary hover:bg-surface hover:text-ink-primary"
-                >
-                  <FileSpreadsheet className="w-4 h-4 mr-2" />
-                  Export CSV
-                </Button>
-              </div>
             </div>
 
             <Separator className="mb-6 bg-border" />
@@ -555,7 +535,7 @@ function ReportCard({ report }: { report: ReportItem }) {
       <CardContent className="pt-0">
         <p className="text-sm text-ink-secondary mb-4 line-clamp-2">{report.description}</p>
 
-        <div className="flex items-center justify-between text-xs text-ink-tertiary mb-4">
+        <div className="flex items-center justify-between text-xs text-ink-tertiary">
           <span className="flex items-center gap-1">
             <Clock className="w-3.5 h-3.5" />
             {report.lastGenerated}
@@ -566,23 +546,6 @@ function ReportCard({ report }: { report: ReportItem }) {
               Scheduled
             </span>
           )}
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            className="flex-1 bg-accent-indigo hover:bg-accent-indigo/90 text-white"
-          >
-            <Download className="w-4 h-4 mr-2" />
-            Download
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            className="border-border text-ink-secondary hover:bg-surface"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </Button>
         </div>
       </CardContent>
     </Card>
