@@ -239,3 +239,15 @@
 @layer base {
   .safe-area-pb { padding-bottom: env(safe-area-inset-bottom, 0px); }
 }
+
+/*
+ * Contrast fix (first-customer stabilization, Phase 3):
+ * `text-muted` resolved to the --muted *background* token hsl(210 20% 18%)
+ * — dark-on-dark, ~1.4:1 contrast (hero subtitle, pricing line, feature
+ * cards, onboarding headings, wordmark). Repoint the text utility to
+ * --muted-foreground (5.5:1 on canvas, 5.0:1 on surface).
+ * Unlayered so it beats the generated utility. bg-muted is unchanged.
+ */
+.text-muted {
+  color: hsl(var(--muted-foreground));
+}

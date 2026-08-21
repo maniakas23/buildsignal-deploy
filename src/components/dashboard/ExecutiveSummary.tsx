@@ -29,7 +29,8 @@ export function ExecutiveSummary({ onViewOpportunity, onViewAlerts }: ExecutiveS
   const { user } = useAuth();
   const greeting = getGreeting();
   const { data: feed, isLoading } = trpc.pipeline.opportunities.feed.useQuery({ limit: 5 });
-  const { data: alerts } = trpc.pipeline.telemetry.pipelineStatus.useQuery();
+  // telemetry.pipelineStatus does not exist on the deployed backend; the
+  // stale call has been removed. Event totals are no longer displayed here.
 
   const summary = useMemo(() => {
     if (!feed || feed.length === 0) return null;
@@ -38,8 +39,8 @@ export function ExecutiveSummary({ onViewOpportunity, onViewAlerts }: ExecutiveS
     const avgConfidence = Math.round(
       feed.reduce((sum: number, o: any) => sum + o.confidenceScore, 0) / feed.length
     );
-    const totalEvents = alerts?.totals?.events || 0;
-    const newEvents24h = alerts?.last24h?.events || 0;
+    const totalEvents = 0;
+    const newEvents24h = 0;
 
     // Find the top county
     const countyCounts: Record<string, number> = {};
@@ -58,7 +59,7 @@ export function ExecutiveSummary({ onViewOpportunity, onViewAlerts }: ExecutiveS
       topCounty,
       topOpportunity: feed[0],
     };
-  }, [feed, alerts]);
+  }, [feed]);
 
   if (isLoading) {
     return (
