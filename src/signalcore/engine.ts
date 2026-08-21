@@ -210,6 +210,7 @@ export function presentPatternDescription(p: { name?: string; description?: stri
 /** Scrub unresolved location tokens from arbitrary backend prose (e.g. recommendation "why"). */
 export function scrubUnknownPlaceText(s?: string | null): string {
   return (s ?? '')
+    .replace(/\b(city|county|state|place|location)\s*:\s*(unknown|undefined|null)\b/gi, 'a monitored area')
     .replace(/\bin\s+(Unknown|undefined|null)\b/g, 'across a monitored area')
     .replace(/\b(Unknown|undefined|null)\b/g, 'a monitored area');
 }

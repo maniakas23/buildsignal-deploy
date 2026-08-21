@@ -32,6 +32,7 @@ import {
   MapPin,
 } from 'lucide-react';
 import { trpc } from '@/providers/trpc';
+import { scrubUnknownPlaceText } from '@/signalcore/engine';
 
 /* ------------------------------------------------------------------ */
 /*  Types derived from brief API                                      */
@@ -134,8 +135,8 @@ export function ReportsPage() {
         if (!section.items || section.items.length === 0) {
           items.push({
             id: `${section.id}-overview`,
-            title: section.title,
-            description: section.summary || 'Daily intelligence briefing section.',
+            title: scrubUnknownPlaceText(section.title),
+            description: scrubUnknownPlaceText(section.summary || 'Daily intelligence briefing section.'),
             type: mapSectionTypeToReportType(section.type),
             lastGenerated: generatedDate,
             status: 'available',
@@ -146,8 +147,8 @@ export function ReportsPage() {
           section.items.forEach((item) => {
             items.push({
               id: String(item.id || `${section.id}-${Math.random().toString(36).slice(2, 8)}`),
-              title: item.title || section.title,
-              description: item.description || section.summary || 'Intelligence report entry.',
+              title: scrubUnknownPlaceText(item.title || section.title),
+              description: scrubUnknownPlaceText(item.description || section.summary || 'Intelligence report entry.'),
               type: mapSectionTypeToReportType(section.type),
               lastGenerated: generatedDate,
               status: 'available',
@@ -174,8 +175,8 @@ export function ReportsPage() {
         const mapped = toItem(x, i);
         items.push({
           id: String(x?.id ?? `${sectionId}-${i}`),
-          title: mapped.title,
-          description: mapped.description,
+          title: scrubUnknownPlaceText(mapped.title),
+          description: scrubUnknownPlaceText(mapped.description),
           type,
           lastGenerated: generatedDate,
           status: 'available',
