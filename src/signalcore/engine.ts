@@ -152,6 +152,68 @@ function humanizePatternType(t: string): string {
   return (t || 'Pattern').replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+// ─── Presentation normalization (first-customer stabilization) ───
+// Kestovar owns correlation and sometimes emits raw "key:value" pattern
+// labels (e.g. "city:Knightdale") or unresolved "Unknown" locations.
+// The frontend must never expose raw object keys or Unknown/undefined/null
+// tokens, and must never invent a location that isn't in the payload.
+const UNKNOWN_PLACE = /^(unknown|undefined|null|n\/a|none|na)$/i;
+
+function cleanPlace(v?: string | null): string {
+  const t = (v ?? '').trim();
+  return t && !UNKNOWN_PLACE.test(t) ? t : '';
+}
+
+function countFromDescription(desc?: string): { n: number; noun: string } | null {
+  const m = (desc || '').match(/(\d+)\s+([a-z-]*?)(permits?|signals?|rezoning cases?|projects?)/i);
+  if (!m) return null;
+  return { n: Number(m[1]), noun: m[3].toLowerCase() };
+}
+
+/** Truthful customer-facing pattern title. */
+export function presentPatternTitle(p: { name?: string; description?: string; evidenceCount?: number }): string {
+  const raw = (p.name || '').trim();
+  const kv = raw.match(/^[a-z][\w]*\s*:\s*(.*)$/i); // raw "field:value" label
+  const counted = countFromDescription(p.description);
+  const n = p.evidenceCount && p.evidenceCount > 0 ? p.evidenceCount : counted?.n ?? 0;
+  const noun = counted?.noun ?? 'permit';
+  const nounPhrase = n === 1 ? noun : noun.endsWith('s') ? noun : `${noun}s`;
+  if (kv) {
+    const place = cleanPlace(kv[1]);
+    if (place) return n > 0 ? `${n} ${nounPhrase} in ${place}` : place;
+    return n > 0 ? `${n} recent ${noun.startsWith('permit') ? 'permit ' : ''}signals` : 'Recent signals';
+  }
+  // Scrub unresolved location tokens from otherwise well-formed titles.
+  const scrubbed = raw.replace(/\b(unknown|undefined|null)\b/gi, '').replace(/\s{2,}/g, ' ').replace(/[\s—–-]+$/, '').trim();
+  return scrubbed || (n > 0 ? `${n} recent signals` : 'Recent signals');
+}
+
+/** Truthful customer-facing pattern description. */
+export function presentPatternDescription(p: { name?: string; description?: string; evidenceCount?: number }): string {
+  const raw = (p.description || '').trim();
+  const kv = (p.name || '').trim().match(/^[a-z][\w]*\s*:\s*(.*)$/i);
+  if (kv) {
+    const place = cleanPlace(kv[1]);
+    const counted = countFromDescription(raw);
+    if (counted) {
+      return place
+        ? `${counted.n} ${counted.noun} detected in ${place}.`
+        : `${counted.n} recent ${counted.noun} detected across a monitored area.`;
+    }
+  }
+  const scrubbed = raw
+    .replace(/\bin\s+(Unknown|undefined|null)\b/g, 'across a monitored area')
+    .replace(/\b(Unknown|undefined|null)\b/g, 'a monitored area');
+  return scrubbed;
+}
+
+/** Scrub unresolved location tokens from arbitrary backend prose (e.g. recommendation "why"). */
+export function scrubUnknownPlaceText(s?: string | null): string {
+  return (s ?? '')
+    .replace(/\bin\s+(Unknown|undefined|null)\b/g, 'across a monitored area')
+    .replace(/\b(Unknown|undefined|null)\b/g, 'a monitored area');
+}
+
 // Pattern timestamps arrive in mixed units (some unix seconds, some ms).
 function patternMs(t?: number): number {
   if (!t) return Date.now();
@@ -274,8 +336,8 @@ export async function fetchDashboard(): Promise<EngineResponse<DashboardMetrics>
     summary: null,
     patterns: patterns.map((p) => ({
       id: String(p.id),
-      name: p.name,
-      description: p.description,
+      name: presentPatternTitle(p),
+      description: presentPatternDescription(p),
       confidence: p.confidence,
       maturity: p.confidence,
       status: p.status === 'active' ? 'active' : 'learning',
@@ -368,8 +430,8 @@ export async function fetchRecommendations(): Promise<EngineListResponse<Recomme
   const patterns = livePatterns(res).sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
   const recommendations: Recommendation[] = patterns.map((p) => ({
     id: `pattern-${p.id}`,
-    title: p.name,
-    description: p.description,
+    title: presentPatternTitle(p),
+    description: presentPatternDescription(p),
     category: humanizePatternType(p.patternType),
     confidence: p.confidence ?? 0,
     evidenceSummary: p.summary || p.description,
@@ -412,7 +474,7 @@ export async function fetchRecentSignals(limit = 10): Promise<RecentSignal[]> {
     .slice(0, limit)
     .map((p) => ({
       id: `pattern-${p.id}`,
-      title: p.name,
+      title: presentPatternTitle(p),
       category: humanizePatternType(p.patternType),
       county: p.county || '',
       state: p.state || '',
