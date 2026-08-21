@@ -112,7 +112,7 @@ function StepIndicator({ step, total }: { step: number; total: number }) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between text-xs font-medium">
-        <span style={{ color: COLORS.deepNavy }}>Step {step} of {total}</span>
+        <span className="text-slate-800 dark:text-slate-100">Step {step} of {total}</span>
         <span className="text-muted-foreground">{Math.round(progress)}% complete</span>
       </div>
       <div className="h-2 w-full rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
@@ -218,7 +218,7 @@ function StepSelectMarkets({
   return (
     <div className="space-y-4">
       <div className="space-y-1">
-        <h2 className="text-xl font-semibold" style={{ color: COLORS.deepNavy }}>
+        <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100">
           Where do you want to track construction activity?
         </h2>
         <p className="text-sm text-muted-foreground">
@@ -334,7 +334,7 @@ function StepAlertPreferences({
   return (
     <div className="space-y-4">
       <div className="space-y-1">
-        <h2 className="text-xl font-semibold" style={{ color: COLORS.deepNavy }}>
+        <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100">
           What opportunities do you want to know about first?
         </h2>
         <p className="text-sm text-muted-foreground">
@@ -395,7 +395,7 @@ function StepAlertPreferences({
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <Bell className="w-4 h-4" style={{ color: COLORS.signalBlue }} />
-          <h3 className="text-sm font-semibold" style={{ color: COLORS.deepNavy }}>
+          <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
             Alert frequency
           </h3>
         </div>
@@ -461,7 +461,7 @@ function StepConnectGo({
       <div className="space-y-1">
         <div className="flex items-center gap-2">
           <CheckCircle className="w-5 h-5" style={{ color: COLORS.insightTeal }} />
-          <h2 className="text-xl font-semibold" style={{ color: COLORS.deepNavy }}>
+          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100">
             You&apos;re ready to start tracking
           </h2>
         </div>
@@ -665,7 +665,7 @@ export function OnboardingWizard() {
           >
             <Zap className="w-5 h-5 text-white" />
           </div>
-          <span className="text-lg font-bold" style={{ color: COLORS.deepNavy }}>
+          <span className="text-lg font-bold text-slate-800 dark:text-slate-100">
             BuildSignal
           </span>
         </div>
