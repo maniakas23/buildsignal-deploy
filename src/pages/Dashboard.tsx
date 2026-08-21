@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { trpc } from '@/providers/trpc'
+import { presentPatternTitle, presentPatternDescription } from '@/signalcore/engine'
 import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard'
 import { DashboardTour } from '@/components/tour/DashboardTour'
 import { HelpWidget } from '@/components/help/HelpWidget'
@@ -609,16 +610,16 @@ export function Dashboard() {
                     >
                       <div className="col-span-4">
                         <p className="truncate text-sm font-semibold text-[var(--bs-text-primary)]">
-                          {opp.title}
+                          {presentPatternTitle(opp)}
                         </p>
                         <p className="truncate text-xs text-[var(--bs-text-tertiary)] mt-0.5">
-                          {opp.description?.slice(0, 60)}{opp.description && opp.description.length > 60 ? '...' : ''}
+                          {presentPatternDescription(opp)?.slice(0, 60)}{opp.description && opp.description.length > 60 ? '...' : ''}
                         </p>
                       </div>
                       <div className="col-span-3 hidden sm:block">
                         <p className="text-sm text-[var(--bs-text-tertiary)] flex items-center gap-1">
                           <MapPin className="h-3 w-3 shrink-0" />
-                          {opp.county}{opp.state ? `, ${opp.state}` : ''}
+                          {/^(unknown|undefined|null|n\/a|none|na)?$/i.test((opp.county ?? '').trim()) ? '—' : `${opp.county}${opp.state ? `, ${opp.state}` : ''}`}
                         </p>
                       </div>
                       <div className="col-span-2 hidden md:block">
