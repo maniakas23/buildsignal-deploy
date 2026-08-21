@@ -425,14 +425,12 @@ interface CountyCoverage {
 }
 
 function CountyCard({ county }: { county: CountyCoverage }) {
-  const handleNavigate = () => {
-    window.location.href = `/counties/${county.id}`;
-  };
-
+  // NOTE: /counties/:id is a stub route. Until a real county-detail
+  // experience exists, these cards are informational only — no customer
+  // visible action may lead to a nonfunctional page.
   return (
     <Card
-      className="bg-surface border-border hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 group cursor-pointer"
-      onClick={handleNavigate}
+      className="bg-surface border-border transition-all duration-200"
     >
       <CardContent className="p-5">
         <div className="flex items-start justify-between mb-3">
@@ -495,18 +493,6 @@ function CountyCard({ county }: { county: CountyCoverage }) {
               : 'Never'}
           </span>
         </div>
-
-        <Button
-          size="sm"
-          className="w-full bg-accent-indigo hover:bg-accent-indigo/90 text-white opacity-0 group-hover:opacity-100 transition-opacity"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleNavigate();
-          }}
-        >
-          View Details
-          <ArrowRight className="w-4 h-4 ml-2" />
-        </Button>
       </CardContent>
     </Card>
   );
