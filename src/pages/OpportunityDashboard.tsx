@@ -7,7 +7,7 @@ import { track, recordFirstOpportunity } from '@/hooks/useAnalytics';
 // FlowCanvas loads Three.js — keep it isolated in its own chunk
 const FlowCanvas = lazy(() => import('@/components/FlowCanvas'));
 import { SparkleIcon, ClockIcon } from '@/components/ui-custom/Icons';
-import { formatRelativeTime, fetchDashboard, fetchRecommendations } from '@/signalcore/engine';
+import { formatRelativeTime, fetchDashboard, fetchRecommendations, scrubUnknownPlaceText } from '@/signalcore/engine';
 import { useEngineQuery, useEngineListQuery } from '@/hooks/useEngine';
 import { SkeletonGrid, SkeletonRow, ErrorState, EmptyState } from '@/components/ui-custom/EngineStates';
 import type { Zone, SurgeAlert, Pattern } from '@/types';
@@ -264,7 +264,7 @@ function ActionBadge({ action }: { action: string }) {
 
 function RecommendationCard({ rec, index }: { rec: Recommendation; index: number }) {
   const handleClick = () => { track({ type: 'recommendation_clicked', recId: rec.id, category: rec.category }); recordFirstOpportunity(); };
-  const explainItems = [rec.why, `${rec.relatedSignals} correlated signals detected`, `${rec.sourceCount} verified data sources`, ...(rec.roi != null ? [`${rec.roi}% projected ROI`] : [])];
+  const explainItems = [scrubUnknownPlaceText(rec.why), `${rec.relatedSignals} correlated signals detected`, `${rec.sourceCount} verified data sources`, ...(rec.roi != null ? [`${rec.roi}% projected ROI`] : [])];
   const marketContext = useMemo(() => {
     if (!rec.contributingSignals?.length) return null;
     const signals = rec.contributingSignals;
@@ -304,7 +304,7 @@ function RecommendationCard({ rec, index }: { rec: Recommendation; index: number
       </div>
       <LifecycleBar currentStage={rec.lifecycleStage} />
       <h3 className="text-base sm:text-lg font-semibold text-ink-primary mb-1.5 leading-snug group-hover:text-accent-indigo transition-colors">{rec.title}</h3>
-      <p className="text-sm text-ink-secondary mb-3 leading-relaxed line-clamp-3">{rec.description}</p>
+      <p className="text-sm text-ink-secondary mb-3 leading-relaxed line-clamp-3">{scrubUnknownPlaceText(rec.description)}</p>
       <div className="mb-4">
         <div className="flex items-center gap-3 mb-2 py-2 px-3 bg-canvas rounded-lg border border-ink-wash">
           <span className="text-[11px] text-ink-tertiary"><strong className="text-ink-primary">{rec.relatedSignals}</strong> signals</span>
@@ -348,7 +348,7 @@ function RecommendationCard({ rec, index }: { rec: Recommendation; index: number
                 <Zap className="w-3.5 h-3.5 text-accent-teal flex-shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2"><span className="text-[12px] font-medium text-ink-primary">{sig.name}</span><span className="pill-teal text-[10px] capitalize">{sig.type}</span></div>
-                  <p className="text-[11px] text-ink-tertiary leading-relaxed">{sig.description}</p>
+                  <p className="text-[11px] text-ink-tertiary leading-relaxed">{scrubUnknownPlaceText(sig.description)}</p>
                 </div>
                 <span className="text-[10px] font-mono text-ink-tertiary w-7 text-right">{sig.influence}</span>
               </div>
@@ -365,7 +365,7 @@ function RecommendationCard({ rec, index }: { rec: Recommendation; index: number
                 <div className="flex-shrink-0 mt-0.5"><Activity className="w-3.5 h-3.5 text-accent-indigo" /></div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2"><span className="text-[12px] font-medium text-ink-primary">{sig.name}</span><span className="pill-surface text-[10px] capitalize">{sig.type}</span></div>
-                  <p className="text-[11px] text-ink-tertiary leading-relaxed">{sig.description}</p>
+                  <p className="text-[11px] text-ink-tertiary leading-relaxed">{scrubUnknownPlaceText(sig.description)}</p>
                   <div className="mt-1 flex items-center gap-2"><div className="flex-1 h-1.5 bg-canvas rounded-full overflow-hidden"><div className="h-full rounded-full bg-accent-indigo" style={{ width: `${sig.influence}%` }} /></div><span className="text-[10px] font-mono text-ink-tertiary w-7 text-right">{sig.influence}</span></div>
                 </div>
               </div>
@@ -396,7 +396,7 @@ function RecommendationCard({ rec, index }: { rec: Recommendation; index: number
         </div>
       )}
       <div className="bg-accent-indigo/[0.04] rounded-lg p-3 mb-4 border border-accent-indigo/10">
-        <p className="text-xs text-ink-secondary"><span className="font-medium text-accent-indigo">Next step:</span>{' '}{rec.nextAction}</p>
+        <p className="text-xs text-ink-secondary"><span className="font-medium text-accent-indigo">Next step:</span>{' '}{scrubUnknownPlaceText(rec.nextAction)}</p>
       </div>
       <div className="flex items-center justify-between pt-3 border-t border-ink-wash">
         <span className="text-[11px] text-ink-tertiary">Impact: <span className="font-medium text-ink-primary">{rec.impact}</span></span>
@@ -437,7 +437,7 @@ function NoOpportunitiesEmptyState() {
         Once your monitored counties begin generating signals, opportunities will appear here automatically.
       </p>
       <button
-        onClick={() => navigate('/counties')}
+        onClick={() => navigate('/county-coverage')}
         className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-accent-indigo text-white text-sm font-medium hover:bg-accent-indigo/90 transition-colors"
       >
         <MapPin className="w-4 h-4" />
