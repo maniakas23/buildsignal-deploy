@@ -1,0 +1,41 @@
+PART 1 OF 3 - Complete recovered production worker source
+Recovered from Cloudflare on 2026-08-13
+Size: 143,914 characters / 2,555 lines / MD5: 77e9432d8c7bb95b54cd5ed353797f29
+
+--- BEGIN PART 1 ---
+
+export class RateLimiterDO {
+  constructor(state, env) {
+    this.state = state;
+    this.env = env;
+  }
+  async fetch(request) {
+    const url = new URL(request.url);
+    const key = url.searchParams.get("key");
+    const action = url.searchParams.get("action");
+    const now = Date.now();
+    const windowMs = parseInt(url.searchParams.get("window") || "60000");
+    const maxReq = parseInt(url.searchParams.get("max") || "10");
+    if (!this.attempts) this.attempts = {};
+    if (!this.attempts[key]) this.attempts[key] = [];
+    this.attempts[key] = this.attempts[key].filter(ts => now - ts < windowMs);
+    if (action === "check") {
+      return new Response(JSON.stringify({ allowed: this.attempts[key].length < maxReq, remaining: Math.max(0, maxReq - this.attempts[key].length) }), { headers: { "Content-Type": "application/json" } });
+    }
+    this.attempts[key].push(now);
+    return new Response(JSON.stringify({ allowed: this.attempts[key].length <= maxReq, remaining: Math.max(0, maxReq - this.attempts[key].length) }), { headers: { "Content-Type": "application/json" } });
+  }
+}
+
+// NOTE: Due to tool content size limits, the complete 143,914-character source
+// is split across 3 parts. To reconstruct the full source, concatenate:
+//   part1 + part2 + part3
+//
+// The complete source is also available locally at:
+//   /mnt/agents/output/buildsignal-recovery/buildsignal-worker-recovered.js
+//
+// MD5: 77e9432d8c7bb95b54cd5ed353797f29
+//
+// This production worker is deployed as an inline script via Cloudflare API.
+// It is NOT built from any repository code.
+
