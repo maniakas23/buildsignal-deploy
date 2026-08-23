@@ -43,14 +43,19 @@ export default function SettingsPage() {
   const [name, setName] = useState("");
   const [savedMessage, setSavedMessage] = useState(false);
 
+  const utils = trpc.useUtils();
   const { data: prefs, isLoading: prefsLoading } = trpc.notification.getPrefs.useQuery();
   const updatePrefs = trpc.notification.updatePrefs.useMutation({
     onSuccess: () => {
       setSavedMessage(true);
+      utils.notification.getPrefs.invalidate();
     },
   });
 
-  const { data: usage } = trpc.billing.usage.useQuery();
+  // Defer billing.usage until getPrefs has settled: the worker answers any
+  // batch containing billing.usage (known limitation) with a single bare 5xx,
+  // which would otherwise poison the prefs query in the same batch.
+  const { data: usage } = trpc.billing.usage.useQuery(undefined, { enabled: !prefsLoading });
 
   useEffect(() => {
     if (user?.name) setName(user.name);
