@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Lightbulb, Check, X, Bookmark, ArrowRight } from "lucide-react";
 import { trpc } from "@/providers/trpc";
+import { toast } from "sonner";
 
 export function RecommendationsPage() {
   const [status, setStatus] = useState<string | null>(null);
@@ -9,13 +10,16 @@ export function RecommendationsPage() {
   const recommendations = trpc.recommendation.list.useQuery({ status: status as any });
   const summary = trpc.recommendation.summary.useQuery();
   const save = trpc.recommendation.save.useMutation({
-    onSuccess: () => recommendations.refetch(),
+    onSuccess: () => { recommendations.refetch(); toast.success("Recommendation saved"); },
+    onError: (err) => toast.error(err.message || "Failed to save recommendation"),
   });
   const dismiss = trpc.recommendation.dismiss.useMutation({
-    onSuccess: () => recommendations.refetch(),
+    onSuccess: () => { recommendations.refetch(); toast.success("Recommendation dismissed"); },
+    onError: (err) => toast.error(err.message || "Failed to dismiss recommendation"),
   });
   const act = trpc.recommendation.act.useMutation({
-    onSuccess: () => recommendations.refetch(),
+    onSuccess: () => { recommendations.refetch(); toast.success("Action recorded"); },
+    onError: (err) => toast.error(err.message || "Failed to record action"),
   });
 
   return (
