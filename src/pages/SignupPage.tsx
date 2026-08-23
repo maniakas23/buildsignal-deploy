@@ -97,7 +97,9 @@ export function SignupPage() {
   const preselectedPlan = searchParams.get("plan");
   const preselectedCycle = searchParams.get("cycle") as "monthly" | "annual" | null;
 
-  const [step, setStep] = useState(preselectedPlan ? 2 : 1);
+  // Always start at step 1 (Account) — even with a preselected plan, the
+  // account credentials must be collected before registration can succeed.
+  const [step, setStep] = useState(1);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -114,7 +116,6 @@ export function SignupPage() {
   useEffect(() => {
     if (preselectedPlan) {
       setSelectedPlan(preselectedPlan);
-      setStep(2);
     }
   }, [preselectedPlan]);
 
@@ -176,7 +177,9 @@ export function SignupPage() {
           plan: selectedPlan || "unknown",
           billing_cycle: billingCycle,
         });
-        navigate("/dashboard");
+        // Paid plan selected → send the new user to Billing to complete checkout;
+        // otherwise straight to the dashboard.
+        navigate(selectedPlan && selectedPlan !== "enterprise" ? "/billing" : "/dashboard");
       } catch (err: any) {
         const message = err?.message || "Something went wrong. Please try again.";
         setErrors({ submit: message });
