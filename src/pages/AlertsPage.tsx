@@ -11,6 +11,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -98,12 +99,14 @@ export default function AlertsPage() {
     onSuccess: () => {
       utils.notification.history.invalidate();
     },
+    onError: (err) => toast.error(err.message || "Failed to mark notification as read"),
   });
 
   const markAllReadMutation = trpc.notification.markAllRead.useMutation({
     onSuccess: () => {
       utils.notification.history.invalidate();
     },
+    onError: (err) => toast.error(err.message || "Failed to mark all as read"),
   });
 
   const items: NotificationItem[] = data?.items ?? [];
@@ -297,15 +300,15 @@ export default function AlertsPage() {
               {activeTab === "Unread"
                 ? "No unread alerts"
                 : activeTab === "Read"
-                  ? "No read alerts"
-                  : "No alerts yet"}
+                ? "No read alerts"
+                : "No alerts yet"}
             </p>
             <p className="text-sm text-ink-tertiary max-w-md mx-auto">
               {activeTab === "Unread"
                 ? "You're all caught up! We'll notify you when new activity is detected."
                 : activeTab === "Read"
-                  ? "Read alerts will appear here once you've marked them."
-                  : "You'll be notified when activity is detected in your monitored counties and watchlists."}
+                ? "Read alerts will appear here once you've marked them."
+                : "You'll be notified when activity is detected in your monitored counties and watchlists."}
             </p>
           </div>
         )}
