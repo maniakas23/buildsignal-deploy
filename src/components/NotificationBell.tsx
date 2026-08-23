@@ -37,7 +37,7 @@ export function NotificationBell() {
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [dropdownRef]);
+  }, []);
 
   const unreadCount = data?.unreadCount ?? 0;
 
