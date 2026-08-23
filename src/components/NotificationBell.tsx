@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Bell, Check, Trash2, Loader2, Settings, X } from "lucide-react";
 import { trpc } from "@/providers/trpc";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export function NotificationBell() {
   const [open, setOpen] = useState(false);
@@ -15,14 +16,17 @@ export function NotificationBell() {
 
   const markRead = trpc.notification.markRead.useMutation({
     onSuccess: () => refetch(),
+    onError: (err) => toast.error(err.message || "Failed to mark notification as read"),
   });
 
   const markAllRead = trpc.notification.markAllRead.useMutation({
     onSuccess: () => refetch(),
+    onError: (err) => toast.error(err.message || "Failed to mark all as read"),
   });
 
   const deleteNotification = trpc.notification.delete.useMutation({
     onSuccess: () => refetch(),
+    onError: (err) => toast.error(err.message || "Failed to delete notification"),
   });
 
   useEffect(() => {
@@ -33,7 +37,7 @@ export function NotificationBell() {
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [dropdownRef]);
 
   const unreadCount = data?.unreadCount ?? 0;
 
