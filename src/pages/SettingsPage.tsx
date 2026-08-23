@@ -42,13 +42,18 @@ export default function SettingsPage() {
   const { user, isLoading: authLoading } = useAuth();
   const [name, setName] = useState("");
   const [savedMessage, setSavedMessage] = useState(false);
+  const [prefsError, setPrefsError] = useState<string | null>(null);
 
   const utils = trpc.useUtils();
   const { data: prefs, isLoading: prefsLoading } = trpc.notification.getPrefs.useQuery();
   const updatePrefs = trpc.notification.updatePrefs.useMutation({
     onSuccess: () => {
+      setPrefsError(null);
       setSavedMessage(true);
       utils.notification.getPrefs.invalidate();
+    },
+    onError: (err) => {
+      setPrefsError(err.message || "Failed to save notification preferences. Please try again.");
     },
   });
 
@@ -116,6 +121,12 @@ export default function SettingsPage() {
           <div className="mb-6 bg-[var(--bs-intelligence)]/10 border border-[var(--bs-intelligence)]/20 text-[var(--bs-intelligence)] rounded-lg p-3 flex items-center gap-2 text-sm font-medium">
             <Check className="h-4 w-4" />
             Settings saved successfully
+          </div>
+        )}
+
+        {prefsError && (
+          <div className="mb-6 bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg p-3 flex items-center gap-2 text-sm font-medium">
+            {prefsError}
           </div>
         )}
 
