@@ -46,13 +46,49 @@ function handleCorsPreflight() {
  * surfaces as a broken page instead of a truthful error state.
  *
  * This normalizes ONLY the wire shape (no business logic): bare error
- * objects become a single-item batch error envelope with HTTP 200.
- * Successful responses and already-shaped envelopes pass through unchanged.
+ * objects become a full tRPC v11 batch error envelope with HTTP 200,
+ * expanded to one item per batched procedure. Successful responses and
+ * already-shaped envelopes pass through unchanged.
  */
 function trpcErrorCode(message) {
   if (message === "Unauthorized") return "UNAUTHORIZED";
   if (message.startsWith("Not found")) return "NOT_FOUND";
   return "INTERNAL_SERVER_ERROR";
+}
+
+/**
+ * Map a tRPC string code to its JSON-RPC numeric code and HTTP status,
+ * producing the full tRPC v11 error envelope shape the client expects:
+ * { error: { message, code: <number>, data: { code: <string>, httpStatus } } }
+ * Without data.code/data.httpStatus the v11 batch link cannot settle the
+ * call, leaving mutations hanging with no error callback.
+ */
+const TRPC_CODE_TABLE = {
+  PARSE_ERROR: [-32700, 400],
+  BAD_REQUEST: [-32600, 400],
+  UNAUTHORIZED: [-32001, 401],
+  FORBIDDEN: [-32003, 403],
+  NOT_FOUND: [-32004, 404],
+  METHOD_NOT_SUPPORTED: [-32005, 405],
+  TIMEOUT: [-32008, 408],
+  CONFLICT: [-32009, 409],
+  PRECONDITION_FAILED: [-32012, 412],
+  PAYLOAD_TOO_LARGE: [-32013, 413],
+  UNPROCESSABLE_CONTENT: [-32022, 422],
+  TOO_MANY_REQUESTS: [-32029, 429],
+  CLIENT_CLOSED_REQUEST: [-32099, 499],
+  INTERNAL_SERVER_ERROR: [-32603, 500],
+};
+
+function trpcErrorItem(message, stringCode) {
+  const [numeric, httpStatus] = TRPC_CODE_TABLE[stringCode] || TRPC_CODE_TABLE.INTERNAL_SERVER_ERROR;
+  return {
+    error: {
+      message,
+      code: numeric,
+      data: { code: stringCode, httpStatus },
+    },
+  };
 }
 
 function applyCors(headers, request) {
@@ -123,8 +159,15 @@ export async function onRequest(context) {
       const message =
         (parsed && typeof parsed.error === "string" && parsed.error) ||
         "An unexpected error occurred. Please try again later.";
+      // The worker collapses a whole batch into one bare error. Expand it to
+      // one item per batched procedure so the v11 batch link can settle every
+      // call in the batch instead of leaving the others hanging forever.
+      const procPath = url.pathname.slice("/api/trpc/".length).split("?")[0];
+      const batchSize = Math.max(procPath.split(",").filter(Boolean).length, 1);
+      const item = trpcErrorItem(message, trpcErrorCode(message));
+      const isBatch = url.searchParams.get("batch") === "1";
       return new Response(
-        JSON.stringify([{ error: { message, code: trpcErrorCode(message) } }]),
+        JSON.stringify(isBatch ? Array.from({ length: batchSize }, () => item) : item),
         {
           status: 200,
           headers: applyCors(
