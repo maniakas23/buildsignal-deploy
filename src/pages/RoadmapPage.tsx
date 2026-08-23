@@ -21,6 +21,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { trpc } from "@/providers/trpc";
+import { toast } from "sonner";
 import {
   ArrowLeft,
   Calendar,
@@ -190,6 +191,7 @@ export function RoadmapPage() {
     onSuccess: () => {
       utils.roadmap.list.invalidate();
     },
+    onError: (err) => toast.error(err.message || "Voting is temporarily unavailable"),
   });
   const submitMutation = trpc.roadmap.submit.useMutation({
     onSuccess: () => {
@@ -197,6 +199,7 @@ export function RoadmapPage() {
       setSubmitForm({ title: "", description: "", category: "feature" });
       utils.roadmap.list.invalidate();
     },
+    onError: (err) => toast.error(err.message || "Feature requests are temporarily unavailable"),
   });
   const utils = trpc.useUtils();
 
