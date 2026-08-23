@@ -129,6 +129,10 @@ export function BillingPage() {
   });
 
   const currentPlan = subscription?.plan || "starter";
+  // A free user has no paid subscription even though their internal plan id is
+  // "starter" — only an active/trialing Stripe subscription makes a plan "Current".
+  const hasPaidSubscription =
+    subscription?.status === "active" || subscription?.status === "trialing";
   const planInfo = planConfig[currentPlan] || planConfig.starter;
 
   const statusConfig: Record<string, { label: string; variant: string; color: string }> = {
@@ -336,7 +340,6 @@ export function BillingPage() {
                     <TableHeader>
                       <TableRow className="border-[var(--bs-border)]">
                         <TableHead className="text-[var(--bs-text-tertiary)]">Date</TableHead>
-                        <TableHead className="text-[var(--bs-text-tertiary)]">Description</TableHead>
                         <TableHead className="text-[var(--bs-text-tertiary)] text-right">Amount</TableHead>
                         <TableHead className="text-[var(--bs-text-tertiary)] text-right">Status</TableHead>
                       </TableRow>
@@ -389,7 +392,13 @@ export function BillingPage() {
             </h3>
             {plans?.map((plan) => {
               const config = planConfig[plan.id] || planConfig.starter;
-              const isCurrent = currentPlan === plan.id;
+              // The API names the paid $99 plan "Scout" (id "starter"); a paid
+              // subscription may report its plan as either id.
+              const displayName = plan.name || config.name;
+              const isCurrent =
+                hasPaidSubscription &&
+                (currentPlan === plan.id ||
+                  (plan.id === "starter" && currentPlan === "scout"));
 
               return (
                 <Card
@@ -409,7 +418,7 @@ export function BillingPage() {
                         </div>
                         <div>
                           <p className="font-semibold text-sm text-[var(--bs-text-primary)]">
-                            {config.name}
+                            {displayName}
                           </p>
                           <p className="text-xs text-[var(--bs-text-tertiary)]">
                             {plan.id === "enterprise" || plan.price === null
@@ -448,7 +457,7 @@ export function BillingPage() {
                         <ExternalLink className="h-3 w-3 ml-1" />
                       </Button>
                     )}
-                    {!isCurrent && plan.id !== "starter" && plan.id !== "enterprise" && (
+                    {!isCurrent && plan.id !== "enterprise" && (
                       <Button
                         size="sm"
                         className="w-full bg-[var(--bs-action)] hover:bg-[var(--bs-action)]/90"
@@ -459,7 +468,7 @@ export function BillingPage() {
                           <Loader2 className="h-3.5 w-3.5 animate-spin" />
                         ) : (
                           <>
-                            Upgrade to {config.name}
+                            Upgrade to {displayName}
                             <ExternalLink className="h-3 w-3 ml-1" />
                           </>
                         )}
