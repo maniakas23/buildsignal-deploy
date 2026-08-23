@@ -300,15 +300,15 @@ export default function AlertsPage() {
               {activeTab === "Unread"
                 ? "No unread alerts"
                 : activeTab === "Read"
-                ? "No read alerts"
-                : "No alerts yet"}
+                  ? "No read alerts"
+                  : "No alerts yet"}
             </p>
             <p className="text-sm text-ink-tertiary max-w-md mx-auto">
               {activeTab === "Unread"
                 ? "You're all caught up! We'll notify you when new activity is detected."
                 : activeTab === "Read"
-                ? "Read alerts will appear here once you've marked them."
-                : "You'll be notified when activity is detected in your monitored counties and watchlists."}
+                  ? "Read alerts will appear here once you've marked them."
+                  : "You'll be notified when activity is detected in your monitored counties and watchlists."}
             </p>
           </div>
         )}
