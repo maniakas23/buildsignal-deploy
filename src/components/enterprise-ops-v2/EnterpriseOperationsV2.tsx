@@ -63,7 +63,7 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 function HealthBar({ value }: { value: number }) {
-  const color = value >= 90 ? 'bg-emerald-500' : value >= 75 ? 'bg-accent-indigo' : value >= 60 ? 'bg-amber-500' : 'bg-accent-crimson';
+  const color = value >= 90 ? 'bg-emerald-700' : value >= 75 ? 'bg-accent-indigo' : value >= 60 ? 'bg-amber-500' : 'bg-accent-crimson';
   return (
     <div className="flex items-center gap-2">
       <div className="flex-1 h-1.5 bg-ink-wash/30 rounded-full overflow-hidden">
@@ -142,7 +142,7 @@ export default function EnterpriseOperationsV2() {
         <div className="space-y-2">
           {AUDIT_HISTORY.map((ah) => (
             <div key={ah.id} className="flex items-start gap-2 p-2.5 bg-canvas rounded-lg">
-              <div className={`w-2 h-2 rounded-full flex-shrink-0 mt-1 ${ah.type === 'admin' ? 'bg-accent-crimson' : ah.type === 'system' ? 'bg-blue-500' : 'bg-emerald-500'}`} />
+              <div className={`w-2 h-2 rounded-full flex-shrink-0 mt-1 ${ah.type === 'admin' ? 'bg-accent-crimson' : ah.type === 'system' ? 'bg-blue-500' : 'bg-emerald-700'}`} />
               <div className="flex-1 min-w-0">
                 <p className="text-[11px] text-ink-secondary">
                   <span className="font-medium text-ink-primary">{ah.user}</span> {ah.action}

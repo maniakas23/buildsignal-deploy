@@ -64,7 +64,7 @@ const PERSONALIZED_RECS: PersonalizedRec[] = [
 
 const QUICK_ACTIONS = [
   { label: 'New Search', icon: Zap, color: 'bg-accent-indigo text-white' },
-  { label: 'Add Watchlist', icon: Bookmark, color: 'bg-emerald-500 text-white' },
+  { label: 'Add Watchlist', icon: Bookmark, color: 'bg-emerald-700 text-white' },
   { label: 'Create Alert', icon: Bell, color: 'bg-amber-500 text-white' },
   { label: 'Generate Report', icon: FileText, color: 'bg-violet-500 text-white' },
 ];
