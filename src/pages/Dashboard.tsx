@@ -374,7 +374,7 @@ export function Dashboard() {
               <p className="font-mono text-2xl font-medium md:text-[32px]" style={{ color: COLORS.deepNavy }}>
                 {countySummary?.total ?? 0}
               </p>
-              <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-semibold text-emerald-400">
+              <span className="inline-flex items-center rounded-full bg-emerald-700/10 px-2 py-0.5 text-xs font-semibold text-emerald-400">
                 <TrendingUp className="mr-1 h-3 w-3" />
                 {countySummary?.active ?? 0} active
               </span>
