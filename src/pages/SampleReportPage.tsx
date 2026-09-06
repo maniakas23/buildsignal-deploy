@@ -51,7 +51,7 @@ const sectorData = [
   { name: "Commercial", value: 35, color: "#1F5EFF" },
   { name: "Residential", value: 28, color: "#18A999" },
   { name: "Infrastructure", value: 22, color: "#F4A261" },
-  { name: "Industrial", value: 15, color: "#0B1F33" },
+  { name: "Industrial", value: 15, color: "#8FA9C7" },
 ];
 
 const opportunities = [
@@ -247,10 +247,10 @@ export function SampleReportPage() {
                               row.sector === "Infrastructure"
                                 ? "#F4A261"
                                 : row.sector === "Commercial"
-                                ? "#1F5EFF"
+                                ? "#6B93FF"
                                 : row.sector === "Residential"
                                 ? "#18A999"
-                                : "#0B1F33",
+                                : "#8FA9C7",
                           }}
                         >
                           {row.sector}
@@ -324,6 +324,7 @@ export function SampleReportPage() {
                       borderRadius: "8px",
                       color: "#F7FAFC",
                     }}
+                    itemStyle={{ color: "#F7FAFC" }}
                   />
                   <Area
                     type="monotone"
@@ -372,8 +373,9 @@ export function SampleReportPage() {
                       borderRadius: "8px",
                       color: "#F7FAFC",
                     }}
+                    itemStyle={{ color: "#F7FAFC" }}
                   />
-                  <Legend />
+                  <Legend formatter={(value: string) => <span style={{ color: "#AEB8C4" }}>{value}</span>} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
