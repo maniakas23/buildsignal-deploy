@@ -140,7 +140,7 @@ export function MarketPulseDemo() {
     <section id="market-pulse" className="py-20 md:py-28 bg-canvas" aria-labelledby="pulse-heading">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-sm font-medium mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-700/10 text-emerald-400 text-sm font-medium mb-4">
             <Activity className="w-4 h-4" /><span>Product Preview</span>
           </div>
           <h2 id="pulse-heading" className="text-3xl md:text-4xl font-bold text-ink mb-4">Market Pulse</h2>
@@ -157,7 +157,7 @@ export function MarketPulseDemo() {
             {tabs.map((tab) => (
               <button key={tab.key} role="tab" aria-selected={activeTab === tab.key} aria-controls={`panel-${tab.key}`} id={`tab-${tab.key}`} tabIndex={activeTab === tab.key ? 0 : -1}
                 onClick={() => handleTabChange(tab.key)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === tab.key ? "bg-emerald-500 text-white" : "text-muted hover:text-ink hover:bg-canvas"}`}>
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === tab.key ? "bg-emerald-700 text-white" : "text-muted hover:text-ink hover:bg-canvas"}`}>
                 {tab.label}
               </button>
             ))}
@@ -200,7 +200,7 @@ export function MarketPulseDemo() {
                         <p className="text-xs text-muted">Confidence</p>
                         <p className="text-lg font-bold text-emerald-400 font-mono">{signal.confidence}%</p>
                       </div>
-                      <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${signal.trend === "up" ? "bg-emerald-500/10 text-emerald-400" : "bg-gray-500/10 text-gray-400"}`}>
+                      <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${signal.trend === "up" ? "bg-emerald-700/10 text-emerald-400" : "bg-gray-500/10 text-gray-400"}`}>
                         {signal.trend === "up" ? <TrendingUp className="w-4 h-4" /> : <Activity className="w-4 h-4" />}
                         {signal.signal}
                       </div>
