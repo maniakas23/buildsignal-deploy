@@ -10,6 +10,7 @@ import { CredibilityBar } from "@/components/marketing/CredibilityBar";
 import { MarketPulseDemo } from "@/components/marketing/MarketPulseDemo";
 import { ROICalculator } from "@/components/marketing/ROICalculator";
 import { HomeFAQ } from "@/components/marketing/HomeFAQ";
+import { Footer } from "@/components/ui-custom/Footer";
 
 export default function Home() {
   const [email, setEmail] = useState("");
@@ -23,22 +24,22 @@ export default function Home() {
   const capabilities = [
     { icon: MapPin, title: "County Coverage", description: "Monitor construction activity across covered US counties with daily data aggregation and automated coverage expansion." },
     { icon: FileText, title: "Permit Tracking", description: "Track municipal building permits as they are published. Filter by type, value, and geography to find relevant opportunities." },
-    { icon: BarChart3, title: "AI Predictions", description: "Machine learning models forecast construction surges with confidence scores. Methodology documented and transparent." },
+    { icon: BarChart3, title: "Early Signal Detection", description: "Related government records are connected into development timelines with evidence-strength indicators, so early planning activity becomes visible before construction starts." },
     { icon: Users, title: "User Analytics", description: "Per-account metrics and reporting dashboards. Track your research activity, saved searches, and team engagement." },
-    { icon: Zap, title: "ROI Tools", description: "Investment analysis and market comparison tools. Evaluate opportunity costs and projected returns across target regions." },
+    { icon: Zap, title: "Research Time Estimator", description: "Transparent, assumption-labeled tools to estimate the manual research effort BuildSignal can help you redirect toward decisions." },
     { icon: Download, title: "Reports", description: "Generate intelligence briefs with charts and narrative summaries from your dashboard." },
   ];
 
   const useCases = [
-    { icon: Building2, title: "Commercial Real Estate", description: "Spot emerging submarkets before land prices surge. Track permit velocity, zoning changes, and infrastructure investments across your target regions to identify development opportunities early." },
-    { icon: LocateFixed, title: "Site Selection", description: "Deliver data-backed location recommendations with confidence scores. Compare markets on growth trajectory, labor availability, and regulatory climate to make informed decisions." },
-    { icon: Mountain, title: "Land Investors", description: "Identify counties with accelerating construction activity. Get early signals on where demand is heating up so you can acquire ahead of the curve and maximize returns." },
-    { icon: Handshake, title: "Commercial Brokers", description: "Know which markets are primed for leasing activity before your competitors. Use permit data to time your outreach and win more listings in high-growth areas." },
+    { icon: Building2, title: "Commercial Real Estate", description: "Track permit velocity, zoning changes, and infrastructure investment across your target regions to identify emerging submarkets and development opportunities early." },
+    { icon: LocateFixed, title: "Site Selection", description: "Deliver data-backed location analysis with evidence-strength indicators. Compare markets on observed development activity and regulatory climate to make informed decisions." },
+    { icon: Mountain, title: "Land Investors", description: "Identify counties with accelerating construction activity. Get early signals on where development is heating up, backed by the underlying government records." },
+    { icon: Handshake, title: "Commercial Brokers", description: "Use permit and zoning activity to time outreach. See which markets show accelerating development before leasing demand follows." },
   ];
 
   const plans = [
-    { name: "Scout", price: "$99", period: "/month", description: "Perfect for individual investors and small teams exploring new markets.", features: ["5 counties", "Weekly email reports", "Basic predictions", "Email support"], highlighted: false },
-    { name: "Professional", price: "$249", period: "/month", description: "For growing teams that need deeper intelligence and more coverage.", features: ["25 counties", "Daily alerts + weekly briefings", "Advanced predictions", "API access", "Priority support"], highlighted: true },
+    { name: "Scout", price: "$99", period: "/month", description: "Perfect for individual investors and small teams exploring new markets.", features: ["5 counties", "Weekly email reports", "Development timelines & evidence view", "Email support"], highlighted: false },
+    { name: "Professional", price: "$249", period: "/month", description: "For growing teams that need deeper intelligence and more coverage.", features: ["25 counties", "Daily alerts + weekly briefings", "Detection Advantage lead-time metrics", "API access", "Priority support"], highlighted: true },
     { name: "Business", price: "$599", period: "/month", description: "Built for organizations managing multi-market portfolios at scale.", features: ["Unlimited counties", "Real-time alerts", "Custom models", "Full API + webhooks", "SSO & SAML", "Dedicated account manager"], highlighted: false },
   ];
 
@@ -48,18 +49,18 @@ export default function Home() {
       <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-500/5 via-transparent to-transparent" />
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-sm font-medium mb-6">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-700/10 text-emerald-400 text-sm font-medium mb-6">
             <TrendingUp className="w-4 h-4" />
-            <span>Live permit intelligence in covered US markets</span>
+            <span>Live development intelligence in covered US markets</span>
           </div>
           <h1 className="text-4xl md:text-6xl font-bold text-ink mb-6 tracking-tight">
-            Predict Construction Surges<br className="hidden md:block" /> Before Your Competitors
+            See Development Activity Earlier —<br className="hidden md:block" /> With the Evidence Attached
           </h1>
           <p className="text-xl text-muted max-w-2xl mx-auto mb-8">
-            AI-powered infrastructure intelligence for construction markets. Get actionable permit insights, growth forecasts, and market opportunities delivered to your inbox.
+            BuildSignal monitors authoritative public development sources — permits, zoning, and planning activity — connects related records into development timelines, and surfaces qualified opportunities so you can investigate what matters, sooner.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/signup" className="inline-flex items-center justify-center px-8 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition-colors">
+            <Link to="/signup" className="inline-flex items-center justify-center px-8 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold rounded-lg transition-colors">
               Get Started<ArrowRight className="w-4 h-4 ml-2" />
             </Link>
             <Link to="/demo" className="inline-flex items-center justify-center px-8 py-3 bg-surface hover:bg-surface-hover text-ink font-semibold rounded-lg border border-border transition-colors">
@@ -86,7 +87,7 @@ export default function Home() {
                   <div className="hidden md:block absolute top-8 left-full w-full h-0.5 bg-border -translate-y-1/2" />
                 )}
                 <div className="text-5xl font-bold text-emerald-500/20 mb-4">{step.number}</div>
-                <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center mb-4">
+                <div className="w-10 h-10 rounded-lg bg-emerald-700/10 flex items-center justify-center mb-4">
                   <step.icon className="w-5 h-5 text-emerald-400" />
                 </div>
                 <h3 className="text-xl font-semibold text-ink mb-2">{step.title}</h3>
@@ -101,7 +102,7 @@ export default function Home() {
       <section className="py-20 md:py-28 bg-canvas">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-sm font-medium mb-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-700/10 text-emerald-400 text-sm font-medium mb-4">
               <Zap className="w-4 h-4" /><span>Platform Capabilities</span>
             </div>
             <h2 className="text-3xl md:text-4xl font-bold text-ink mb-4">What BuildSignal Delivers</h2>
@@ -110,7 +111,7 @@ export default function Home() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {capabilities.map((cap) => (
               <div key={cap.title} className="bg-surface border border-border rounded-2xl p-6 hover:border-emerald-500/30 transition-colors">
-                <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center mb-4">
+                <div className="w-10 h-10 rounded-lg bg-emerald-700/10 flex items-center justify-center mb-4">
                   <cap.icon className="w-5 h-5 text-emerald-400" />
                 </div>
                 <h3 className="text-lg font-semibold text-ink mb-2">{cap.title}</h3>
@@ -127,7 +128,7 @@ export default function Home() {
       <section className="py-20 md:py-28 bg-surface">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-sm font-medium mb-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-700/10 text-emerald-400 text-sm font-medium mb-4">
               <Users className="w-4 h-4" /><span>Use Cases</span>
             </div>
             <h2 className="text-3xl md:text-4xl font-bold text-ink mb-4">Built for Every Player in the Construction Ecosystem</h2>
@@ -135,7 +136,7 @@ export default function Home() {
           <div className="grid md:grid-cols-2 gap-6">
             {useCases.map((uc) => (
               <div key={uc.title} className="bg-canvas border border-border rounded-2xl p-6">
-                <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center mb-4">
+                <div className="w-10 h-10 rounded-lg bg-emerald-700/10 flex items-center justify-center mb-4">
                   <uc.icon className="w-5 h-5 text-emerald-400" />
                 </div>
                 <h3 className="text-lg font-semibold text-ink mb-2">{uc.title}</h3>
@@ -160,7 +161,7 @@ export default function Home() {
             {plans.map((plan) => (
               <div key={plan.name} className={`bg-surface border rounded-2xl p-6 ${plan.highlighted ? "border-emerald-500/50 shadow-lg shadow-emerald-500/5" : "border-border"}`}>
                 {plan.highlighted && (
-                  <div className="inline-flex items-center px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-medium mb-4">Most Popular</div>
+                  <div className="inline-flex items-center px-3 py-1 rounded-full bg-emerald-700/10 text-emerald-400 text-xs font-medium mb-4">Most Popular</div>
                 )}
                 <h3 className="text-xl font-semibold text-ink mb-2">{plan.name}</h3>
                 <div className="flex items-baseline gap-1 mb-2">
@@ -175,7 +176,7 @@ export default function Home() {
                     </li>
                   ))}
                 </ul>
-                <Link to="/signup" className={`block w-full text-center px-4 py-2 rounded-lg font-semibold transition-colors ${plan.highlighted ? "bg-emerald-500 hover:bg-emerald-600 text-white" : "bg-canvas hover:bg-surface-hover text-ink border border-border"}`}>
+                <Link to="/signup" className={`block w-full text-center px-4 py-2 rounded-lg font-semibold transition-colors ${plan.highlighted ? "bg-emerald-700 hover:bg-emerald-800 text-white" : "bg-canvas hover:bg-surface-hover text-ink border border-border"}`}>
                   Get Started
                 </Link>
               </div>
@@ -192,7 +193,7 @@ export default function Home() {
           <h2 className="text-3xl font-bold text-ink mb-4">Stay Ahead of the Market</h2>
           <p className="text-muted mb-8">Get weekly insights on construction market trends and new feature updates.</p>
           <p className="text-sm text-muted mb-6">Email updates are not yet available — reach out and we will keep you posted.</p>
-          <Link to="/contact" className="inline-flex items-center justify-center px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition-colors">Contact Us</Link>
+          <Link to="/contact" className="inline-flex items-center justify-center px-6 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold rounded-lg transition-colors">Contact Us</Link>
         </div>
       </section>
 
@@ -201,12 +202,12 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-ink mb-4">Trust and Contact</h2>
-            <p className="text-lg text-muted">Enterprise-Grade Security and Support</p>
+            <p className="text-lg text-muted">Security and Support</p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { icon: Shield, title: "SOC 2 Type II (In Progress)", desc: "Security controls aligned to SOC 2 Type II. Certification audit not yet completed — not verified." },
-              { icon: Lock, title: "256-bit Encryption", desc: "AES-256 encryption at rest and in transit. Your data is never sold or shared with third parties." },
+              { icon: Shield, title: "Data Protection", desc: "Encryption in transit and at rest. Access controls on all account data. Your data is never sold or shared." },
+              { icon: Lock, title: "Encryption & Data Handling", desc: "Data encrypted in transit and at rest. Your data is never sold or shared with third parties." },
               { icon: Eye, title: "No Data Selling", desc: "We never sell, rent, or share your proprietary data with external parties. Your intelligence stays yours." },
               { icon: Mail, title: "Email Support", desc: "Reach our team at support@buildsignal.net. We typically respond within one business day." },
               { icon: Phone, title: "Phone Support", desc: "Available for Business plan customers. Contact support to schedule a call with our team." },
@@ -221,6 +222,7 @@ export default function Home() {
           </div>
         </div>
       </section>
+      <Footer />
     </main>
   );
 }
