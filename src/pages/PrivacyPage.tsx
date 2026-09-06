@@ -34,14 +34,29 @@ interface PrivacySection {
 export function PrivacyPage() {
   const navigate = useNavigate();
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
-  const [analyticsConsent, setAnalyticsConsent] = useState(true);
-  const [marketingConsent, setMarketingConsent] = useState(false);
+  const [analyticsConsent, setAnalyticsConsentState] = useState<boolean>(() => {
+    try {
+      const raw = localStorage.getItem("buildsignal_cookie_consent");
+      return raw ? JSON.parse(raw).analytics === true : false;
+    } catch { return false; }
+  });
+  const [marketingConsent, setMarketingConsentState] = useState<boolean>(() => {
+    try {
+      const raw = localStorage.getItem("buildsignal_cookie_consent");
+      return raw ? JSON.parse(raw).marketing === true : false;
+    } catch { return false; }
+  });
+  const persistConsent = (analytics: boolean, marketing: boolean) => {
+    try { localStorage.setItem("buildsignal_cookie_consent", JSON.stringify({ analytics, marketing, updatedAt: Date.now() })); } catch { /* storage unavailable */ }
+  };
+  const setAnalyticsConsent = (v: boolean) => { setAnalyticsConsentState(v); persistConsent(v, marketingConsent); };
+  const setMarketingConsent = (v: boolean) => { setMarketingConsentState(v); persistConsent(analyticsConsent, v); };
 
   const toggleSection = (id: string) => {
     setExpandedSection(expandedSection === id ? null : id);
   };
 
-  const lastUpdated = "January 15, 2025";
+  const lastUpdated = "August 30, 2026";
 
   const sections: PrivacySection[] = [
     {
@@ -179,12 +194,11 @@ export function PrivacyPage() {
               SAML 2.0 support
             </li>
             <li>
-              <strong>Monitoring:</strong> 24/7 security monitoring and automated
-              threat detection
+              <strong>Monitoring:</strong> Automated platform health monitoring
+              and alerting
             </li>
             <li>
-              <strong>Audits:</strong> SOC 2 Type II audit in progress;
-              independent penetration testing planned
+              <strong>Audits:</strong> Independent security assessment planned
             </li>
             <li>
               <strong>Backups:</strong> Encrypted, geographically distributed
@@ -259,7 +273,7 @@ export function PrivacyPage() {
             To exercise these rights, contact us at{" "}
             <a
               href="mailto:privacy@buildsignal.net"
-              className="text-primary hover:underline"
+              className="text-[var(--bs-action)] hover:underline"
             >
               privacy@buildsignal.net
             </a>
@@ -312,7 +326,7 @@ export function PrivacyPage() {
             or contact{" "}
             <a
               href="mailto:privacy@buildsignal.net"
-              className="text-primary hover:underline"
+              className="text-[var(--bs-action)] hover:underline"
             >
               privacy@buildsignal.net
             </a>
@@ -333,14 +347,10 @@ export function PrivacyPage() {
               Email:{" "}
               <a
                 href="mailto:privacy@buildsignal.net"
-                className="text-primary hover:underline"
+                className="text-[var(--bs-action)] hover:underline"
               >
                 privacy@buildsignal.net
               </a>
-            </li>
-            <li>Address: 123 Market Street, Suite 456, San Francisco, CA 94105</li>
-            <li>
-              DPO: Jane Smith, Chief Privacy Officer
             </li>
           </ul>
           <p>
@@ -382,7 +392,7 @@ export function PrivacyPage() {
             understand. If you have any questions, please{" "}
             <button
               onClick={() => navigate("/contact")}
-              className="text-primary hover:underline"
+              className="text-[var(--bs-action)] hover:underline"
             >
               contact us
             </button>
@@ -443,12 +453,13 @@ export function PrivacyPage() {
               <div>
                 <div className="font-medium text-sm">Analytics Cookies</div>
                 <div className="text-xs text-muted-foreground">
-                  Help us understand how users interact with our platform.
+                  Local-only usage analytics stored in your browser. Off by default; enabling helps us improve the product. Disabling stops all analytics recording immediately.
                 </div>
               </div>
               <Switch
                 checked={analyticsConsent}
                 onCheckedChange={setAnalyticsConsent}
+                aria-label="Analytics cookies"
               />
             </div>
             <Separator />
@@ -456,12 +467,13 @@ export function PrivacyPage() {
               <div>
                 <div className="font-medium text-sm">Marketing Cookies</div>
                 <div className="text-xs text-muted-foreground">
-                  Used for targeted advertising and promotional content.
+                  BuildSignal does not currently use advertising or cross-site marketing trackers. This preference is recorded and will apply if that changes.
                 </div>
               </div>
               <Switch
                 checked={marketingConsent}
                 onCheckedChange={setMarketingConsent}
+                aria-label="Marketing cookies"
               />
             </div>
           </div>
@@ -474,7 +486,7 @@ export function PrivacyPage() {
           This Privacy Policy is part of our{" "}
           <button
             onClick={() => navigate("/terms")}
-            className="text-primary hover:underline"
+            className="text-[var(--bs-action)] hover:underline"
           >
             Terms of Service
           </button>
