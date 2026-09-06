@@ -215,7 +215,7 @@ export function DemoRequestPage() {
                       ? "bg-green-500 text-white"
                       : step === idx + 1
                       ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground"
+                      : "bg-muted text-[#AEB8C4]"
                   )}
                 >
                   {step > idx + 1 ? (
