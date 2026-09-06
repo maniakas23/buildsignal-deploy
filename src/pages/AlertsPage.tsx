@@ -139,7 +139,7 @@ export default function AlertsPage() {
         <div className="mb-8">
           <h1 className="section-title text-ink-primary mb-2">Alerts</h1>
           <p className="text-body text-ink-secondary">
-            Real-time notifications for your monitored counties and watchlist
+            Notifications for your monitored counties and watchlist
           </p>
         </div>
 
