@@ -14,7 +14,7 @@ const faqData: FAQItem[] = [
   },
   {
     question: "Where does BuildSignal get its information?",
-    answer: <p>BuildSignal aggregates data from public records, county permit offices, and other open government data sources. We maintain provenance tracking so you can understand where each signal originated. We do not access private or proprietary databases without authorization.</p>,
+    answer: <p>BuildSignal aggregates data from public records, county permit offices, and other open government data sources. Every signal keeps a link to its original source so you can verify where it came from. We do not access private or proprietary databases without authorization.</p>,
   },
   {
     question: "How frequently is information updated?",
@@ -55,7 +55,7 @@ export function HomeFAQ() {
     <section id="faq" className="py-20 md:py-28 bg-surface" aria-labelledby="faq-heading">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-sm font-medium mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-700/10 text-emerald-400 text-sm font-medium mb-4">
             <HelpCircle className="w-4 h-4" /><span>Common Questions</span>
           </div>
           <h2 id="faq-heading" className="text-3xl md:text-4xl font-bold text-ink mb-4">Frequently Asked Questions</h2>

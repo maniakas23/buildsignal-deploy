@@ -117,7 +117,7 @@ export function RecommendationsPage() {
           <div className="text-center py-12 text-muted-foreground">
             <Lightbulb className="mx-auto h-12 w-12 mb-4" />
             <p>No recommendations available</p>
-            <p className="text-sm">The Kestovar engine is analyzing your markets</p>
+            <p className="text-sm">BuildSignal is analyzing your markets</p>
           </div>
         )}
       </div>
