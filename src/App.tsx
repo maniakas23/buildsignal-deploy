@@ -11,7 +11,9 @@ import { BillingPage } from "./pages/BillingPage";
 import { PricingPage } from "./pages/PricingPage";
 import AlertsPage from "./pages/AlertsPage";
 import { RecommendationsPage } from "./pages/RecommendationsPage";
+import { WhatChangedPage } from "./pages/WhatChangedPage";
 import OpportunityDashboard from "./pages/OpportunityDashboard";
+import { OpportunityDetailPage } from "./pages/OpportunityDetailPage";
 import { CountyDetail } from "./pages/CountyDetail";
 import CountyCoveragePage from "./pages/CountyCoveragePage";
 import { WatchlistPage } from "./pages/WatchlistPage";
@@ -35,7 +37,6 @@ import NotFound from "./pages/NotFound";
 import AuthLayout from "./components/AuthLayout";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as SonnerToaster } from "sonner";
-import { ThemeSwitcher } from "./components/theme/ThemeSwitcher";
 
 function App() {
   usePageTracking();
@@ -44,7 +45,6 @@ function App() {
     <TRPCProvider>
       <Toaster />
       <SonnerToaster richColors position="top-right" />
-      <ThemeSwitcher />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
@@ -67,11 +67,13 @@ function App() {
         <Route element={<AuthLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/opportunities" element={<OpportunityDashboard />} />
+          <Route path="/opportunities/:sequenceId" element={<OpportunityDetailPage />} />
           <Route path="/counties/:id" element={<CountyDetail />} />
           <Route path="/county-coverage" element={<CountyCoveragePage />} />
           <Route path="/watchlist" element={<WatchlistPage />} />
           <Route path="/alerts" element={<AlertsPage />} />
           <Route path="/recommendations" element={<RecommendationsPage />} />
+          <Route path="/changes" element={<WhatChangedPage />} />
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/billing" element={<BillingPage />} />
           <Route path="/settings" element={<SettingsPage />} />
