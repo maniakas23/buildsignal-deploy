@@ -66,7 +66,7 @@ function wrapMeta<T>(data: T, overrides: Partial<EngineResponse<T>['meta']> = {}
       evidenceSummary: 'Aggregated from monitored public data sources including permits, utilities, zoning, and public records.',
       lastUpdated: new Date().toISOString(),
       relatedSignals: 0,
-      source: isDemoMode() ? 'Demo Data' : 'SignalCore Intelligence',
+      source: isDemoMode() ? 'Demo Data' : 'Kestovar Intelligence',
       ...overrides,
     },
   };
@@ -81,7 +81,7 @@ function wrapListMeta<T>(data: T[], overrides: Partial<EngineListResponse<T>['me
       lastUpdated: new Date().toISOString(),
       relatedSignals: 0,
       total: data.length, page: 1, perPage: data.length,
-      source: isDemoMode() ? 'Demo Data' : 'SignalCore Intelligence',
+      source: isDemoMode() ? 'Demo Data' : 'Kestovar Intelligence',
       ...overrides,
     },
   };
