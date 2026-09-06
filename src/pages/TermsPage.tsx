@@ -33,7 +33,7 @@ export function TermsPage() {
     setExpandedSection(expandedSection === id ? null : id);
   };
 
-  const lastUpdated = "January 15, 2025";
+  const lastUpdated = "August 30, 2026";
   const effectiveDate = "February 1, 2025";
 
   const sections: TermsSection[] = [
@@ -99,7 +99,7 @@ export function TermsPage() {
               You may upgrade or downgrade your plan at any time
             </li>
             <li>
-              Refunds are provided per our 14-day money-back guarantee policy
+              You may cancel at any time; cancellation takes effect at the end of the current billing period. Refund requests are reviewed individually — contact support@buildsignal.net
             </li>
           </ul>
           <p>
@@ -144,8 +144,8 @@ export function TermsPage() {
             data solely for the purpose of providing our services.
           </p>
           <p>
-            BuildSignal data and insights (including predictions, reports, and
-            analytics) are the property of BuildSignal, Inc. You may use these
+            BuildSignal data and insights (including reports, timelines, and derived
+            analytics) are the property of BuildSignal You may use these
             for your internal business purposes but may not resell or redistribute
             them without written consent.
           </p>
@@ -153,7 +153,7 @@ export function TermsPage() {
             See our{" "}
             <button
               onClick={() => navigate("/privacy")}
-              className="text-primary hover:underline"
+              className="text-[var(--bs-action)] hover:underline"
             >
               Privacy Policy
             </button>{" "}
@@ -170,7 +170,7 @@ export function TermsPage() {
         <div className="space-y-3 text-sm text-muted-foreground">
           <p>
             All content, software, and materials on BuildSignal are the
-            intellectual property of BuildSignal, Inc. or our licensors. This
+            intellectual property of BuildSignal or our licensors. This
             includes text, graphics, logos, icons, software, and AI models.
           </p>
           <p>
@@ -194,9 +194,9 @@ export function TermsPage() {
       content: (
         <div className="space-y-3 text-sm text-muted-foreground">
           <p>
-            BuildSignal provides intelligence and predictions based on available
-            data. While we strive for accuracy, we do not guarantee that our
-            predictions will always be correct. You agree that:
+            BuildSignal organizes and interprets authoritative public records. Source
+            records can change, and government systems can be delayed or unavailable;
+            we do not guarantee completeness or freedom from error. You agree that:
           </p>
           <ul className="space-y-1 list-disc list-inside">
             <li>
@@ -213,6 +213,11 @@ export function TermsPage() {
               We are not liable for indirect, incidental, or consequential damages
             </li>
           </ul>
+          <p>
+BuildSignal does not provide legal, financial, engineering,
+            environmental, appraisal, or investment advice. Intelligence provided
+            is informational and does not replace independent professional review.
+          </p>
           <p>
             You should always conduct your own due diligence before making
             investment or business decisions.
@@ -239,7 +244,7 @@ export function TermsPage() {
               We will delete your personal data per our{" "}
               <button
                 onClick={() => navigate("/privacy")}
-                className="text-primary hover:underline"
+                className="text-[var(--bs-action)] hover:underline"
               >
                 Privacy Policy
               </button>
@@ -292,12 +297,11 @@ export function TermsPage() {
               Email:{" "}
               <a
                 href="mailto:legal@buildsignal.net"
-                className="text-primary hover:underline"
+                className="text-[var(--bs-action)] hover:underline"
               >
                 legal@buildsignal.net
               </a>
             </li>
-            <li>Address: 123 Market Street, Suite 456, San Francisco, CA 94105</li>
           </ul>
           <p>
             We will respond to legal inquiries within 5 business days.
@@ -343,7 +347,7 @@ export function TermsPage() {
             you have any questions, please{" "}
             <button
               onClick={() => navigate("/contact")}
-              className="text-primary hover:underline"
+              className="text-[var(--bs-action)] hover:underline"
             >
               contact us
             </button>
@@ -387,7 +391,7 @@ export function TermsPage() {
             understood, and agree to be bound by these Terms of Service and our{" "}
             <button
               onClick={() => navigate("/privacy")}
-              className="text-primary hover:underline"
+              className="text-[var(--bs-action)] hover:underline"
             >
               Privacy Policy
             </button>
