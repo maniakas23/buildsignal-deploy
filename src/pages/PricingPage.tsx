@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/accordion";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Footer } from "@/components/ui-custom/Footer";
 
 export function PricingPage() {
   const navigate = useNavigate();
@@ -92,7 +93,7 @@ export function PricingPage() {
         "Unlimited everything",
         "Dedicated account manager",
         "Custom data sources",
-        "SLA guarantees",
+        "Custom service-level agreement (Enterprise)",
         "On-premise option",
       ],
     },
@@ -312,7 +313,7 @@ export function PricingPage() {
             </AccordionTrigger>
             <AccordionContent>
               Enterprise includes everything in Business plus custom data
-              sources, SLA guarantees, dedicated support, and optional
+              sources, a custom service-level agreement, dedicated support, and optional
               on-premise deployment. Contact us for a custom quote.
             </AccordionContent>
           </AccordionItem>
@@ -337,7 +338,7 @@ export function PricingPage() {
         </div>
         <div className="flex items-center gap-2">
           <BadgeCheck className="h-4 w-4 text-[#4ade80]" />
-          <span>SOC 2 Program In Progress</span>
+          <span>Encryption in transit and at rest</span>
         </div>
       </div>
 
@@ -368,6 +369,7 @@ export function PricingPage() {
           </Button>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }
