@@ -46,7 +46,7 @@ const defaultPlans: Plan[] = [
     price: 99,
     interval: "month",
     description: "Perfect for individual investors and small teams exploring new markets.",
-    features: ["5 counties", "Weekly email reports", "Basic predictions", "Email support"],
+    features: ["5 counties", "Weekly email reports", "Development timelines & evidence view", "Email support"],
     highlighted: false,
     cta: "Get Started",
   },
@@ -56,7 +56,7 @@ const defaultPlans: Plan[] = [
     price: 249,
     interval: "month",
     description: "For growing teams that need deeper intelligence and more coverage.",
-    features: ["25 counties", "Daily alerts + weekly briefings", "Advanced predictions", "API access", "Priority support"],
+    features: ["25 counties", "Daily alerts + weekly briefings", "Detection Advantage lead-time metrics", "API access", "Priority support"],
     highlighted: true,
     cta: "Get Started",
   },
@@ -76,7 +76,7 @@ const defaultPlans: Plan[] = [
     price: 0,
     interval: "custom",
     description: "Tailored deployments for large enterprises with custom data needs.",
-    features: ["Everything in Business", "Custom data integrations", "White-label reports", "On-premise option", "SLA guarantees", "24/7 phone support"],
+    features: ["Everything in Business", "Custom data integrations", "White-label reports", "On-premise option", "Custom service-level agreement", "24/7 phone support"],
     highlighted: false,
     cta: "Talk to Sales",
   },
@@ -212,11 +212,11 @@ export function SignupPage() {
             <div className="lg:col-span-2">
               <Card className="border-[var(--bs-border)] shadow-sm">
                 <CardHeader>
-                  <CardTitle className="text-2xl text-[var(--bs-text-primary)]">
+                  <h1 className="text-2xl font-semibold leading-none tracking-tight text-[var(--bs-text-primary)]">
                     {step === 1 && "Create Your Account"}
                     {step === 2 && "Choose Your Plan"}
                     {step === 3 && "Get Started with BuildSignal"}
-                  </CardTitle>
+                  </h1>
                 </CardHeader>
                 <CardContent>
                   {/* Progress */}
@@ -228,9 +228,9 @@ export function SignupPage() {
                             className={cn(
                               "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium mb-1",
                               step > idx + 1
-                                ? "bg-[var(--bs-intelligence)] text-white"
+                                ? "bg-[var(--bs-intelligence)] text-[#081018]"
                                 : step === idx + 1
-                                ? "bg-[var(--bs-action)] text-white"
+                                ? "bg-primary text-primary-foreground"
                                 : "bg-[var(--bs-surface-hover)] text-[var(--bs-text-tertiary)]"
                             )}
                           >
@@ -340,7 +340,8 @@ export function SignupPage() {
                             <button
                               type="button"
                               onClick={() => setShowPassword(!showPassword)}
-                              className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--bs-text-tertiary)] hover:text-[var(--bs-text-primary)] transition-colors"
+                              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[var(--bs-text-tertiary)] hover:text-[var(--bs-text-primary)] transition-colors"
+                              aria-label={showPassword ? "Hide password" : "Show password"}
                             >
                               {showPassword ? (
                                 <EyeOff className="h-4 w-4" />
@@ -417,7 +418,7 @@ export function SignupPage() {
                               )}
                             >
                               {plan.highlighted && (
-                                <Badge className="absolute top-2 right-2 text-[10px] px-1.5 bg-[var(--bs-action)] text-white hover:bg-[var(--bs-action)]">
+                                <Badge className="absolute top-2 right-2 text-[10px] px-1.5 bg-primary text-primary-foreground hover:bg-primary/90">
                                   Popular
                                 </Badge>
                               )}
@@ -601,7 +602,7 @@ export function SignupPage() {
                     </li>
                     <li className="flex items-center gap-2">
                       <Shield className="h-4 w-4 text-[var(--bs-intelligence)] shrink-0" />
-                      Bank-grade security &amp; SOC 2 program in progress
+                      Encryption in transit and at rest
                     </li>
                   </ul>
                 </div>
@@ -640,17 +641,17 @@ export function SignupPage() {
                       <span className="font-medium text-sm text-[var(--bs-text-primary)]">Transparent AI methodology</span>
                     </div>
                     <p className="text-xs text-[var(--bs-text-tertiary)]">
-                      Confidence scores on every prediction. Model performance published monthly. No black boxes.
+                      Evidence strength shown on every signal. Each opportunity links back to the government records behind it.
                     </p>
                   </div>
 
                   <div className="bg-[var(--bs-surface)] border border-[var(--bs-border)] rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-2">
                       <Shield className="h-4 w-4 text-[var(--bs-intelligence)]" />
-                      <span className="font-medium text-sm text-[var(--bs-text-primary)]">Enterprise-grade security</span>
+                      <span className="font-medium text-sm text-[var(--bs-text-primary)]">Security</span>
                     </div>
                     <p className="text-xs text-[var(--bs-text-tertiary)]">
-                      SOC 2 Type II program in progress. 256-bit AES encryption. SSO & SAML 2.0 ready. Data never sold.
+                      Encryption in transit and at rest. SSO & SAML 2.0 on Business plans. Data never sold.
                     </p>
                   </div>
 
@@ -677,7 +678,7 @@ export function SignupPage() {
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 text-sm text-[var(--bs-text-tertiary)]">
                       <Lock className="h-4 w-4 text-[var(--bs-intelligence)]" />
-                      256-bit SSL encryption
+                      Encryption in transit and at rest
                     </div>
                     <div className="flex items-center gap-2 text-sm text-[var(--bs-text-tertiary)]">
                       <Shield className="h-4 w-4 text-[var(--bs-intelligence)]" />
@@ -685,10 +686,15 @@ export function SignupPage() {
                     </div>
                     <div className="flex items-center gap-2 text-sm text-[var(--bs-text-tertiary)]">
                       <Check className="h-4 w-4 text-[var(--bs-intelligence)]" />
-                      SOC 2 Type II (In Progress)
+                      Encryption in transit and at rest
                     </div>
                   </div>
                 </div>
+
+                {/* Platform endorsement */}
+                <p className="text-xs tracking-wide text-[var(--bs-text-tertiary)]">
+                  Powered by Kestovar
+                </p>
               </div>
             </div>
           </div>
