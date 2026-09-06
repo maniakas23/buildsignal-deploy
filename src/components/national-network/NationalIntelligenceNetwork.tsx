@@ -84,7 +84,7 @@ export default function NationalIntelligenceNetwork() {
               </div>
               <div className="flex items-center gap-1 mb-1">
                 <div className="flex-1 h-1.5 bg-ink-wash/30 rounded-full overflow-hidden">
-                  <div className={`h-full rounded-full ${parseInt(st.coverage) >= 90 ? 'bg-emerald-500' : 'bg-amber-500'}`} style={{ width: st.coverage }} />
+                  <div className={`h-full rounded-full ${parseInt(st.coverage) >= 90 ? 'bg-emerald-700' : 'bg-amber-500'}`} style={{ width: st.coverage }} />
                 </div>
               </div>
               <div className="flex items-center justify-between">
@@ -106,7 +106,7 @@ export default function NationalIntelligenceNetwork() {
           {PROVIDER_HEALTH.map((ph) => (
             <div key={ph.name} className="flex items-center justify-between p-2.5 bg-canvas rounded-lg">
               <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${ph.status === 'operational' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${ph.status === 'operational' ? 'bg-emerald-700' : 'bg-amber-500'}`} />
                 <span className="text-[11px] font-medium text-ink-primary">{ph.name}</span>
               </div>
               <div className="flex items-center gap-3">

@@ -67,7 +67,7 @@ const WHY_MULTIPLE_SIGNALS = [
   { count: '2 signals', confidence: '~62%', color: 'bg-blue-500' },
   { count: '3 signals', confidence: '~75%', color: 'bg-accent-indigo' },
   { count: '4 signals', confidence: '~86%', color: 'bg-accent-indigo' },
-  { count: '5+ signals', confidence: '~93%', color: 'bg-emerald-500' },
+  { count: '5+ signals', confidence: '~93%', color: 'bg-emerald-700' },
 ];
 
 export default function SignalCoreKnowledgeGraph() {

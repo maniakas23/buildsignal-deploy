@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Building2, Menu, Bell, User, LogOut, Search, X, ChevronDown, Map, BarChart3, Lightbulb, Shield, CreditCard, Settings, HelpCircle, Calendar } from "lucide-react";
+import { Building2, Menu, Bell, User, LogOut, Search, X, ChevronDown, Map, BarChart3, Lightbulb, Shield, CreditCard, Settings, HelpCircle, Calendar, Activity } from "lucide-react";
 import { trpc } from "@/providers/trpc";
 import { HelpTooltip } from "./HelpTooltip";
 import { InAppNotifications } from "../dashboard/InAppNotifications";
@@ -24,6 +24,7 @@ export function Navbar() {
   const navItems = [
     { path: "/dashboard", label: "Dashboard", icon: BarChart3 },
     { path: "/opportunities", label: "Opportunities", icon: Map },
+    { path: "/changes", label: "What Changed", icon: Activity },
     { path: "/recommendations", label: "Recommendations", icon: Lightbulb },
     { path: "/alerts", label: "Alerts", icon: Bell },
     { path: "/operations", label: "Operations", icon: Shield },
