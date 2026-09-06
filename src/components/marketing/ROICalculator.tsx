@@ -52,7 +52,7 @@ export function ROICalculator() {
     <section id="roi-calculator" className="py-20 md:py-28 bg-canvas" aria-labelledby="roi-heading">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-14">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-sm font-medium mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-700/10 text-emerald-400 text-sm font-medium mb-4">
             <Calculator className="w-4 h-4" /><span>Operational Value</span>
           </div>
           <h2 id="roi-heading" className="text-3xl md:text-4xl font-bold text-ink mb-4">Estimate Your Research Time</h2>
@@ -78,7 +78,7 @@ export function ROICalculator() {
                   <div className="flex items-center gap-4">
                     <input id={field.id} type="range" min={field.min} max={field.max} step={field.step} value={field.val}
                       onChange={(e) => updateField(field.id as keyof ROICalculatorState, Number(e.target.value))}
-                      className="flex-1 h-2 bg-border rounded-lg appearance-none cursor-pointer accent-emerald-500" />
+                      className="flex-1 h-2 py-2 bg-border rounded-lg appearance-none cursor-pointer accent-emerald-500" />
                     <span className="min-w-[4rem] text-right font-mono text-emerald-400 font-semibold">{field.fmt(field.val)}</span>
                   </div>
                 </div>
@@ -87,14 +87,14 @@ export function ROICalculator() {
               <div className="pt-4 border-t border-border">
                 <label htmlFor="efficiency" className="flex items-center gap-2 text-sm font-medium text-ink mb-2">
                   <span>Assumed efficiency gain</span>
-                  <button type="button" onClick={() => setShowFormula(!showFormula)} className="text-muted hover:text-ink transition-colors" aria-label="Toggle formula explanation">
+                  <button type="button" onClick={() => setShowFormula(!showFormula)} className="p-1 -m-1 text-muted hover:text-ink transition-colors" aria-label="Toggle formula explanation">
                     <Info className="w-4 h-4" />
                   </button>
                 </label>
                 <div className="flex items-center gap-4">
                   <input id="efficiency" type="range" min={10} max={80} step={5} value={state.efficiencyAssumption}
                     onChange={(e) => { updateField("efficiencyAssumption", Number(e.target.value)); trackEvent("roi_assumption_changed", { value: Number(e.target.value) }); }}
-                    className="flex-1 h-2 bg-border rounded-lg appearance-none cursor-pointer accent-emerald-500" />
+                    className="flex-1 h-2 py-2 bg-border rounded-lg appearance-none cursor-pointer accent-emerald-500" />
                   <span className="min-w-[3.5rem] text-right font-mono text-emerald-400 font-semibold">{state.efficiencyAssumption}%</span>
                 </div>
                 <p className="text-xs text-muted mt-2">This is an illustrative assumption, not a verified BuildSignal performance statistic. Adjust based on your own expectations.</p>
@@ -116,12 +116,12 @@ export function ROICalculator() {
                   <p className="text-2xl font-bold text-ink font-mono">{formatCurrency(monthlyResearchCost)}</p>
                   <p className="text-xs text-muted mt-1">Based on hourly rate × hours</p>
                 </div>
-                <div className="bg-emerald-500/5 rounded-xl p-4 border border-emerald-500/20">
+                <div className="bg-emerald-700/5 rounded-xl p-4 border border-emerald-500/20">
                   <p className="text-sm text-emerald-400 mb-1">Time potentially recovered</p>
                   <p className="text-2xl font-bold text-emerald-400 font-mono">{formatHours(estimatedRecoveredHours)}</p>
                   <p className="text-xs text-emerald-400/70 mt-1">{state.efficiencyAssumption}% of monthly hours</p>
                 </div>
-                <div className="bg-emerald-500/5 rounded-xl p-4 border border-emerald-500/20">
+                <div className="bg-emerald-700/5 rounded-xl p-4 border border-emerald-500/20">
                   <p className="text-sm text-emerald-400 mb-1">Cost potentially redirected</p>
                   <p className="text-2xl font-bold text-emerald-400 font-mono">{formatCurrency(estimatedOperationalValue)}</p>
                   <p className="text-xs text-emerald-400/70 mt-1">Estimated operational value</p>
@@ -149,7 +149,7 @@ export function ROICalculator() {
             )}
 
             <div className="text-center">
-              <a href="/signup" className="inline-flex items-center justify-center px-8 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition-colors"
+              <a href="/signup" className="inline-flex items-center justify-center px-8 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold rounded-lg transition-colors"
                 onClick={() => trackEvent("signup_clicked", { source: "roi_calculator" })}>
                 Get Started
               </a>
