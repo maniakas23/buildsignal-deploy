@@ -28,6 +28,7 @@ import {
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { trackEvent } from "@/hooks/usePageTracking";
+import { Footer } from "@/components/ui-custom/Footer";
 
 export function ContactPage() {
   const navigate = useNavigate();
@@ -79,7 +80,7 @@ export function ContactPage() {
                   <div className="font-medium text-sm">Email</div>
                   <a
                     href="mailto:support@buildsignal.net"
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                    className="text-sm text-foreground hover:text-[var(--bs-action)] transition-colors"
                   >
                     support@buildsignal.net
                   </a>
@@ -92,7 +93,7 @@ export function ContactPage() {
                   <div className="text-sm text-muted-foreground">
                     Phone support available for Business and Enterprise plans.
                     <br />
-                    Schedule a call via <a href="mailto:support@buildsignal.net" className="text-primary hover:underline">support@buildsignal.net</a>
+                    Schedule a call via <a href="mailto:support@buildsignal.net" className="text-[var(--bs-action)] hover:underline">support@buildsignal.net</a>
                   </div>
                 </div>
               </div>
@@ -101,11 +102,9 @@ export function ContactPage() {
                 <div>
                   <div className="font-medium text-sm">Company</div>
                   <div className="text-sm text-muted-foreground">
-                    BuildSignal, Inc.
+                    BuildSignal
                     <br />
                     Remote-first team
-                    <br />
-                    San Francisco Bay Area
                   </div>
                 </div>
               </div>
@@ -318,9 +317,10 @@ export function ContactPage() {
       <div className="text-center space-y-2">
         <h2 className="text-xl font-semibold">Remote-First Team</h2>
         <p className="text-muted-foreground max-w-xl mx-auto">
-          BuildSignal is a remote-first company with team members across the United States. We collaborate digitally and are available to connect via video call or in-person meetings for Enterprise clients.
+          BuildSignal operates as a remote-first team. We collaborate digitally and are available to connect via video call for Enterprise clients.
         </p>
       </div>
+      <Footer />
     </div>
   );
 }
