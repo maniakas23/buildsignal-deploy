@@ -44,9 +44,9 @@ export function Login() {
             <div className="mx-auto h-14 w-14 bg-[var(--bs-action)]/10 rounded-xl flex items-center justify-center mb-4">
               <Building2 className="h-8 w-8 text-[var(--bs-action)]" />
             </div>
-            <h2 className="text-3xl font-bold tracking-tight text-[var(--bs-text-primary)]">
+            <h1 className="text-3xl font-bold tracking-tight text-[var(--bs-text-primary)]">
               Welcome back
-            </h2>
+            </h1>
             <p className="mt-2 text-sm text-[var(--bs-text-secondary)]">
               Sign in to your BuildSignal account
             </p>
@@ -111,7 +111,8 @@ export function Login() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--bs-text-tertiary)] hover:text-[var(--bs-text-primary)] transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[var(--bs-text-tertiary)] hover:text-[var(--bs-text-primary)] transition-colors"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (
                     <EyeOff className="h-4 w-4" />
@@ -126,7 +127,7 @@ export function Login() {
               type="submit"
               disabled={loginIsPending}
               className={cn(
-                "w-full flex items-center justify-center gap-2 rounded-lg bg-[var(--bs-action)] px-4 py-3 text-sm font-medium text-white hover:bg-[var(--bs-action)]/90 transition-colors shadow-sm",
+                "w-full flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm",
                 loginIsPending && "opacity-70 cursor-not-allowed"
               )}
             >
@@ -166,10 +167,15 @@ export function Login() {
             </span>
             <span className="flex items-center gap-1">
               <Building2 className="h-3 w-3" />
-              SOC 2 Type II (In Progress)
+              Encryption in transit and at rest
             </span>
           </div>
         </div>
+
+        {/* Platform endorsement */}
+        <p className="mt-6 text-center text-xs tracking-wide text-[var(--bs-text-tertiary)]">
+          Powered by Kestovar
+        </p>
       </div>
     </div>
   );
