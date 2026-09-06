@@ -34,28 +34,15 @@ const COLORS = {
   opportunityAmber: "#F4A261",
 };
 
-// ─── Sample Market List (20 popular US metros) ──────────────────────
+// ─── Markets BuildSignal currently covers with LIVE government-sourced intelligence ───
 const SAMPLE_MARKETS = [
-  "Austin, TX",
-  "Denver, CO",
-  "Atlanta, GA",
-  "Boston, MA",
-  "Charlotte, NC",
-  "Chicago, IL",
-  "Dallas, TX",
-  "Houston, TX",
-  "Los Angeles, CA",
-  "Miami, FL",
-  "Nashville, TN",
-  "New York, NY",
-  "Phoenix, AZ",
-  "Portland, OR",
-  "Raleigh, NC",
-  "San Francisco, CA",
-  "Seattle, WA",
-  "Tampa, FL",
-  "Washington, DC",
-  "Salt Lake City, UT",
+  "Raleigh–Wake County, NC",
+  "Charlotte–Mecklenburg, NC",
+  "Durham, NC",
+  "Union County, NC",
+  "Cabarrus County, NC",
+  "Greenville County, SC",
+  "York County, SC",
 ];
 
 // ─── Alert Preference Options ─────────────────────────────────────
@@ -590,7 +577,7 @@ function StepConnectGo({
 export function OnboardingWizard() {
   const [step, setStep] = useState(1);
   const [direction, setDirection] = useState<"forward" | "backward">("forward");
-  const [selectedMarkets, setSelectedMarkets] = useState<string[]>(["Austin, TX", "Denver, CO"]);
+  const [selectedMarkets, setSelectedMarkets] = useState<string[]>(["Raleigh–Wake County, NC"]);
   const [alertPreferences, setAlertPreferences] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
     ALERT_OPTIONS.forEach((o) => (initial[o.id] = o.defaultChecked));
