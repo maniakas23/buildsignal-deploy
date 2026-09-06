@@ -54,7 +54,7 @@ const VALIDATION_DIMENSIONS = [
     tests: '128',
     passed: '128',
     failed: '0',
-    description: 'Controls aligned to SOC 2 Type II (certification in progress), GDPR, and CCPA. Zero known critical vulnerabilities.',
+    description: 'Controls aligned with GDPR and CCPA requirements.',
   },
   {
     dimension: 'Accessibility',
@@ -181,7 +181,7 @@ export default function QualityAssurance() {
                 </div>
               </div>
               <div className="h-1.5 bg-ink-wash/30 rounded-full overflow-hidden mb-2">
-                <div className={`h-full rounded-full ${vd.score >= 95 ? 'bg-emerald-500' : vd.score >= 85 ? 'bg-accent-indigo' : 'bg-amber-500'}`} style={{ width: `${vd.score}%` }} />
+                <div className={`h-full rounded-full ${vd.score >= 95 ? 'bg-emerald-700' : vd.score >= 85 ? 'bg-accent-indigo' : 'bg-amber-500'}`} style={{ width: `${vd.score}%` }} />
               </div>
               <div className="flex items-center gap-3 mb-1">
                 <span className="text-[9px] text-ink-tertiary">Tests: <span className="font-medium text-ink-secondary">{vd.tests}</span></span>

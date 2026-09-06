@@ -71,7 +71,7 @@ const CONVERGENCE_CLUSTERS = [
 ];
 
 const CROSS_DOMAIN_INSIGHTS = [
-  { insight: 'Projects with 5+ converging domains have 94% prediction accuracy vs. 62% for single-domain signals.', source: 'SignalCore Analysis' },
+  { insight: 'Projects with 5+ converging domains have 94% prediction accuracy vs. 62% for single-domain signals.', source: 'BuildSignal Analysis' },
   { insight: 'Utility signals precede DOT filings by an average of 45 days, making them the earliest reliable indicator.', source: 'Historical Pattern Library' },
   { insight: 'Government investment signals (CIP, RFP, budget) carry 2.3x more weight than permit signals alone.', source: 'Confidence Engine' },
   { insight: 'Cross-domain validation from planning + infrastructure + utilities produces the highest-confidence recommendations.', source: 'Knowledge Graph' },
