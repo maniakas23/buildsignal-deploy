@@ -117,18 +117,6 @@ function DataFreshnessBanner() {
                 {health?.status === 'healthy' ? 'Data pipeline healthy' : health?.status === 'degraded' ? 'Data pipeline degraded' : hasData ? 'Data pipeline active' : 'No data ingested yet'}
               </span>
             </span>
-            {health && (
-              <>
-                <span className="w-px h-3 bg-ink-wash hidden sm:block" />
-                <span className="text-ink-tertiary">
-                  Provider health: <span className="font-medium text-ink-primary">{health.providerHealth}%</span>
-                </span>
-                <span className="w-px h-3 bg-ink-wash hidden sm:block" />
-                <span className="text-ink-tertiary">
-                  Coverage: <span className="font-medium text-ink-primary">{health.coverageHealth}%</span>
-                </span>
-              </>
-            )}
             <span className="w-px h-3 bg-ink-wash hidden sm:block" />
             <span className="text-ink-tertiary text-xs">
               Last checked: {new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
@@ -264,7 +252,7 @@ function ActionBadge({ action }: { action: string }) {
 
 function RecommendationCard({ rec, index }: { rec: Recommendation; index: number }) {
   const handleClick = () => { track({ type: 'recommendation_clicked', recId: rec.id, category: rec.category }); recordFirstOpportunity(); };
-  const explainItems = [scrubUnknownPlaceText(rec.why), `${rec.relatedSignals} correlated signals detected`, `${rec.sourceCount} verified data sources`, ...(rec.roi != null ? [`${rec.roi}% projected ROI`] : [])];
+  const explainItems = [scrubUnknownPlaceText(rec.why), `${rec.relatedSignals} related records detected`, `${rec.sourceCount} linked data sources`, ...(rec.roi != null ? [`${rec.roi}% projected ROI`] : [])];
   const marketContext = useMemo(() => {
     if (!rec.contributingSignals?.length) return null;
     const signals = rec.contributingSignals;
@@ -284,7 +272,7 @@ function RecommendationCard({ rec, index }: { rec: Recommendation; index: number
     if (zoning.length) items.push({ label: 'Zoning', description: zoning[0].description, influence: zoning[0].influence });
     if (environmental.length) items.push({ label: 'Environmental', description: environmental[0].description, influence: environmental[0].influence });
     const recentCount = refTime > 0 ? signals.filter(s => { const sigTime = new Date(s.date).getTime(); const days = (refTime - sigTime) / (1000 * 60 * 60 * 24); return days >= 0 && days < 7; }).length : 0;
-    const timing = recentCount >= 3 ? `${recentCount} of ${signals.length} signals detected within the past 7 days — activity is accelerating.` : undefined;
+    const timing = recentCount >= 3 ? `${recentCount} of ${signals.length} records detected within the past 7 days — activity is accelerating.` : undefined;
     return { items, timing, avgInfluence: Math.round(signals.reduce((s, c) => s + c.influence, 0) / signals.length) };
   }, [rec.contributingSignals, rec.lastUpdated]);
 
@@ -307,7 +295,7 @@ function RecommendationCard({ rec, index }: { rec: Recommendation; index: number
       <p className="text-sm text-ink-secondary mb-3 leading-relaxed line-clamp-3">{scrubUnknownPlaceText(rec.description)}</p>
       <div className="mb-4">
         <div className="flex items-center gap-3 mb-2 py-2 px-3 bg-canvas rounded-lg border border-ink-wash">
-          <span className="text-[11px] text-ink-tertiary"><strong className="text-ink-primary">{rec.relatedSignals}</strong> signals</span>
+          <span className="text-[11px] text-ink-tertiary"><strong className="text-ink-primary">{rec.relatedSignals}</strong> related records</span>
           <span className="w-px h-3 bg-ink-wash" />
           <span className="text-[11px] text-ink-tertiary"><strong className="text-ink-primary">{rec.sourceCount}</strong> sources</span>
           {rec.roi != null && (<><span className="w-px h-3 bg-ink-wash" /><span className="text-[11px] text-ink-tertiary">{rec.roi}% ROI</span></>)}
@@ -358,7 +346,7 @@ function RecommendationCard({ rec, index }: { rec: Recommendation; index: number
       )}
       {rec.contributingSignals && rec.contributingSignals.filter(s => s.type !== 'utility' && s.type !== 'transportation' && s.type !== 'project').length > 0 && (
         <div className="mb-4">
-          <p className="text-[11px] text-ink-tertiary uppercase tracking-wider mb-2">Contributing signals (ranked by influence)</p>
+          <p className="text-[11px] text-ink-tertiary uppercase tracking-wider mb-2">Contributing records</p>
           <div className="space-y-2">
             {rec.contributingSignals.filter(s => s.type !== 'utility' && s.type !== 'transportation' && s.type !== 'project').map((sig, i) => (
               <div key={i} className="flex items-start gap-2.5">
@@ -411,7 +399,7 @@ function TrustBar({ dashboard }: { dashboard: DashboardMetrics | null }) {
   return (
     <div className="bg-accent-indigo/[0.03] border-y border-accent-indigo/10">
       <div className="max-w-content mx-auto px-6 py-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-        <span className="flex items-center gap-1.5 text-ink-secondary"><CheckCircle2 className="w-3.5 h-3.5 text-accent-teal" /><span className="font-medium text-ink-primary">{dashboard.activeSignals.toLocaleString()}</span> live signals</span>
+        <span className="flex items-center gap-1.5 text-ink-secondary"><CheckCircle2 className="w-3.5 h-3.5 text-accent-teal" /><span className="font-medium text-ink-primary">{dashboard.activeSignals.toLocaleString()}</span> government records tracked</span>
         <span className="w-px h-3 bg-ink-wash hidden sm:block" />
         <span className="text-ink-tertiary">{dashboard.zones.length} areas monitored</span>
         <span className="w-px h-3 bg-ink-wash hidden sm:block" />
@@ -434,7 +422,7 @@ function NoOpportunitiesEmptyState() {
       </h3>
       <p className="text-sm text-ink-secondary max-w-md mx-auto mb-6">
         Opportunity analysis runs as new permit, zoning, and infrastructure data is ingested.
-        Once your monitored counties begin generating signals, opportunities will appear here automatically.
+        Once your monitored counties begin generating records, opportunities will appear here automatically.
       </p>
       <button
         onClick={() => navigate('/county-coverage')}
@@ -497,7 +485,7 @@ export default function OpportunityDashboard() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6" role="feed" aria-label="Recommendations">
                 {recommendations.length === 0 && (
                   <div className="col-span-full">
-                    <EmptyState title="Analyzing your areas" message="SignalCore is processing permits, zoning changes, and utility filings. Recommendations typically appear within 24 hours." />
+                    <EmptyState title="Analyzing your areas" message="BuildSignal is processing permits, zoning changes, and utility filings. Recommendations typically appear within 24 hours." />
                     <div className="flex justify-center gap-3 mt-4">
                       <button onClick={() => setCurrentPage('map')} className="px-4 py-2 rounded-lg bg-accent-indigo text-white text-sm font-medium hover:bg-accent-indigo/90 transition-colors">Explore the Map</button>
                       <button onClick={() => setCurrentPage('projects')} className="px-4 py-2 rounded-lg bg-surface border border-ink-wash text-ink-secondary text-sm font-medium hover:bg-canvas transition-colors">Browse All Projects</button>
@@ -552,7 +540,7 @@ export default function OpportunityDashboard() {
           {/* Growth Patterns */}
           <section className="bg-canvas border-t border-ink-wash">
             <div className="max-w-content mx-auto px-6 py-10">
-              <SectionHeader title="Growth Patterns" subtitle="Validated patterns that predict development activity" />
+              <SectionHeader title="Growth Patterns" subtitle="Patterns observed in development activity across covered markets" />
               {(dashState === 'loading' || dashState === 'idle') && <SkeletonGrid count={3} />}
               {dashState === 'error' && <ErrorState message="Failed to load patterns" onRetry={dashRefetch} />}
               {dashState === 'success' && dashboard && (
