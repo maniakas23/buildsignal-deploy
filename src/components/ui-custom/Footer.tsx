@@ -15,8 +15,11 @@ export function Footer() {
               <span className="font-bold">BuildSignal</span>
             </Link>
             <p className="text-sm text-muted-foreground">
-              Commercial intelligence for construction markets. Predict
-              opportunities before they happen.
+              Development intelligence from authoritative public sources —
+              organized into timelines, with the evidence attached.
+            </p>
+            <p className="text-xs text-muted-foreground tracking-wide">
+              Powered by Kestovar
             </p>
           </div>
 
@@ -40,7 +43,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="hover:text-foreground transition-colors">
+                <Link to="/contact" className="inline-flex items-center min-h-6 hover:text-foreground transition-colors">
                   Contact Support
                 </Link>
               </li>
@@ -52,17 +55,22 @@ export function Footer() {
             <h4 className="font-medium text-sm">Company</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
-                <Link to="/privacy" className="hover:text-foreground transition-colors">
+                <Link to="/privacy" className="inline-flex items-center min-h-6 hover:text-foreground transition-colors">
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link to="/terms" className="hover:text-foreground transition-colors">
+                <Link to="/terms" className="inline-flex items-center min-h-6 hover:text-foreground transition-colors">
                   Terms of Service
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="hover:text-foreground transition-colors">
+                <Link to="/privacy" className="inline-flex items-center min-h-6 hover:text-foreground transition-colors">
+                  Privacy & Cookie Choices
+                </Link>
+              </li>
+              <li>
+                <Link to="/contact" className="inline-flex items-center min-h-6 hover:text-foreground transition-colors">
                   Contact Us
                 </Link>
               </li>
@@ -81,7 +89,6 @@ export function Footer() {
                   support@buildsignal.net
                 </a>
               </li>
-              <li>San Francisco, CA</li>
               <li>Mon–Fri, 9AM–6PM ET</li>
             </ul>
           </div>
@@ -90,13 +97,13 @@ export function Footer() {
         <div className="mt-8 pt-6 border-t flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
           <p>&copy; {currentYear} BuildSignal. All rights reserved.</p>
           <div className="flex items-center gap-4">
-            <Link to="/privacy" className="hover:text-foreground transition-colors">
+            <Link to="/privacy" className="inline-flex items-center min-h-6 hover:text-foreground transition-colors">
               Privacy
             </Link>
-            <Link to="/terms" className="hover:text-foreground transition-colors">
+            <Link to="/terms" className="inline-flex items-center min-h-6 hover:text-foreground transition-colors">
               Terms
             </Link>
-            <Link to="/contact" className="hover:text-foreground transition-colors">
+            <Link to="/contact" className="inline-flex items-center min-h-6 hover:text-foreground transition-colors">
               Contact
             </Link>
           </div>

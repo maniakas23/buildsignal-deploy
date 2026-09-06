@@ -7,7 +7,7 @@ export default function NotFound() {
     <div className="min-h-screen flex items-center justify-center">
       <Card className="w-full max-w-sm text-center">
         <CardHeader>
-          <CardTitle className="text-4xl font-bold">404</CardTitle>
+          <h1 className="text-4xl font-bold">404</h1>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-muted-foreground">Page not found</p>
