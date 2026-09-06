@@ -19,7 +19,19 @@ function getAnalyticsStore(): AnalyticsEvent[] {
   }
 }
 
+export function getAnalyticsConsent(): boolean {
+  try {
+    const raw = localStorage.getItem("buildsignal_cookie_consent");
+    if (!raw) return false; // default: no analytics until the user opts in (Privacy & Cookie Choices)
+    const parsed = JSON.parse(raw);
+    return parsed.analytics === true;
+  } catch {
+    return false;
+  }
+}
+
 function appendEvent(event: AnalyticsEvent) {
+  if (!getAnalyticsConsent()) return; // user declined analytics — record nothing
   try {
     const store = getAnalyticsStore();
     store.push(event);
