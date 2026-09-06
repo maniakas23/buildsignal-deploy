@@ -34,7 +34,7 @@ const planConfig: Record<string, { name: string; color: string; features: string
   scout: { name: "Scout", color: "bg-[var(--bs-action)]", features: ["5 counties", "100 searches/mo", "10 reports/mo", "Email alerts"] },
   professional: { name: "Professional", color: "bg-[var(--bs-intelligence)]", features: ["20 counties", "500 searches/mo", "50 reports/mo", "API access"] },
   business: { name: "Business", color: "bg-[var(--bs-text-primary)]", features: ["Unlimited counties", "Unlimited searches", "Full API", "Priority support"] },
-  enterprise: { name: "Enterprise", color: "bg-[#FFD700]", features: ["Custom integrations", "Unlimited seats", "SLA guarantee"] },
+  enterprise: { name: "Enterprise", color: "bg-[#FFD700]", features: ["Custom integrations", "Unlimited seats", "Custom service-level agreement"] },
 };
 
 export default function SettingsPage() {
