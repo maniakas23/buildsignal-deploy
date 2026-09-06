@@ -137,7 +137,7 @@ export function BillingPage() {
 
   const statusConfig: Record<string, { label: string; variant: string; color: string }> = {
     active: { label: "Active", variant: "default", color: "bg-[var(--bs-intelligence)] text-white" },
-    trialing: { label: "Trialing", variant: "secondary", color: "bg-[var(--bs-action)] text-white" },
+    trialing: { label: "Trialing", variant: "secondary", color: "bg-primary text-primary-foreground" },
     past_due: { label: "Past Due", variant: "destructive", color: "bg-red-500 text-white" },
     canceled: { label: "Canceled", variant: "outline", color: "bg-[var(--bs-text-tertiary)] text-white" },
     none: { label: "No Subscription", variant: "outline", color: "bg-[var(--bs-surface-hover)] text-[var(--bs-text-tertiary)]" },
