@@ -182,7 +182,7 @@ export default function CommercialReadiness() {
                 <RiskBadge level={r.risk} />
                 <div className="w-16">
                   <div className="h-1 bg-ink-wash/30 rounded-full overflow-hidden">
-                    <div className={`h-full rounded-full ${r.health >= 90 ? 'bg-emerald-500' : r.health >= 75 ? 'bg-accent-indigo' : 'bg-amber-500'}`} style={{ width: `${r.health}%` }} />
+                    <div className={`h-full rounded-full ${r.health >= 90 ? 'bg-emerald-700' : r.health >= 75 ? 'bg-accent-indigo' : 'bg-amber-500'}`} style={{ width: `${r.health}%` }} />
                   </div>
                 </div>
               </div>
