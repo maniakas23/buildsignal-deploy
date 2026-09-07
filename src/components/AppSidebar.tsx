@@ -2,6 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   Target,
+  Activity,
   Bell,
   MapPin,
   FileText,
@@ -46,6 +47,12 @@ const topNavItems: NavItem[] = [
     to: "/opportunities",
     icon: Target,
     ariaLabel: "Navigate to Opportunities",
+  },
+  {
+    label: "What Changed",
+    to: "/changes",
+    icon: Activity,
+    ariaLabel: "Navigate to What Changed",
   },
   {
     label: "Alerts",
