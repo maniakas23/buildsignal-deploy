@@ -259,7 +259,7 @@ export default function ExecutiveCommandCenter() {
           <div className="space-y-2">
             {RECENTLY_CHANGED.map((rc) => (
               <div key={rc.id} className="flex items-center gap-2 p-2.5 bg-canvas rounded-lg">
-                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${rc.type === 'upgrade' ? 'bg-emerald-500' : rc.type === 'progress' ? 'bg-accent-indigo' : 'bg-blue-500'}`} />
+                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${rc.type === 'upgrade' ? 'bg-emerald-700' : rc.type === 'progress' ? 'bg-accent-indigo' : 'bg-blue-500'}`} />
                 <div className="flex-1 min-w-0">
                   <span className="text-[11px] font-medium text-ink-primary">{rc.project}</span>
                   <p className="text-[10px] text-emerald-600 font-medium">{rc.change}</p>

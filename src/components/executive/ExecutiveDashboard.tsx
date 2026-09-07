@@ -77,7 +77,7 @@ const ENGAGEMENT_METRICS = [
 ];
 
 function StatusDot({ status }: { status: 'healthy' | 'warning' | 'critical' }) {
-  const colors = { healthy: 'bg-emerald-500', warning: 'bg-amber-500', critical: 'bg-accent-crimson' };
+  const colors = { healthy: 'bg-emerald-700', warning: 'bg-amber-500', critical: 'bg-accent-crimson' };
   return <span className={`w-2 h-2 rounded-full ${colors[status]}`} />;
 }
 
