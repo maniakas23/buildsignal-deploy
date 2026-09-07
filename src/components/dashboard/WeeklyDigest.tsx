@@ -60,7 +60,7 @@ export default function WeeklyDigest() {
       )}
 
       <p className="text-[10px] text-ink-tertiary mt-3">
-        Email delivery of digests is not yet enabled — the latest live signals are shown here.
+        Email delivery of digests is not yet enabled — the latest activity is shown here.
       </p>
     </div>
   );
