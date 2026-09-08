@@ -30,7 +30,7 @@ export const searchRouter = createRouter({
         sortOrder: z.enum(["asc", "desc"]).default("desc"),
       })
     )
-    .query(async ({ input, ctx }) => {
+    .query(async ({ input }) => {
       const db = getDbFromContext();
       const conditions = [eq(kestovarCanonicalEvents.statusCanonical, "active")];
 
@@ -147,8 +147,8 @@ export const searchRouter = createRouter({
 
       return {
         suggestions: results
-          .filter((r) => r.county || r.city || r.contractorName)
-          .map((r) => r.county || r.city || r.contractorName),
+          .filter((r: any) => r.county || r.city || r.contractorName)
+          .map((r: any) => r.county || r.city || r.contractorName),
       };
     }),
 
@@ -206,7 +206,7 @@ export const searchRouter = createRouter({
         .limit(input.limit);
 
       return {
-        results: results.filter((r) => r.canonicalId !== input.id),
+        results: results.filter((r: any) => r.canonicalId !== input.id),
         source: {
           id: source.canonicalId,
           title: source.title,
