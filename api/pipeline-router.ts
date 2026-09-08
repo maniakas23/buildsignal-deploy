@@ -1,2 +1,2 @@
-import { createRouter, publicQuery } from "./middleware";
+import { createRouter } from "./middleware";
 export const pipelineRouter = createRouter({});

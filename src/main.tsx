@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { ThemeProvider } from '@/themes'
 import './index.css'
 const __BUILD_TIMESTAMP = Date.now();
+(window as unknown as { __BUILD_TIMESTAMP?: number }).__BUILD_TIMESTAMP = __BUILD_TIMESTAMP;
 import { TRPCProvider } from "@/providers/trpc"
 import AccessibilityInit from "@/components/AccessibilityInit"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
