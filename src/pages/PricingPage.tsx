@@ -329,7 +329,7 @@ export function PricingPage() {
         </div>
         <div className="flex items-center gap-2">
           <CreditCard className="h-4 w-4 text-[#4ade80]" />
-          <span>PCI Compliant</span>
+          <span>Payments secured by Stripe</span>
         </div>
         <div className="flex items-center gap-2">
           <Shield className="h-4 w-4 text-[#4ade80]" />
