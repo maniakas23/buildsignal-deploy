@@ -507,7 +507,7 @@ export function SignupPage() {
                             </span>
                             <span className="flex items-center gap-1">
                               <Shield className="h-3 w-3" />
-                              PCI Compliant
+                              Payments secured by Stripe
                             </span>
                           </div>
                         </div>
@@ -663,7 +663,7 @@ export function SignupPage() {
                       Preview the intelligence BuildSignal delivers — real opportunity analysis, confidence scores, and market trends.
                     </p>
                     <button
-                      onClick={() => window.open("/reports-hub", "_blank")}
+                      onClick={() => window.open("/sample-report", "_blank")}
                       className="text-xs text-[var(--bs-action)] hover:underline font-medium"
                     >
                       View sample report →
