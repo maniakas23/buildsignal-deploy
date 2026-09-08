@@ -297,7 +297,6 @@ export function TermsPage() {
                 legal@buildsignal.net
               </a>
             </li>
-            <li>Address: 123 Market Street, Suite 456, San Francisco, CA 94105</li>
           </ul>
           <p>
             We will respond to legal inquiries within 5 business days.
