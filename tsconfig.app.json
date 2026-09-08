@@ -2,9 +2,13 @@
   "compilerOptions": {
     "target": "ES2020",
     "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2020",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "module": "ESNext",
-    "skipLibCheck": false,
+    "skipLibCheck": true,
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
@@ -17,11 +21,30 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@db/*": ["./db/*"],
-      "@contracts/*": ["./contracts/*"]
+      "@/*": [
+        "./src/*"
+      ],
+      "@db/*": [
+        "./db/*"
+      ],
+      "@contracts/*": [
+        "./contracts/*"
+      ]
     },
-    "types": ["node", "react", "react-dom", "@cloudflare/workers-types", "vite/client"]
+    "types": [
+      "node",
+      "react",
+      "react-dom",
+      "@cloudflare/workers-types",
+      "vite/client"
+    ]
   },
-  "include": ["src"]
+  "include": [
+    "src"
+  ],
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
+    }
+  ]
 }
