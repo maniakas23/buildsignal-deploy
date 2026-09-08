@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Loader2, Inbox, MapPin, Bell, RefreshCw, Plus, Database } from 'lucide-react';
+import { Loader2, Inbox, MapPin, Bell, RefreshCw, Database } from 'lucide-react';
 import { isDemoMode } from '@/signalcore/engine';
 
 // ═══════════════════════════════════════════════════════════════
@@ -118,14 +118,15 @@ export function SkeletonGrid({ count = 6, className = '' }: { count?: number; cl
 }
 
 // ─── Empty State ───
-export function EmptyState({ title = 'No results found', description = 'Try adjusting your filters or search criteria.', icon = 'inbox' }: { title?: string; description?: string; icon?: 'inbox' | 'map' | 'bell' | 'database' }) {
+export function EmptyState({ title = 'No results found', description, message, icon = 'inbox' }: { title?: string; description?: string; message?: string; icon?: 'inbox' | 'map' | 'bell' | 'database' }) {
+  const body = description ?? message ?? 'Try adjusting your filters or search criteria.';
   const icons = { inbox: Inbox, map: MapPin, bell: Bell, database: Database };
   const Icon = icons[icon] || Inbox;
   return (
     <div className="flex flex-col items-center justify-center py-16 px-6">
       <Icon className="w-10 h-10 text-ink-tertiary mb-4" />
       <p className="text-[16px] font-semibold text-ink-secondary mb-1">{title}</p>
-      <p className="text-[12px] text-ink-tertiary max-w-md text-center">{description}</p>
+      <p className="text-[12px] text-ink-tertiary max-w-md text-center">{body}</p>
     </div>
   );
 }
