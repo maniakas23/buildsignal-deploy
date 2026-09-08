@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createRouter, publicQuery, authedQuery } from "./middleware";
+import { createRouter, authedQuery } from "./middleware";
 import { watchlists, watchlistItems, kestovarCanonicalEvents } from "@db/schema-sqlite";
 import { eq, and, desc, sql } from "drizzle-orm";
 import { getDbFromContext } from "./queries/connection";
@@ -43,7 +43,7 @@ export const watchlistRouter = createRouter({
         .all();
 
       // Fetch signal details for each item
-      const signalIds = items.map((item) => item.signalId).filter(Boolean);
+      const signalIds = items.map((item: any) => item.signalId).filter(Boolean);
       const signals = signalIds.length > 0
         ? await db
             .select()
@@ -52,11 +52,11 @@ export const watchlistRouter = createRouter({
             .all()
         : [];
 
-      const signalMap = new Map(signals.map((s) => [s.canonicalId, s]));
+      const signalMap = new Map(signals.map((s: any) => [s.canonicalId, s]));
 
       return {
         watchlist,
-        items: items.map((item) => ({
+        items: items.map((item: any) => ({
           ...item,
           signal: signalMap.get(item.signalId) || null,
         })),
@@ -69,7 +69,7 @@ export const watchlistRouter = createRouter({
       z.object({
         name: z.string().min(1).max(100),
         description: z.string().max(500).optional(),
-        filters: z.record(z.unknown()).optional(),
+        filters: z.record(z.string(), z.unknown()).optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -100,7 +100,7 @@ export const watchlistRouter = createRouter({
         id: z.number(),
         name: z.string().min(1).max(100).optional(),
         description: z.string().max(500).optional(),
-        filters: z.record(z.unknown()).optional(),
+        filters: z.record(z.string(), z.unknown()).optional(),
         isActive: z.boolean().optional(),
       })
     )
