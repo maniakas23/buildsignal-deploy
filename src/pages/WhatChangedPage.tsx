@@ -14,7 +14,7 @@ export function WhatChangedPage() {
     refetch,
   } = trpc.notification.history.useQuery({ limit: 50, offset: 0 });
 
-  const items = data?.notifications ?? data?.items ?? [];
+  const items = data?.items ?? [];
   const visible =
     filter === "unread" ? items.filter((n: any) => !n.readAt && !n.read) : items;
 
