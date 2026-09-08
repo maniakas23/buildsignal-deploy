@@ -1,7 +1,6 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { TRPCProvider } from "./providers/trpc";
 import { usePageTracking } from "./hooks/usePageTracking";
-import { useAuth } from "./hooks/useAuth";
 import Home from "./pages/Home";
 import { Login } from "./pages/Login";
 import { SignupPage } from "./pages/SignupPage";
@@ -23,8 +22,6 @@ import { SSOPage } from "./pages/SSOPage";
 import { HelpPage } from "./pages/HelpPage";
 import { ContactPage } from "./pages/ContactPage";
 import { FeatureRequestPage } from "./pages/FeatureRequestPage";
-import { ProductImprovementDashboard } from "./pages/ProductImprovementDashboard";
-import { ReportsHubPage } from "./pages/ReportsHubPage";
 import { DemoRequestPage } from "./pages/DemoRequestPage";
 import { PrivacyPage } from "./pages/PrivacyPage";
 import { TermsPage } from "./pages/TermsPage";
@@ -54,8 +51,6 @@ function App() {
         <Route path="/help" element={<HelpPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/feature-requests" element={<FeatureRequestPage />} />
-        <Route path="/product-improvement" element={<ProductImprovementDashboard />} />
-        <Route path="/reports-hub" element={<ReportsHubPage />} />
         <Route path="/demo" element={<DemoRequestPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/terms" element={<TermsPage />} />
