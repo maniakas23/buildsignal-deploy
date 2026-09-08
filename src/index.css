@@ -1,11 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&display=swap');
-
 /* Tailwind */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* --- Google Fonts --- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&display=swap');
 
 /* --- Tiẽmpos Headline (self-hosted woff2) --- */
 @font-face {
@@ -81,7 +80,7 @@
   --card-foreground: 210 20% 96%;
   --popover: 210 30% 11%;
   --popover-foreground: 210 20% 96%;
-  --primary: 217 80% 50%;
+  --primary: 217 80% 64%;
   --primary-foreground: 0 0% 100%;
   --secondary: 210 30% 11%;
   --secondary-foreground: 210 20% 96%;
@@ -96,7 +95,7 @@
   --ring: 217 80% 64%;
   --sidebar-background: 210 30% 8%;
   --sidebar-foreground: 210 15% 55%;
-  --sidebar-primary: 217 80% 50%;
+  --sidebar-primary: 217 80% 64%;
   --sidebar-primary-foreground: 0 0% 100%;
   --sidebar-accent: 210 30% 14%;
   --sidebar-accent-foreground: 210 20% 96%;
