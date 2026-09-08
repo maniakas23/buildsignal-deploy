@@ -27,7 +27,7 @@ function envelopeWrap(map: Record<string, unknown>): Record<string, unknown> {
 }
 
 const trpcFetch: typeof fetch = async (input, init) => {
-  let url = typeof input === "string" ? input : input.url;
+  let url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
   let body = init?.body;
   try {
     const u = new URL(url, window.location.origin);
