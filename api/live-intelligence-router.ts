@@ -37,7 +37,7 @@ export const liveIntelligenceRouter = createRouter({
     const d1 = getD1(ctx);
     if (!d1) return getDefaultActivationCoverage();
     try {
-      const { results } = await d1.prepare(`SELECT providerType, COUNT(*) as count, AVG(healthScore) as avgHealth, AVG(historicalReliability) as avgReliability FROM provider_registry GROUP BY providerType ORDER BY count DESC`).all();
+      const { results } = await d1.prepare(`SELECT providerType, COUNT(*) as count, AVG(healthScore) as avgHealth, AVG(historicalReliability) as avgReliability FROM provider_registry GROUP BY providerType ORDER BY count DESC`).all<{ providerType: string; count: number; avgHealth: number | null; avgReliability: number | null }>();
       const activeTypes = (results || []).map((r: any) => r.providerType);
       const required = LIVE_PROVIDER_TYPES;
       return {
