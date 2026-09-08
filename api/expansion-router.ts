@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { createRouter, publicQuery } from "./middleware";
 import { expansionRegistry } from "@db/schema-sqlite";
-import { eq, desc, and, sql } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import { getDbFromContext } from "./queries/connection";
 
 export const expansionRouter = createRouter({
