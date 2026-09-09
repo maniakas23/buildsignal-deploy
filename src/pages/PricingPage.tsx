@@ -3,24 +3,19 @@ import { useNavigate } from "react-router-dom";
 import { trackEvent } from "@/hooks/usePageTracking";
 import {
   Check,
-  Building2,
   Shield,
   Lock,
   CreditCard,
   BadgeCheck,
   ChevronDown,
   ChevronUp,
-  Users,
-  Zap,
   HelpCircle,
   ArrowRight,
   MessageSquare,
-  Star,
 } from "lucide-react";
 import { trpc } from "@/providers/trpc";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import {
   Accordion,
@@ -36,7 +31,8 @@ export function PricingPage() {
   const [expandedComparison, setExpandedComparison] = useState(false);
   const { isAuthenticated } = useAuth();
 
-  const { data: plansData } = trpc.billing.plans.useQuery();
+  // Plans are served by stripe.plans (billing.plans does not exist).
+  const { data: plansData } = trpc.stripe.plans.useQuery();
 
   const rawPlans = (plansData as any)?.plans ?? plansData;
   // Enterprise is custom pricing ("Contact Sales") — never display a fixed monthly price for it
@@ -106,8 +102,6 @@ export function PricingPage() {
     }
     return { display: `$${plan.price}`, sub: "/month" };
   };
-
-  const getAnnualPrice = (monthly: number) => Math.round(monthly * 12 * 0.85);
 
   const comparisonFeatures = [
     "counties",
@@ -329,7 +323,7 @@ export function PricingPage() {
         </div>
         <div className="flex items-center gap-2">
           <CreditCard className="h-4 w-4 text-[#4ade80]" />
-          <span>PCI Compliant</span>
+          <span>Payments secured by Stripe</span>
         </div>
         <div className="flex items-center gap-2">
           <Shield className="h-4 w-4 text-[#4ade80]" />

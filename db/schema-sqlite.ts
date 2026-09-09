@@ -1,7 +1,7 @@
 // BuildSignal D1 Schema — SQLite edition
 // Drizzle ORM table definitions for Cloudflare D1
 
-import { sqliteTable, integer, text, real, index, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { sqliteTable, integer, text, real } from "drizzle-orm/sqlite-core";
 
 // ─── Users ───
 export const users = sqliteTable("users", {
@@ -110,6 +110,7 @@ export const ingestionSources = sqliteTable("ingestion_sources", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
   sourceType: text("sourceType").notNull(),
+  jurisdictionLevel: text("jurisdictionLevel"),
   endpointUrl: text("endpointUrl"),
   apiKey: text("apiKey"),
   config: text("config"),
@@ -519,4 +520,176 @@ export const learningModels = sqliteTable("learning_models", {
   createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
   updatedAt: integer("updatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
   provenance: text("provenance").default("SEED"),
+});
+
+// ─── Watchlist Items ───
+export const watchlistItems = sqliteTable("watchlist_items", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  watchlistId: integer("watchlistId").notNull(),
+  signalId: text("signalId").notNull(),
+  notes: text("notes"),
+  status: text("status").default("active"),
+  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  provenance: text("provenance").default("LIVE"),
+});
+
+// ─── Pattern Library ───
+export const patternLibrary = sqliteTable("pattern_library", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  patternName: text("patternName").notNull(),
+  patternType: text("patternType").notNull(),
+  description: text("description"),
+  historicalSuccessRate: real("historicalSuccessRate").default(0),
+  isActive: integer("isActive", { mode: "boolean" }).default(true),
+  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  updatedAt: integer("updatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  provenance: text("provenance").default("SEED"),
+});
+
+// ─── Confidence Scores ───
+export const confidenceScores = sqliteTable("confidence_scores", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  entityType: text("entityType").notNull(),
+  entityId: integer("entityId").notNull(),
+  overallScore: integer("overallScore").default(0),
+  providerReliability: integer("providerReliability").default(0),
+  historicalAccuracy: integer("historicalAccuracy").default(0),
+  crossSourceAgreement: integer("crossSourceAgreement").default(0),
+  dataFreshness: integer("dataFreshness").default(0),
+  patternMatch: integer("patternMatch").default(0),
+  geographicContext: integer("geographicContext").default(0),
+  eventCorrelation: integer("eventCorrelation").default(0),
+  historicalOutcomes: integer("historicalOutcomes").default(0),
+  explanation: text("explanation"),
+  calculatedAt: integer("calculatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  provenance: text("provenance").default("LIVE"),
+});
+
+// ─── Recommendation Outcomes ───
+export const recommendationOutcomes = sqliteTable("recommendation_outcomes", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  recommendationId: integer("recommendationId").notNull(),
+  patternId: integer("patternId"),
+  county: text("county"),
+  state: text("state"),
+  predictedEventTypes: text("predictedEventTypes"),
+  actualEventTypes: text("actualEventTypes"),
+  outcomeStatus: text("outcomeStatus").default("pending"),
+  accuracyScore: integer("accuracyScore"),
+  timeToDevelopmentDays: integer("timeToDevelopmentDays"),
+  confidenceAtPrediction: integer("confidenceAtPrediction"),
+  lessonsLearned: text("lessonsLearned"),
+  validatedAt: integer("validatedAt", { mode: "timestamp" }),
+  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  provenance: text("provenance").default("LIVE"),
+});
+
+// ─── Data Validation Queue ───
+export const dataValidationQueue = sqliteTable("data_validation_queue", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  sourceId: integer("sourceId").notNull(),
+  externalRecordId: text("externalRecordId").notNull(),
+  recordType: text("recordType").notNull(),
+  rawPayload: text("rawPayload"),
+  validationStatus: text("validationStatus").default("pending"),
+  requiredFieldsCheck: integer("requiredFieldsCheck", { mode: "boolean" }).default(false),
+  dateValidationCheck: integer("dateValidationCheck", { mode: "boolean" }).default(false),
+  addressValidationCheck: integer("addressValidationCheck", { mode: "boolean" }).default(false),
+  coordinateValidationCheck: integer("coordinateValidationCheck", { mode: "boolean" }).default(false),
+  schemaComplianceCheck: integer("schemaComplianceCheck", { mode: "boolean" }).default(false),
+  providerIntegrityCheck: integer("providerIntegrityCheck", { mode: "boolean" }).default(false),
+  confidenceScore: integer("confidenceScore").default(0),
+  validationErrors: text("validationErrors"),
+  reviewerNotes: text("reviewerNotes"),
+  reviewedBy: integer("reviewedBy"),
+  reviewedAt: integer("reviewedAt", { mode: "timestamp" }),
+  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  provenance: text("provenance").default("LIVE"),
+});
+
+// ─── Enrichment Log ───
+export const enrichmentLog = sqliteTable("enrichment_log", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  eventId: integer("eventId").notNull(),
+  enrichmentType: text("enrichmentType").notNull(),
+  enrichmentData: text("enrichmentData"),
+  source: text("source"),
+  confidence: integer("confidence").default(80),
+  processedAt: integer("processedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  provenance: text("provenance").default("LIVE"),
+});
+
+// ─── Historical Warehouse ───
+export const historicalWarehouse = sqliteTable("historical_warehouse", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  entityType: text("entityType").notNull(),
+  entityId: integer("entityId").notNull(),
+  eventType: text("eventType").notNull(),
+  county: text("county").notNull(),
+  state: text("state").notNull(),
+  snapshotData: text("snapshotData"),
+  eventDate: integer("eventDate", { mode: "timestamp" }),
+  snapshotDate: integer("snapshotDate", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  confidence: integer("confidence"),
+  provenance: text("provenance").default("LIVE"),
+});
+
+// ─── Expansion Registry ───
+export const expansionRegistry = sqliteTable("expansion_registry", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  state: text("state").notNull(),
+  county: text("county").notNull(),
+  city: text("city"),
+  planningAuthority: text("planningAuthority"),
+  utilityProviders: text("utilityProviders"),
+  population: integer("population"),
+  dataSourcesAvailable: integer("dataSourcesAvailable").default(0),
+  dataSourcesActive: integer("dataSourcesActive").default(0),
+  expansionStatus: text("expansionStatus").default("queued"),
+  coveragePercent: integer("coveragePercent").default(0),
+  activeProviders: integer("activeProviders").default(0),
+  providerHealth: integer("providerHealth"),
+  onboardedAt: integer("onboardedAt", { mode: "timestamp" }),
+  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  updatedAt: integer("updatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  provenance: text("provenance").default("SEED"),
+});
+
+// ─── Quality Metrics ───
+export const qualityMetrics = sqliteTable("quality_metrics", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  metricDate: text("metricDate").notNull(),
+  recommendationPrecision: real("recommendationPrecision"),
+  recommendationRecall: real("recommendationRecall"),
+  falsePositiveRate: real("falsePositiveRate"),
+  falseNegativeRate: real("falseNegativeRate"),
+  acceptanceRate: real("acceptanceRate"),
+  providerReliabilityAvg: real("providerReliabilityAvg"),
+  coverageCompleteness: real("coverageCompleteness"),
+  confidenceAccuracy: real("confidenceAccuracy"),
+  totalRecommendations: integer("totalRecommendations"),
+  acceptedRecommendations: integer("acceptedRecommendations"),
+  rejectedRecommendations: integer("rejectedRecommendations"),
+  correctedRecommendations: integer("correctedRecommendations"),
+  trendDirection: text("trendDirection"),
+  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  provenance: text("provenance").default("LIVE"),
+});
+
+// ─── Daily Briefings ───
+export const dailyBriefings = sqliteTable("daily_briefings", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  title: text("title").notNull(),
+  category: text("category").notNull(),
+  summary: text("summary").notNull(),
+  details: text("details"),
+  actionItems: text("actionItems"),
+  priority: text("priority").default("medium"),
+  county: text("county"),
+  state: text("state"),
+  tags: text("tags"),
+  briefingDate: integer("briefingDate", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  isRead: integer("isRead", { mode: "boolean" }).default(false),
+  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  provenance: text("provenance").default("LIVE"),
 });

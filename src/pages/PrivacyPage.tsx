@@ -15,10 +15,8 @@ import {
   Cookie,
   Globe,
   Server,
-  FileText,
   Clock,
   Trash2,
-  ExternalLink,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
@@ -337,10 +335,6 @@ export function PrivacyPage() {
               >
                 privacy@buildsignal.net
               </a>
-            </li>
-            <li>Address: 123 Market Street, Suite 456, San Francisco, CA 94105</li>
-            <li>
-              DPO: Jane Smith, Chief Privacy Officer
             </li>
           </ul>
           <p>

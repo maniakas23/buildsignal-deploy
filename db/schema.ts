@@ -3,7 +3,7 @@
  * All column names match the MySQL schema for code compatibility.
  */
 
-import { sqliteTable, integer, text, real, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { sqliteTable, integer, text, real } from "drizzle-orm/sqlite-core";
 
 // ─── Users ───
 export const users = sqliteTable("users", {
@@ -271,5 +271,76 @@ export const telemetryEvents = sqliteTable("telemetry_events", {
   error: integer("error", { mode: "boolean" }).default(false),
   userId: text("userId"),
   metadata: text("metadata"),
+  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+// ─── Password Reset Tokens ───
+export const passwordResetTokens = sqliteTable("password_reset_tokens", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  userId: integer("userId").notNull(),
+  token: text("token").notNull(),
+  expiresAt: integer("expiresAt", { mode: "timestamp" }).notNull(),
+  used: integer("used", { mode: "boolean" }).default(false),
+  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+// ─── Subscription Events (Stripe webhook idempotency + history) ───
+export const subscriptionEvents = sqliteTable("subscription_events", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  userId: integer("userId"),
+  event: text("event"),
+  plan: text("plan"),
+  amount: integer("amount"),
+  stripeEventId: text("stripeEventId"),
+  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+// ─── Feedback ───
+export const feedback = sqliteTable("feedback", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  userId: integer("userId"),
+  type: text("type").notNull(),
+  category: text("category"),
+  message: text("message").notNull(),
+  rating: integer("rating"),
+  page: text("page"),
+  status: text("status").default("new"),
+  upvotes: integer("upvotes").default(0),
+  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  updatedAt: integer("updatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+// ─── Notifications ───
+export const notifications = sqliteTable("notifications", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  userId: integer("userId").notNull(),
+  title: text("title").notNull(),
+  message: text("message"),
+  type: text("type"),
+  link: text("link"),
+  read: integer("read", { mode: "boolean" }).default(false),
+  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+// ─── Notification Preferences ───
+export const notificationPrefs = sqliteTable("notification_prefs", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  userId: integer("userId").notNull(),
+  emailEnabled: integer("emailEnabled", { mode: "boolean" }).default(true),
+  inAppEnabled: integer("inAppEnabled", { mode: "boolean" }).default(true),
+  alertFrequency: text("alertFrequency").default("daily"),
+  alertTypes: text("alertTypes"),
+  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  updatedAt: integer("updatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+// ─── Usage Tracking ───
+export const usageTracking = sqliteTable("usage_tracking", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  userId: integer("userId").notNull(),
+  feature: text("feature").notNull(),
+  count: integer("count").default(0),
+  period: text("period").default("daily"),
+  periodDate: text("periodDate"),
   createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });

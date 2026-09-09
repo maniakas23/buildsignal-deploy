@@ -98,8 +98,8 @@ export function BillingPage() {
   const { data: subscription, isLoading: subLoading } =
     trpc.stripe.getSubscription.useQuery();
   const { data: plansData } = trpc.stripe.plans.useQuery();
-  // stripe.plans returns { plans: [...], annual, trial, ... } — unwrap it
-  const plans = plansData?.plans;
+  // stripe.plans returns the plan array directly.
+  const plans = plansData;
   const { data: billingHistoryData, isLoading: historyLoading } =
     trpc.billing.history.useQuery();
   // billing.history returns { invoices: [...] } — unwrap it
@@ -109,8 +109,8 @@ export function BillingPage() {
 
   const checkout = trpc.stripe.createCheckoutSession.useMutation({
     onSuccess: (data) => {
-      // API returns { checkoutUrl, sessionId }
-      const url = data.checkoutUrl || data.url;
+      // API returns { sessionId, url }
+      const url = data.url;
       if (url) window.location.href = url;
     },
   });
@@ -346,7 +346,7 @@ export function BillingPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {billingHistory.map((invoice) => (
+                      {billingHistory.map((invoice: any) => (
                         <TableRow key={invoice.id} className="border-[var(--bs-border)]">
                           <TableCell className="text-sm text-[var(--bs-text-primary)]">
                             <div className="flex items-center gap-2">
@@ -391,7 +391,7 @@ export function BillingPage() {
             <h3 className="text-sm font-semibold text-[var(--bs-text-primary)] uppercase tracking-wider">
               Available Plans
             </h3>
-            {plans?.map((plan) => {
+            {plans?.map((plan: any) => {
               const config = planConfig[plan.id] || planConfig.starter;
               // The API names the paid $99 plan "Scout" (id "starter"); a paid
               // subscription may report its plan as either id.

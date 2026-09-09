@@ -1,4 +1,3 @@
-import { z } from "zod";
 import { initTRPC, TRPCError } from "@trpc/server";
 import { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
 import { eq } from "drizzle-orm";

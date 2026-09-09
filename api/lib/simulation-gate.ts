@@ -86,5 +86,5 @@ export function addSimulationWarning<T>(
       _simulationWarning: `This data is ${provenance}. Not for commercial decisions.`,
     };
   }
-  return data;
+  return data as T & { _simulationWarning?: string };
 }

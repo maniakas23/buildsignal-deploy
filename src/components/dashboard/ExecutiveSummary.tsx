@@ -7,7 +7,6 @@
  */
 
 import { useMemo } from "react";
-import { trpc } from "@/providers/trpc";
 import { useAuth } from "@/hooks/useAuth";
 import { TrendingUp, AlertTriangle, Lightbulb, Bookmark, ArrowRight, Sun, Sunrise, Moon } from "lucide-react";
 import { SkeletonCard } from "@/components/ui-custom/EngineStates";
@@ -28,9 +27,12 @@ function getGreeting(): { text: string; icon: ReactNode } {
 export function ExecutiveSummary({ onViewOpportunity, onViewAlerts }: ExecutiveSummaryProps) {
   const { user } = useAuth();
   const greeting = getGreeting();
-  const { data: feed, isLoading } = trpc.pipeline.opportunities.feed.useQuery({ limit: 5 });
-  // telemetry.pipelineStatus does not exist on the deployed backend; the
-  // stale call has been removed. Event totals are no longer displayed here.
+  // pipeline.opportunities.feed does not exist on the deployed backend (the
+  // pipeline router is an empty stub) and telemetry.pipelineStatus was removed
+  // earlier for the same reason; the stale calls have been removed. The
+  // component renders its truthful empty state until a live feed ships.
+  const feed = ((): any[] | undefined => undefined)();
+  const isLoading = false;
 
   const summary = useMemo(() => {
     if (!feed || feed.length === 0) return null;

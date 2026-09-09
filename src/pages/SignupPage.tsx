@@ -92,7 +92,9 @@ export function SignupPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { register, registerError, registerIsPending } = useAuth();
-  const config = trpc.billing.config.useQuery();
+  // billing.config does not exist on the deployed backend; plan data comes
+  // from stripe.plans (public), falling back to local defaults.
+  const plansQuery = trpc.stripe.plans.useQuery();
 
   const preselectedPlan = searchParams.get("plan");
   const preselectedCycle = searchParams.get("cycle") as "monthly" | "annual" | null;
@@ -106,12 +108,12 @@ export function SignupPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(preselectedPlan);
-  const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">(
+  const [billingCycle] = useState<"monthly" | "annual">(
     preselectedCycle || "monthly"
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const plans = (config.data?.plans?.length ? config.data.plans : defaultPlans) as Plan[];
+  const plans = (plansQuery.data?.length ? plansQuery.data : defaultPlans) as Plan[];
 
   useEffect(() => {
     if (preselectedPlan) {
@@ -507,14 +509,14 @@ export function SignupPage() {
                             </span>
                             <span className="flex items-center gap-1">
                               <Shield className="h-3 w-3" />
-                              PCI Compliant
+                              Payments secured by Stripe
                             </span>
                           </div>
                         </div>
 
                         {(errors.submit || registerError) && (
                           <p className="text-sm text-red-400 bg-red-500/10 p-3 rounded-lg border border-red-500/20">
-                            {errors.submit || registerError.message}
+                            {errors.submit || registerError?.message}
                           </p>
                         )}
                       </div>
@@ -663,7 +665,7 @@ export function SignupPage() {
                       Preview the intelligence BuildSignal delivers — real opportunity analysis, confidence scores, and market trends.
                     </p>
                     <button
-                      onClick={() => window.open("/reports-hub", "_blank")}
+                      onClick={() => window.open("/sample-report", "_blank")}
                       className="text-xs text-[var(--bs-action)] hover:underline font-medium"
                     >
                       View sample report →

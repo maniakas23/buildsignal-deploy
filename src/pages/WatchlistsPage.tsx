@@ -64,36 +64,42 @@ export function WatchlistsPage() {
     refetch,
   } = trpc.watchlist.list.useQuery();
 
-  // The watchlist API stores a single state/county string per row; the UI
-  // works with arrays. Normalize at the boundary (comma-joined values are
-  // split back into arrays). createdAt arrives as unix seconds.
+  // The watchlist API returns { watchlists, total } and stores per-watchlist
+  // state/county/eventTypes/alertEnabled inside the JSON `filters` column;
+  // the UI works with arrays. Normalize at the boundary (comma-joined values
+  // are split back into arrays).
   const watchlists = useMemo(() => {
-    if (!Array.isArray(rawWatchlists)) return rawWatchlists;
-    return rawWatchlists.map((w) => ({
-      ...w,
-      states: typeof w.state === "string" && w.state ? w.state.split(",").map((s) => s.trim()).filter(Boolean) : [],
-      counties: typeof w.county === "string" && w.county ? w.county.split(",").map((s) => s.trim()).filter(Boolean) : [],
-      eventTypes: Array.isArray(w.eventTypes) ? w.eventTypes : [],
-      updatedAt: w.updatedAt ?? (typeof w.createdAt === "number" ? w.createdAt * 1000 : null),
-    }));
+    const rows: any[] = Array.isArray(rawWatchlists)
+      ? rawWatchlists
+      : rawWatchlists?.watchlists ?? [];
+    return rows.map((w: any) => {
+      let filters: Record<string, unknown> = {};
+      if (typeof w.filters === "string") {
+        try { filters = JSON.parse(w.filters); } catch { filters = {}; }
+      } else if (w.filters && typeof w.filters === "object") {
+        filters = w.filters as Record<string, unknown>;
+      }
+      return {
+        ...w,
+        filters,
+        alertEnabled: filters.alertEnabled !== false,
+        states: typeof filters.state === "string" && filters.state ? filters.state.split(",").map((s: string) => s.trim()).filter(Boolean) : [],
+        counties: typeof filters.county === "string" && filters.county ? filters.county.split(",").map((s: string) => s.trim()).filter(Boolean) : [],
+        eventTypes: Array.isArray(filters.eventTypes) ? filters.eventTypes : [],
+        updatedAt: w.updatedAt ?? (typeof w.createdAt === "number" ? w.createdAt * 1000 : null),
+      };
+    });
   }, [rawWatchlists]);
 
-  const { data: alertsData } = trpc.watchlist.checkAlerts.useQuery();
-
-  const alertMap = useMemo(() => {
-    const map = new Map<number, number>();
-    if (!Array.isArray(alertsData)) return map;
-    for (const entry of alertsData) {
-      map.set(entry.watchlist.id, entry.alertCount);
-    }
-    return map;
-  }, [alertsData]);
+  // watchlist.checkAlerts does not exist on the deployed backend; the stale
+  // query has been removed. Per-watchlist alert badges stay hidden until a
+  // live alert-count capability ships.
+  const alertMap = new Map<number, number>();
 
   const createMutation = trpc.watchlist.create.useMutation({
     onSuccess: () => {
       toast.success("Watchlist created");
       utils.watchlist.list.invalidate();
-      utils.watchlist.checkAlerts.invalidate();
       closeModal();
     },
     onError: (err) => {
@@ -105,7 +111,6 @@ export function WatchlistsPage() {
     onSuccess: () => {
       toast.success("Watchlist updated");
       utils.watchlist.list.invalidate();
-      utils.watchlist.checkAlerts.invalidate();
       closeModal();
     },
     onError: (err) => {
@@ -117,7 +122,6 @@ export function WatchlistsPage() {
     onSuccess: () => {
       toast.success("Watchlist deleted");
       utils.watchlist.list.invalidate();
-      utils.watchlist.checkAlerts.invalidate();
       setDeleteConfirmId(null);
     },
     onError: (err) => {
@@ -160,13 +164,16 @@ export function WatchlistsPage() {
       return;
     }
 
-    // API contract: single state/county string per watchlist (comma-joined
-    // for multiple values); eventTypes is not yet supported server-side.
+    // API contract: state/county/eventTypes/alertEnabled live inside the
+    // JSON `filters` column (comma-joined strings for multiple values).
     const payload = {
       name: form.name.trim(),
-      state: states.join(", "),
-      county: parseCommaList(form.counties).join(", "),
-      alertEnabled: form.alertEnabled,
+      filters: {
+        state: states.join(", "),
+        county: parseCommaList(form.counties).join(", "),
+        eventTypes: parseCommaList(form.eventTypes),
+        alertEnabled: form.alertEnabled,
+      },
     };
 
     if (editingId !== null) {
@@ -179,7 +186,7 @@ export function WatchlistsPage() {
   const toggleAlertEnabled = (watchlist: NonNullable<typeof watchlists>[number]) => {
     updateMutation.mutate({
       id: watchlist.id,
-      alertEnabled: !watchlist.alertEnabled,
+      filters: { ...watchlist.filters, alertEnabled: !watchlist.alertEnabled },
     });
   };
 
@@ -193,14 +200,13 @@ export function WatchlistsPage() {
     const q = searchQuery.toLowerCase();
     return watchlists.filter((w) => {
       const nameMatch = w.name.toLowerCase().includes(q);
-      const stateMatch = w.states.some((s) => s.toLowerCase().includes(q));
-      const countyMatch = w.counties?.some((c) => c.toLowerCase().includes(q));
+      const stateMatch = w.states.some((s: string) => s.toLowerCase().includes(q));
+      const countyMatch = w.counties?.some((c: string) => c.toLowerCase().includes(q));
       return nameMatch || stateMatch || countyMatch;
     });
   }, [watchlists, searchQuery]);
 
-  const alertEnabledCount = watchlists?.filter((w) => w.alertEnabled).length ?? 0;
-  const totalAlerts = Array.isArray(alertsData) ? alertsData.reduce((sum, a) => sum + a.alertCount, 0) : 0;
+  const alertEnabledCount = watchlists.filter((w) => w.alertEnabled).length;
 
   return (
     <div className="min-h-screen bg-canvas">
@@ -240,14 +246,14 @@ export function WatchlistsPage() {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
           <Card>
             <CardContent className="p-4 text-center">
               <div className="text-2xl font-bold text-ink-primary">
                 {isLoading ? (
                   <Skeleton className="h-8 w-12 mx-auto" />
                 ) : (
-                  watchlists?.length ?? 0
+                  watchlists.length
                 )}
               </div>
               <div className="text-xs text-ink-secondary">Watchlists</div>
@@ -267,23 +273,11 @@ export function WatchlistsPage() {
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-accent-amber">
-                {isLoading ? (
-                  <Skeleton className="h-8 w-12 mx-auto" />
-                ) : (
-                  totalAlerts
-                )}
-              </div>
-              <div className="text-xs text-ink-secondary">New Events (24h)</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
               <div className="text-2xl font-bold text-ink-primary">
                 {isLoading ? (
                   <Skeleton className="h-8 w-12 mx-auto" />
                 ) : (
-                  watchlists?.reduce((sum, w) => sum + (w.states?.length ?? 0), 0) ?? 0
+                  watchlists.reduce((sum, w) => sum + (w.states?.length ?? 0), 0)
                 )}
               </div>
               <div className="text-xs text-ink-secondary">States Tracked</div>
@@ -387,7 +381,7 @@ export function WatchlistsPage() {
                           {/* States */}
                           <div className="flex items-center gap-1.5 mb-2 flex-wrap">
                             <MapPin className="h-3.5 w-3.5 text-ink-tertiary" />
-                            {watchlist.states.map((state) => (
+                            {watchlist.states.map((state: string) => (
                               <Badge
                                 key={state}
                                 variant="outline"
@@ -402,7 +396,7 @@ export function WatchlistsPage() {
                           {watchlist.counties && watchlist.counties.length > 0 && (
                             <div className="flex items-center gap-1.5 mb-2 flex-wrap">
                               <span className="text-xs text-ink-tertiary">Counties:</span>
-                              {watchlist.counties.map((county) => (
+                              {watchlist.counties.map((county: string) => (
                                 <Badge
                                   key={county}
                                   variant="outline"
@@ -418,7 +412,7 @@ export function WatchlistsPage() {
                           {watchlist.eventTypes && watchlist.eventTypes.length > 0 && (
                             <div className="flex items-center gap-1.5 mb-2 flex-wrap">
                               <span className="text-xs text-ink-tertiary">Events:</span>
-                              {watchlist.eventTypes.map((et) => (
+                              {watchlist.eventTypes.map((et: string) => (
                                 <Badge
                                   key={et}
                                   variant="outline"

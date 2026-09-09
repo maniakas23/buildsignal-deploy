@@ -32,7 +32,7 @@ export default function RecentActivity() {
       <div className="flex items-center justify-between px-4 py-3 border-b border-ink-wash/50">
         <div className="flex items-center gap-2">
           <Clock className="w-4 h-4 text-accent-indigo" />
-          <h3 className="text-sm font-semibold text-ink-primary">Recent Signal Activity</h3>
+          <h3 className="text-sm font-semibold text-ink-primary">Recent Activity</h3>
         </div>
         <span className="text-[10px] text-ink-tertiary">Live</span>
       </div>

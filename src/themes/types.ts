@@ -1,5 +1,5 @@
 export interface ColorPalette {
-  id: string;
+  id: PaletteId;
   name: string;
   description: string;
   isDark: boolean;

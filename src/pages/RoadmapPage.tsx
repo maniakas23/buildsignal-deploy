@@ -27,14 +27,11 @@ import {
   Calendar,
   CheckCircle2,
   Clock,
-  MapPin,
   MessageSquare,
   Search,
   Send,
   ThumbsUp,
-  User,
   Loader2,
-  AlertTriangle,
   Plus,
   X,
 } from "lucide-react";
@@ -98,7 +95,6 @@ function RoadmapCard({
   item: RoadmapItem;
   onVote: (id: number) => void;
 }) {
-  const status = statusConfig[item.status] || statusConfig.planned;
   const { user } = useAuth();
   const canVote = !!user;
 
@@ -169,7 +165,6 @@ function RoadmapCard({
 
 export function RoadmapPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
@@ -180,28 +175,51 @@ export function RoadmapPage() {
     category: "feature",
   });
 
-  const { data: roadmapData, isLoading } = trpc.roadmap.list.useQuery();
-  // Backend returns { items, total, message? }; tolerate legacy array or malformed shapes.
-  const items: RoadmapItem[] = Array.isArray(roadmapData)
-    ? (roadmapData as RoadmapItem[])
-    : Array.isArray((roadmapData as { items?: unknown } | undefined)?.items)
-      ? ((roadmapData as { items: RoadmapItem[] }).items)
-      : [];
-  const voteMutation = trpc.roadmap.vote.useMutation({
+  // Roadmap capability lives on the feedback router: featureRequests (public
+  // list), upvote (authed), submit (authed, type "feature_request"). Feedback
+  // rows carry { id, category, message, status, upvotes, createdAt }; the
+  // title is the first line of `message`.
+  const { data: roadmapData, isLoading } = trpc.feedback.featureRequests.useQuery({ limit: 50 });
+  const statusMap: Record<string, RoadmapItem["status"]> = {
+    new: "planned",
+    reviewing: "in_progress",
+    planned: "planned",
+    completed: "completed",
+    declined: "cancelled",
+  };
+  const items: RoadmapItem[] = ((roadmapData ?? []) as any[]).map((row: any) => {
+    const text: string = row.message ?? "";
+    const nl = text.indexOf("\n");
+    const title = (nl === -1 ? text : text.slice(0, nl)).trim();
+    const description = (nl === -1 ? text : text.slice(nl + 1)).trim();
+    return {
+      id: row.id,
+      title: title || "Feature request",
+      description: description || title,
+      status: statusMap[row.status] ?? "planned",
+      category: row.category ?? "feature",
+      votes: row.upvotes ?? 0,
+      votedByMe: false, // backend does not track per-user vote state
+      createdAt: row.createdAt ? new Date(row.createdAt).toISOString() : "",
+      eta: null,
+      progress: 0,
+    };
+  });
+  const utils = trpc.useUtils();
+  const voteMutation = trpc.feedback.upvote.useMutation({
     onSuccess: () => {
-      utils.roadmap.list.invalidate();
+      utils.feedback.featureRequests.invalidate();
     },
     onError: (err) => toast.error(err.message || "Voting is temporarily unavailable"),
   });
-  const submitMutation = trpc.roadmap.submit.useMutation({
+  const submitMutation = trpc.feedback.submit.useMutation({
     onSuccess: () => {
       setIsSubmitOpen(false);
       setSubmitForm({ title: "", description: "", category: "feature" });
-      utils.roadmap.list.invalidate();
+      utils.feedback.featureRequests.invalidate();
     },
     onError: (err) => toast.error(err.message || "Feature requests are temporarily unavailable"),
   });
-  const utils = trpc.useUtils();
 
   const categories = Array.from(new Set(items?.map((i) => i.category) ?? []));
 
@@ -223,7 +241,12 @@ export function RoadmapPage() {
 
   const handleSubmit = () => {
     if (!submitForm.title.trim() || !submitForm.description.trim()) return;
-    submitMutation.mutate(submitForm);
+    submitMutation.mutate({
+      type: "feature_request",
+      category: submitForm.category,
+      message: `${submitForm.title.trim()}\n${submitForm.description.trim()}`,
+      page: "/roadmap",
+    });
   };
 
   return (

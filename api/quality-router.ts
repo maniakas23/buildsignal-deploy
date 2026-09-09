@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { createRouter, publicQuery } from "./middleware";
 import { qualityMetrics } from "@db/schema-sqlite";
-import { eq, desc, and, sql } from "drizzle-orm";
+import { desc } from "drizzle-orm";
 import { getDbFromContext } from "./queries/connection";
 
 export const qualityRouter = createRouter({
@@ -50,7 +50,7 @@ export const qualityRouter = createRouter({
     const db = getDbFromContext(ctx.env);
     const last30 = await db.select().from(qualityMetrics).orderBy(desc(qualityMetrics.metricDate)).limit(30);
     if (last30.length === 0) return { latest: null, avgPrecision: 0, avgRecall: 0, avgAcceptance: 0, avgFalsePositive: 0, avgFalseNegative: 0, trend: "stable", dailyTrends: [] };
-    const avg = (field: string) => { const vals = last30.filter((r: any) => r[field] !== null).map((r: any) => r[field] as number); return vals.length > 0 ? Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 1000) / 1000 : 0; };
+    const avg = (field: string) => { const vals = last30.filter((r: any) => r[field] !== null).map((r: any) => r[field] as number); return vals.length > 0 ? Math.round((vals.reduce((a: number, b: number) => a + b, 0) / vals.length) * 1000) / 1000 : 0; };
     const half = Math.floor(last30.length / 2);
     const firstHalf = last30.slice(-half); const secondHalf = last30.slice(0, half);
     const firstPrecision = firstHalf.filter((r: any) => r.recommendationPrecision).reduce((s: number, r: any) => s + r.recommendationPrecision, 0) / Math.max(firstHalf.length, 1);

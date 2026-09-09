@@ -1,6 +1,6 @@
 // SignalCore Engine SDK — Production build with demo data fallback
 import type {
-  Project, Pattern, Alert, Zone, Summary, SurgeAlert,
+  Project, Pattern, Zone, Summary, SurgeAlert,
   GrowthStory,
 } from '@/types';
 
@@ -303,6 +303,20 @@ export interface DashboardMetrics {
 }
 
 export async function fetchDashboard(): Promise<EngineResponse<DashboardMetrics>> {
+  if (isDemoMode()) {
+    const data: DashboardMetrics = {
+      activeSignals: DEMO_ZONES.reduce((sum, z) => sum + z.signalCount, 0),
+      projectsTracked: DEMO_ZONES.reduce((sum, z) => sum + z.projectCount, 0),
+      patternsActive: DEMO_PATTERNS.length,
+      alertsUnread: DEMO_SURGES.length,
+      confidenceScore: 94,
+      zones: DEMO_ZONES,
+      recentSurges: DEMO_SURGES,
+      summary: DEMO_SUMMARY,
+      patterns: DEMO_PATTERNS,
+    };
+    return wrapMeta(data, { confidence: 94, relatedSignals: data.activeSignals });
+  }
   const [county, patternsRes, health] = await Promise.all([
     trpcQuery<CountySummaryData>('county.summary').catch(() => null),
     trpcQuery<{ patterns?: ApiPattern[] }>('pattern.list').catch(() => null),
@@ -427,6 +441,12 @@ export interface Recommendation {
 }
 
 export async function fetchRecommendations(): Promise<EngineListResponse<Recommendation>> {
+  if (isDemoMode()) {
+    return wrapListMeta(DEMO_RECOMMENDATIONS, {
+      confidence: 91,
+      relatedSignals: DEMO_RECOMMENDATIONS.reduce((sum, r) => sum + r.relatedSignals, 0),
+    });
+  }
   const res = await trpcQuery<{ patterns?: ApiPattern[] }>('pattern.list');
   const patterns = livePatterns(res).sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
   const recommendations: Recommendation[] = patterns.map((p) => ({

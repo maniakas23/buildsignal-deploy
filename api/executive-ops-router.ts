@@ -3,7 +3,6 @@
  * Coverage growth, provider growth, recommendation accuracy, platform health.
  */
 
-import { z } from "zod";
 import { createRouter, publicQuery } from "./middleware";
 
 function getD1(ctx: any): D1Database | null {
