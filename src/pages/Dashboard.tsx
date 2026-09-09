@@ -43,10 +43,6 @@ const COLORS = {
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────
-function formatDate(dateStr: string) {
-  const d = new Date(dateStr)
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-}
 
 function relativeTime(dateStr: string): string {
   const date = new Date(dateStr)
@@ -702,7 +698,7 @@ export function Dashboard() {
               {/* Data */}
               {!notificationsLoading && !notificationsError && notifications.length > 0 && (
                 <>
-                  {notifications.map((alert) => (
+                  {notifications.map((alert: any) => (
                     <div
                       key={alert.id}
                       className={`rounded-lg border p-3 transition-all duration-200 hover:shadow-sm motion-reduce:transition-none ${getNotificationBorderColor(alert.type)} ${getNotificationBgColor(alert.type)}`}
