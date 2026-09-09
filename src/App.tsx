@@ -1,7 +1,6 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { TRPCProvider } from "./providers/trpc";
 import { usePageTracking } from "./hooks/usePageTracking";
-import { useAuth } from "./hooks/useAuth";
 import Home from "./pages/Home";
 import { Login } from "./pages/Login";
 import { SignupPage } from "./pages/SignupPage";
@@ -11,7 +10,9 @@ import { BillingPage } from "./pages/BillingPage";
 import { PricingPage } from "./pages/PricingPage";
 import AlertsPage from "./pages/AlertsPage";
 import { RecommendationsPage } from "./pages/RecommendationsPage";
+import { WhatChangedPage } from "./pages/WhatChangedPage";
 import OpportunityDashboard from "./pages/OpportunityDashboard";
+import { OpportunityDetailPage } from "./pages/OpportunityDetailPage";
 import { CountyDetail } from "./pages/CountyDetail";
 import CountyCoveragePage from "./pages/CountyCoveragePage";
 import { WatchlistPage } from "./pages/WatchlistPage";
@@ -21,8 +22,6 @@ import { SSOPage } from "./pages/SSOPage";
 import { HelpPage } from "./pages/HelpPage";
 import { ContactPage } from "./pages/ContactPage";
 import { FeatureRequestPage } from "./pages/FeatureRequestPage";
-import { ProductImprovementDashboard } from "./pages/ProductImprovementDashboard";
-import { ReportsHubPage } from "./pages/ReportsHubPage";
 import { DemoRequestPage } from "./pages/DemoRequestPage";
 import { PrivacyPage } from "./pages/PrivacyPage";
 import { TermsPage } from "./pages/TermsPage";
@@ -35,7 +34,6 @@ import NotFound from "./pages/NotFound";
 import AuthLayout from "./components/AuthLayout";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as SonnerToaster } from "sonner";
-import { ThemeSwitcher } from "./components/theme/ThemeSwitcher";
 
 function App() {
   usePageTracking();
@@ -44,7 +42,6 @@ function App() {
     <TRPCProvider>
       <Toaster />
       <SonnerToaster richColors position="top-right" />
-      <ThemeSwitcher />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
@@ -54,8 +51,6 @@ function App() {
         <Route path="/help" element={<HelpPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/feature-requests" element={<FeatureRequestPage />} />
-        <Route path="/product-improvement" element={<ProductImprovementDashboard />} />
-        <Route path="/reports-hub" element={<ReportsHubPage />} />
         <Route path="/demo" element={<DemoRequestPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/terms" element={<TermsPage />} />
@@ -67,11 +62,13 @@ function App() {
         <Route element={<AuthLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/opportunities" element={<OpportunityDashboard />} />
+          <Route path="/opportunities/:sequenceId" element={<OpportunityDetailPage />} />
           <Route path="/counties/:id" element={<CountyDetail />} />
           <Route path="/county-coverage" element={<CountyCoveragePage />} />
           <Route path="/watchlist" element={<WatchlistPage />} />
           <Route path="/alerts" element={<AlertsPage />} />
           <Route path="/recommendations" element={<RecommendationsPage />} />
+          <Route path="/changes" element={<WhatChangedPage />} />
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/billing" element={<BillingPage />} />
           <Route path="/settings" element={<SettingsPage />} />

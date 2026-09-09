@@ -1,25 +1,25 @@
 import { useState } from "react";
-import { Lightbulb, Check, X, Bookmark, ArrowRight } from "lucide-react";
-import { trpc } from "@/providers/trpc";
-import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
+import { Lightbulb } from "lucide-react";
+import { fetchRecommendations } from "@/signalcore/engine";
 
 export function RecommendationsPage() {
-  const [status, setStatus] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState("confidence");
 
-  const recommendations = trpc.recommendation.list.useQuery({ status: status as any });
-  const summary = trpc.recommendation.summary.useQuery();
-  const save = trpc.recommendation.save.useMutation({
-    onSuccess: () => { recommendations.refetch(); toast.success("Recommendation saved"); },
-    onError: (err) => toast.error(err.message || "Failed to save recommendation"),
+  // The legacy trpc.recommendation.* contract does not exist on the deployed
+  // backend. Live recommendations come from the engine's pattern.list
+  // pipeline (same source as the dashboard). Save/dismiss/act actions had no
+  // backend capability and have been removed rather than left as dead calls.
+  const recommendations = useQuery({
+    queryKey: ["engine", "recommendations"],
+    queryFn: fetchRecommendations,
+    retry: false,
   });
-  const dismiss = trpc.recommendation.dismiss.useMutation({
-    onSuccess: () => { recommendations.refetch(); toast.success("Recommendation dismissed"); },
-    onError: (err) => toast.error(err.message || "Failed to dismiss recommendation"),
-  });
-  const act = trpc.recommendation.act.useMutation({
-    onSuccess: () => { recommendations.refetch(); toast.success("Action recorded"); },
-    onError: (err) => toast.error(err.message || "Failed to record action"),
+
+  const items = [...(recommendations.data?.data ?? [])].sort((a, b) => {
+    if (sortBy === "date") return b.lastUpdated.localeCompare(a.lastUpdated);
+    if (sortBy === "type") return a.category.localeCompare(b.category);
+    return b.confidence - a.confidence;
   });
 
   return (
@@ -29,34 +29,11 @@ export function RecommendationsPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <div className="p-4 border rounded-lg bg-card">
           <div className="text-sm text-muted-foreground">Total</div>
-          <div className="text-2xl font-bold">{summary.data?.total || 0}</div>
-        </div>
-        <div className="p-4 border rounded-lg bg-card">
-          <div className="text-sm text-muted-foreground">New</div>
-          <div className="text-2xl font-bold text-blue-500">{summary.data?.new || 0}</div>
-        </div>
-        <div className="p-4 border rounded-lg bg-card">
-          <div className="text-sm text-muted-foreground">Saved</div>
-          <div className="text-2xl font-bold text-yellow-500">{summary.data?.saved || 0}</div>
-        </div>
-        <div className="p-4 border rounded-lg bg-card">
-          <div className="text-sm text-muted-foreground">Acted</div>
-          <div className="text-2xl font-bold text-green-500">{summary.data?.acted || 0}</div>
+          <div className="text-2xl font-bold">{items.length}</div>
         </div>
       </div>
 
       <div className="flex gap-4 mb-6">
-        <select
-          value={status || ""}
-          onChange={(e) => setStatus(e.target.value || null)}
-          className="rounded-lg border border-input bg-background px-4 py-2 text-sm"
-        >
-          <option value="">All Status</option>
-          <option value="new">New</option>
-          <option value="saved">Saved</option>
-          <option value="dismissed">Dismissed</option>
-          <option value="acted">Acted</option>
-        </select>
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
@@ -69,51 +46,27 @@ export function RecommendationsPage() {
       </div>
 
       <div className="space-y-4">
-        {recommendations.data?.recommendations?.map((rec) => (
+        {items.map((rec) => (
           <div key={rec.id} className="p-4 border rounded-lg bg-card">
             <div className="flex items-start justify-between">
               <div className="flex items-start gap-3">
                 <Lightbulb className="h-5 w-5 text-yellow-500 mt-1" />
                 <div>
-                  <h3 className="font-semibold">{rec.countyName}, {rec.state}</h3>
-                  <p className="text-sm text-muted-foreground">{rec.summary}</p>
+                  <h3 className="font-semibold">{rec.title}</h3>
+                  <p className="text-sm text-muted-foreground">{rec.description}</p>
                   <div className="mt-2 flex gap-2 text-xs text-muted-foreground">
-                    <span>{rec.type}</span>
+                    <span>{rec.category}</span>
                     <span>Confidence: {rec.confidence}%</span>
-                    <span>{rec.status}</span>
+                    {(rec.county || rec.state) && (
+                      <span>{[rec.county, rec.state].filter(Boolean).join(", ")}</span>
+                    )}
                   </div>
                 </div>
-              </div>
-              <div className="flex gap-2">
-                {rec.status === "new" && (
-                  <button
-                    onClick={() => save.mutate({ id: rec.id })}
-                    className="rounded-lg border border-input px-3 py-1 text-xs hover:bg-accent"
-                  >
-                    <Bookmark className="h-3 w-3" />
-                  </button>
-                )}
-                {rec.status !== "dismissed" && rec.status !== "acted" && (
-                  <button
-                    onClick={() => dismiss.mutate({ id: rec.id })}
-                    className="rounded-lg border border-input px-3 py-1 text-xs hover:bg-accent"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                )}
-                {rec.status === "new" || rec.status === "saved" ? (
-                  <button
-                    onClick={() => act.mutate({ id: rec.id })}
-                    className="rounded-lg bg-primary px-3 py-1 text-xs text-primary-foreground hover:bg-primary/90"
-                  >
-                    <ArrowRight className="h-3 w-3" />
-                  </button>
-                ) : null}
               </div>
             </div>
           </div>
         ))}
-        {recommendations.data?.recommendations?.length === 0 && (
+        {!recommendations.isLoading && items.length === 0 && (
           <div className="text-center py-12 text-muted-foreground">
             <Lightbulb className="mx-auto h-12 w-12 mb-4" />
             <p>No recommendations available</p>
