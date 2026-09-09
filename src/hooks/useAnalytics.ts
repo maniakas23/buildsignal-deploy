@@ -1,9 +1,12 @@
 import { useCallback, useRef } from 'react';
 
 type TrackEvent = {
-  type: 'page_view' | 'click' | 'search' | 'filter' | 'export' | 'error';
+  type: 'page_view' | 'click' | 'search' | 'filter' | 'export' | 'error' | 'alert_opened' | 'recommendation_clicked';
   page?: string;
   target?: string;
+  alertId?: string | number;
+  recId?: string | number;
+  category?: string;
   metadata?: Record<string, unknown>;
 };
 
