@@ -449,7 +449,7 @@ function NoOpportunitiesEmptyState() {
 
 export default function OpportunityDashboard() {
   const { setCurrentPage } = useStore();
-  const [selectedOpp, setSelectedOpp] = useState<number | null>(null);
+  const [selectedOpp, setSelectedOpp] = useState<string | number | null>(null);
   const { data: dashboard, state: dashState, error: dashError, refetch: dashRefetch } = useEngineQuery<DashboardMetrics>(fetchDashboard, []);
   const { data: recommendations, state: recState, error: recError, refetch: recRefetch } = useEngineListQuery(fetchRecommendations, []);
 
@@ -497,7 +497,7 @@ export default function OpportunityDashboard() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6" role="feed" aria-label="Recommendations">
                 {recommendations.length === 0 && (
                   <div className="col-span-full">
-                    <EmptyState title="Analyzing your areas" message="SignalCore is processing permits, zoning changes, and utility filings. Recommendations typically appear within 24 hours." />
+                    <EmptyState title="Analyzing your areas" message="The Kestovar engine is processing permits, zoning changes, and utility filings. Recommendations typically appear within 24 hours." />
                     <div className="flex justify-center gap-3 mt-4">
                       <button onClick={() => setCurrentPage('map')} className="px-4 py-2 rounded-lg bg-accent-indigo text-white text-sm font-medium hover:bg-accent-indigo/90 transition-colors">Explore the Map</button>
                       <button onClick={() => setCurrentPage('projects')} className="px-4 py-2 rounded-lg bg-surface border border-ink-wash text-ink-secondary text-sm font-medium hover:bg-canvas transition-colors">Browse All Projects</button>
