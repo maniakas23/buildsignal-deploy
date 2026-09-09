@@ -128,7 +128,7 @@ export function NotificationBell() {
               </div>
             ) : data?.items && data.items.length > 0 ? (
               <div className="divide-y divide-[var(--bs-border)]">
-                {data.items.map((item) => (
+                {data.items.map((item: any) => (
                   <div
                     key={item.id}
                     className={cn(
