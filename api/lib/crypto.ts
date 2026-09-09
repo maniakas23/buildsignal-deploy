@@ -7,8 +7,8 @@ const PBKDF2_ITERATIONS = 100000;
 const SALT_LENGTH = 16;
 const KEY_LENGTH = 32;
 
-function bufferToBase64url(buf: ArrayBuffer): string {
-  const bytes = new Uint8Array(buf);
+function bufferToBase64url(buf: ArrayBuffer | Uint8Array): string {
+  const bytes = buf instanceof Uint8Array ? buf : new Uint8Array(buf);
   let binary = "";
   for (let i = 0; i < bytes.byteLength; i++) {
     binary += String.fromCharCode(bytes[i]);

@@ -18,7 +18,6 @@ export const warehouseRouter = createRouter({
     if (input?.county) conditions.push(eq(historicalWarehouse.county, input.county));
     if (input?.state) conditions.push(eq(historicalWarehouse.state, input.state));
     if (input?.year) {
-      const y = String(input.year);
       const all = await db.select().from(historicalWarehouse).orderBy(desc(historicalWarehouse.snapshotDate));
       const filtered = all.filter((r: any) => {
         const d = r.snapshotDate ? new Date(r.snapshotDate).getFullYear() : 0;

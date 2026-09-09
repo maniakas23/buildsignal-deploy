@@ -18,7 +18,7 @@ export const PATTERN_TYPES = [
 
 export const patternRouter = createRouter({
   list: publicQuery
-    .input(z.object({ patternType: z.string().optional(), isActive: z.boolean().optional(), minSuccessRate: z.number().optional() }).optional())
+    .input(z.object({ patternType: z.string().optional(), isActive: z.boolean().optional(), minSuccessRate: z.number().optional(), limit: z.number().min(1).max(100).optional() }).optional())
     .query(async ({ input, ctx }) => {
       const d1 = getD1(ctx);
       if (!d1) return { patterns: [] as any[], total: 0 };
@@ -29,9 +29,10 @@ export const patternRouter = createRouter({
         if (input?.isActive !== undefined) { sql += ` AND isActive = ?`; params.push(input.isActive ? 1 : 0); }
         if (input?.minSuccessRate) { sql += ` AND historicalSuccessRate >= ?`; params.push(input.minSuccessRate); }
         sql += ` ORDER BY historicalSuccessRate DESC`;
+        if (input?.limit) { sql += ` LIMIT ?`; params.push(input.limit); }
         const { results } = await d1.prepare(sql).bind(...params).all();
         if (!results || results.length === 0) return { patterns: [] as any[], total: 0 };
-        return { patterns: results };
+        return { patterns: results, total: results.length };
       } catch { return { patterns: [] as any[], total: 0 }; }
     }),
 
