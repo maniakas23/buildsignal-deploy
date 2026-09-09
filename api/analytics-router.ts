@@ -2,7 +2,6 @@
  * Analytics Router — Gate 14 Section 12
  */
 
-import { z } from "zod";
 import { createRouter, publicQuery, authedQuery } from "./middleware";
 
 function getD1(ctx: any): D1Database | null {

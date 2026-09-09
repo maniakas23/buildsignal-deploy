@@ -123,7 +123,7 @@ export class ErrorBoundary extends Component<Props, State> {
             <div className="mt-4 pt-4 border-t border-[#243444]">
               <div className="flex items-center justify-between">
                 <p className="text-[11px] text-white/30">If this persists, contact support with the error details above.</p>
-                <a href="mailto:support@buildsignal.com" className="flex items-center gap-1 text-[11px] text-accent-indigo hover:underline"><Bug className="w-3 h-3" /> Report</a>
+                <a href="mailto:support@buildsignal.net" className="flex items-center gap-1 text-[11px] text-accent-indigo hover:underline"><Bug className="w-3 h-3" /> Report</a>
               </div>
             </div>
           </div>

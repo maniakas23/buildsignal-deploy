@@ -96,7 +96,7 @@ export const confidenceRouter = createRouter({
     const d1 = getD1(ctx);
     if (!d1) return getDefaultDimensions();
     try {
-      const row = await d1.prepare(`SELECT AVG(providerReliability) as providerReliability, AVG(historicalAccuracy) as historicalAccuracy, AVG(crossSourceAgreement) as crossSourceAgreement, AVG(dataFreshness) as dataFreshness, AVG(patternMatch) as patternMatch, AVG(geographicContext) as geographicContext, AVG(eventCorrelation) as eventCorrelation, AVG(historicalOutcomes) as historicalOutcomes FROM confidence_scores`).first();
+      const row = await d1.prepare(`SELECT AVG(providerReliability) as providerReliability, AVG(historicalAccuracy) as historicalAccuracy, AVG(crossSourceAgreement) as crossSourceAgreement, AVG(dataFreshness) as dataFreshness, AVG(patternMatch) as patternMatch, AVG(geographicContext) as geographicContext, AVG(eventCorrelation) as eventCorrelation, AVG(historicalOutcomes) as historicalOutcomes FROM confidence_scores`).first<Record<string, number | null>>();
       return {
         providerReliability: Math.round(row?.providerReliability || 82),
         historicalAccuracy: Math.round(row?.historicalAccuracy || 78),

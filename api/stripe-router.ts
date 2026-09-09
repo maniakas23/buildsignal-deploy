@@ -73,7 +73,7 @@ function getStripe(secretKey: string | unknown): Stripe {
       message: "Stripe secret key not configured",
     });
   }
-  return new Stripe(secretKey, { apiVersion: "2025-06-30.basil" });
+  return new Stripe(secretKey, { apiVersion: "2026-08-26.dahlia" });
 }
 
 function createPriceId(plan: keyof typeof PLAN_CONFIG): string {
@@ -219,7 +219,7 @@ export const stripeRouter = createRouter({
     return {
       status: subscription.status,
       plan: user.plan,
-      currentPeriodEnd: subscription.current_period_end,
+      currentPeriodEnd: subscription.items.data[0]?.current_period_end ?? null,
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
     };
   }),
@@ -453,9 +453,9 @@ export async function handleStripeWebhook(
           .update(users)
           .set({
             subscriptionStatus: subscription.status,
-            subscriptionCurrentPeriodEnd: new Date(
-              subscription.current_period_end * 1000
-            ),
+            subscriptionCurrentPeriodEnd: subscription.items.data[0]
+              ? new Date(subscription.items.data[0].current_period_end * 1000)
+              : null,
             cancelAtPeriodEnd: subscription.cancel_at_period_end,
           })
           .where(eq(users.stripeCustomerId, customerId))

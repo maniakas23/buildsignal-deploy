@@ -27,7 +27,6 @@ import {
   Clock,
   Filter,
   ArrowUpDown,
-  ArrowRight,
   Info,
 } from 'lucide-react';
 
@@ -89,7 +88,6 @@ export default function CountyCoveragePage() {
     { enabled: !summaryError }
   );
 
-  const isLoading = summaryLoading || listLoading;
   const isError = summaryError || listError;
 
   const refetch = () => {

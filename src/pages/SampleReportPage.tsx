@@ -17,14 +17,12 @@ import {
   FileText,
   TrendingUp,
   PieChart as PieChartIcon,
-  Brain,
   AlertTriangle,
   CheckCircle,
   ArrowRight,
   ChevronRight,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Table,

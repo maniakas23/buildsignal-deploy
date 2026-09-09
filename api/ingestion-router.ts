@@ -5,7 +5,6 @@ import {
   rawRecords,
   ingestionRuns,
   kestovarCanonicalEvents,
-  providerRegistry,
 } from "@db/schema-sqlite";
 import { eq, desc, and, sql } from "drizzle-orm";
 import { getDbFromContext } from "./queries/connection";
@@ -343,7 +342,7 @@ export const ingestionRouter = createRouter({
             confidence: z.number().optional(),
           })
         ),
-        metadata: z.record(z.unknown()).optional(),
+        metadata: z.record(z.string(), z.unknown()).optional(),
       })
     )
     .mutation(async ({ input }) => {
@@ -395,7 +394,7 @@ export const ingestionRouter = createRouter({
           }
 
           // Insert raw record
-          const rawResult = await db
+          await db
             .insert(rawRecords)
             .values({
               providerId: input.providerId,
@@ -413,7 +412,6 @@ export const ingestionRouter = createRouter({
               isDeleted: false,
             })
             .returning();
-          const rawRecord = rawResult[0];
 
           // ── Write to kestovar_canonical_events (CANONICAL) ──
           const canonicalId = generateCanonicalId();

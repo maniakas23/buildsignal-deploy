@@ -12,7 +12,7 @@ function getStripe(secretKey: string | unknown): Stripe {
       message: "Stripe secret key not configured",
     });
   }
-  return new Stripe(secretKey, { apiVersion: "2025-06-30.basil" });
+  return new Stripe(secretKey, { apiVersion: "2026-08-26.dahlia" });
 }
 
 export const billingRouter = createRouter({
@@ -26,7 +26,7 @@ export const billingRouter = createRouter({
       .orderBy(desc(subscriptionEvents.createdAt))
       .all();
 
-    const invoices = rows.map((row) => ({
+    const invoices = rows.map((row: any) => ({
       id: row.id,
       event: row.event,
       plan: row.plan,

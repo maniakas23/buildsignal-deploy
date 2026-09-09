@@ -9,7 +9,6 @@ export default function AuthLayout() {
   const location = useLocation();
   const { isAuthenticated, isLoading } = useAuth();
 
-  const openMobile = () => setIsMobileOpen(true);
   const closeMobile = () => setIsMobileOpen(false);
   const toggleMobile = () => setIsMobileOpen((prev) => !prev);
 

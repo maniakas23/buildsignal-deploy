@@ -1,27 +1,17 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { trackEvent } from "@/hooks/usePageTracking";
 import {
   Search,
-  HelpCircle,
   MessageSquare,
   BookOpen,
   ArrowRight,
-  CheckCircle2,
-  ChevronDown,
-  ChevronUp,
   Mail,
-  MapPin,
   Phone,
   FileText,
   Zap,
   Building2,
   Shield,
-  CreditCard,
-  Bell,
   ExternalLink,
-  Loader2,
-  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,16 +28,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
+
 import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 const categories = [
   { id: "all", label: "All", icon: BookOpen },

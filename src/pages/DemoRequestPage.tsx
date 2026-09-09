@@ -13,22 +13,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
-import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 import {
   ArrowLeft,
   ArrowRight,
   CheckCircle2,
-  Calendar as CalendarIcon,
   Clock,
   Users,
   Video,
   Phone,
   MessageSquare,
-  Star,
-  Zap,
   Building2,
   Globe,
   Landmark,

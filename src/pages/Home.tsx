@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowRight, Check, Mail, Phone, Shield, Lock, Eye,
@@ -12,7 +11,6 @@ import { ROICalculator } from "@/components/marketing/ROICalculator";
 import { HomeFAQ } from "@/components/marketing/HomeFAQ";
 
 export default function Home() {
-  const [email, setEmail] = useState("");
 
   const steps = [
     { number: "01", title: "Capture", description: "Select counties, metros, and asset classes. Our system monitors municipal permits, zoning filings, and infrastructure investments across your target markets.", icon: Search },
