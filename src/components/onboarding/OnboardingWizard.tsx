@@ -1,10 +1,9 @@
 import { useState, useMemo } from "react";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import {
@@ -438,8 +437,6 @@ function StepAlertPreferences({
 
 // ─── Step 3: Connect & Go ──────────────────────────────────────────
 function StepConnectGo({
-  integrations,
-  onToggleIntegration,
   teamEmail,
   onTeamEmailChange,
   onInviteTeamChange,
@@ -447,8 +444,6 @@ function StepConnectGo({
   onLaunch,
   onSkip,
 }: {
-  integrations: Record<string, boolean>;
-  onToggleIntegration: (id: string) => void;
   teamEmail: string;
   onTeamEmailChange: (v: string) => void;
   onInviteTeamChange: (v: boolean) => void;
@@ -597,7 +592,9 @@ export function OnboardingWizard() {
     return initial;
   });
   const [alertFrequency, setAlertFrequency] = useState("daily");
-  const [integrations, setIntegrations] = useState<Record<string, boolean>>({});
+  // Integration toggles were removed from the Connect & Go step; the state is
+  // retained so the completion payload keeps its existing shape.
+  const [integrations] = useState<Record<string, boolean>>({});
   const [inviteTeam, setInviteTeam] = useState(false);
   const [teamEmail, setTeamEmail] = useState("");
   const [toast, setToast] = useState<string | null>(null);
@@ -695,10 +692,6 @@ export function OnboardingWizard() {
 
             <StepContainer visible={step === 3} direction={direction}>
               <StepConnectGo
-                integrations={integrations}
-                onToggleIntegration={(id) =>
-                  setIntegrations((prev) => ({ ...prev, [id]: !prev[id] }))
-                }
                 teamEmail={teamEmail}
                 onTeamEmailChange={setTeamEmail}
                 onInviteTeamChange={setInviteTeam}
