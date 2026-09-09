@@ -45,7 +45,7 @@ export function isD1(): boolean {
 }
 
 // Helper to get DB from tRPC context (for use in routers)
-export function getDbFromContext(env: Record<string, unknown> | undefined) {
+export function getDbFromContext(env?: Record<string, unknown> | undefined) {
   if (env?.DB) {
     return drizzleD1(env.DB as D1Database, { schema: fullSqliteSchema });
   }
