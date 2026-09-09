@@ -55,7 +55,7 @@ export function Login() {
           {/* Error Message */}
           {(error || loginError) && (
             <div className="bg-red-50/10 border border-red-200/20 text-red-400 text-sm rounded-lg p-3 flex items-center gap-2">
-              <span className="font-medium">{error || loginError.message}</span>
+              <span className="font-medium">{error || loginError?.message}</span>
             </div>
           )}
 
