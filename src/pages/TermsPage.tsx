@@ -2,8 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import {
   ArrowLeft,
   FileText,
@@ -297,7 +295,6 @@ export function TermsPage() {
                 legal@buildsignal.net
               </a>
             </li>
-            <li>Address: 123 Market Street, Suite 456, San Francisco, CA 94105</li>
           </ul>
           <p>
             We will respond to legal inquiries within 5 business days.
