@@ -144,7 +144,7 @@ export function ReportsPage() {
             sectionId: section.id,
           });
         } else {
-          section.items.forEach((item) => {
+          section.items.forEach((item: any) => {
             items.push({
               id: String(item.id || `${section.id}-${Math.random().toString(36).slice(2, 8)}`),
               title: scrubUnknownPlaceText(item.title || section.title),
