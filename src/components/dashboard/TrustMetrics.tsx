@@ -1,7 +1,7 @@
 import { Shield, Lock, Eye, Database, Clock, TrendingUp, Globe, Server } from 'lucide-react';
 
 const TRUST_ITEMS = [
-  { icon: Shield, label: 'SOC 2 (In Progress)', color: 'text-accent-teal' },
+  { icon: Shield, label: 'Encrypted Data', color: 'text-accent-teal' },
   { icon: Lock, label: 'AES-256 Encrypted', color: 'text-accent-teal' },
   { icon: Eye, label: 'Transparent AI', color: 'text-accent-indigo' },
   { icon: Database, label: 'Public Data Only', color: 'text-accent-indigo' },

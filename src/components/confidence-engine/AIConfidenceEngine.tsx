@@ -69,7 +69,7 @@ const SCORING_FACTORS = [
 ];
 
 const CONFIDENCE_LEVELS = [
-  { range: '95-100%', label: 'Exceptional', color: 'bg-emerald-500', count: 12, description: 'Multi-domain convergence with strong historical validation' },
+  { range: '95-100%', label: 'Exceptional', color: 'bg-emerald-700', count: 12, description: 'Multi-domain convergence with strong historical validation' },
   { range: '85-94%', label: 'High', color: 'bg-accent-indigo', count: 34, description: 'Multiple confirming signals from reliable sources' },
   { range: '75-84%', label: 'Moderate', color: 'bg-blue-500', count: 28, description: 'Some confirming signals, limited historical data' },
   { range: '65-74%', label: 'Developing', color: 'bg-amber-500', count: 19, description: 'Early signals detected, awaiting confirmation' },

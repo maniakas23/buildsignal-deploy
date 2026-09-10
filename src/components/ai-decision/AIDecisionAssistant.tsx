@@ -41,7 +41,7 @@ const ANALYSES: Analysis[] = [
     county: 'Larimer County, CO',
     type: 'DOT-Corridor',
     detectedAt: 'Jul 18, 2026',
-    analyst: 'SignalCore AI Analyst',
+    analyst: 'BuildSignal AI Analyst',
     evidence: [
       { source: 'DOT Permits', detail: 'HWY-287-EXP-2026 — 4.2-mile expansion, $12.4M budget', date: 'Jul 18', confidence: 99 },
       { source: 'County Planning', detail: 'Commercial rezoning approved parcels 287-A through 287-F', date: 'Jul 15', confidence: 97 },
@@ -84,7 +84,7 @@ const ANALYSES: Analysis[] = [
     county: 'Weld County, CO',
     type: 'Public Contract',
     detectedAt: 'Jul 17, 2026',
-    analyst: 'SignalCore AI Analyst',
+    analyst: 'BuildSignal AI Analyst',
     evidence: [
       { source: 'School Construction DB', detail: 'RFP-WCSD-NEWCAMPUS-2026 — K-8, 85,000 sq ft, $48M', date: 'Jul 17', confidence: 99 },
       { source: 'Capital Improvement', detail: '$4.2M road extension to campus site', date: 'Jul 15', confidence: 94 },
@@ -253,7 +253,7 @@ function AnalysisCard({ analysis }: { analysis: Analysis }) {
               {analysis.riskIndicators.map((ri, i) => (
                 <div key={i} className="flex items-center gap-2 p-2 bg-canvas rounded-lg">
                   <span className={`w-2 h-2 rounded-full ${
-                    ri.severity === 'high' ? 'bg-accent-crimson' : ri.severity === 'medium' ? 'bg-amber-500' : 'bg-emerald-500'
+                    ri.severity === 'high' ? 'bg-accent-crimson' : ri.severity === 'medium' ? 'bg-amber-500' : 'bg-emerald-700'
                   }`} />
                   <span className="text-[11px] text-ink-secondary">{ri.label}</span>
                   <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ml-auto ${
