@@ -12,6 +12,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { trpc } from "@/providers/trpc";
+import { selectPlans, isContactSalesPlan } from "./billingPlans";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -98,8 +99,9 @@ export function BillingPage() {
   const { data: subscription, isLoading: subLoading } =
     trpc.stripe.getSubscription.useQuery();
   const { data: plansData } = trpc.stripe.plans.useQuery();
-  // stripe.plans returns the plan array directly.
-  const plans = plansData;
+  // Production returns { plans: [...] } — unwrap via the shared contract
+  // helper (m1(24A): the bare-array assumption crashed this page).
+  const plans = selectPlans(plansData as any);
   const { data: billingHistoryData, isLoading: historyLoading } =
     trpc.billing.history.useQuery();
   // billing.history returns { invoices: [...] } — unwrap it
@@ -445,7 +447,7 @@ export function BillingPage() {
                         </li>
                       ))}
                     </ul>
-                    {!isCurrent && plan.id !== "starter" && plan.id === "enterprise" && (
+                    {!isCurrent && plan.id !== "starter" && isContactSalesPlan(plan) && (
                       <Button
                         size="sm"
                         variant="outline"
@@ -458,7 +460,7 @@ export function BillingPage() {
                         <ExternalLink className="h-3 w-3 ml-1" />
                       </Button>
                     )}
-                    {!isCurrent && plan.id !== "enterprise" && (
+                    {!isCurrent && !isContactSalesPlan(plan) && (
                       <Button
                         size="sm"
                         className="w-full bg-[var(--bs-action)] hover:bg-[var(--bs-action)]/90"
