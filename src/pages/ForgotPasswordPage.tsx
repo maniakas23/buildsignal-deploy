@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { forgotPassword } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,9 +25,9 @@ export function ForgotPasswordPage() {
 
     setLoading(true);
 
-    // Simulate password reset request
-    // In production, this would call your auth API
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    // Real production recovery request. The API response is intentionally
+    // generic; we show the same confirmation either way (anti-enumeration).
+    await forgotPassword(email.trim().toLowerCase());
 
     setSubmitted(true);
     setLoading(false);
@@ -63,7 +64,7 @@ export function ForgotPasswordPage() {
                   </AlertDescription>
                 </Alert>
                 <p className="text-sm text-muted-foreground text-center">
-                  Check your inbox (and spam folder). The link expires in 24 hours.
+                  Check your inbox (and spam folder). The link expires in 45 minutes and can be used once.
                 </p>
                 <div className="text-center space-y-2">
                   <Link

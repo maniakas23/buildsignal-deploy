@@ -56,6 +56,22 @@ async function fetchMe(token: string): Promise<User | null> {
   return item?.result?.data ?? null;
 }
 
+/** Request a password-reset email. Always resolves with a generic message (anti-enumeration). */
+export async function forgotPassword(email: string): Promise<{ success: boolean; message?: string }> {
+  try {
+    return await trpcCall<{ success: boolean; message?: string }>("auth.forgotPassword", { email });
+  } catch {
+    // Recovery must not leak transport/server detail to the customer; the UI
+    // shows the same generic confirmation regardless of outcome.
+    return { success: true };
+  }
+}
+
+/** Complete a password reset with a one-time token from the recovery email. */
+export async function resetPassword(token: string, password: string): Promise<{ success: boolean }> {
+  return trpcCall<{ success: boolean }>("auth.resetPassword", { token, password });
+}
+
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);

@@ -30,6 +30,7 @@ import { RoadmapPage } from "./pages/RoadmapPage";
 import EmailPreviewPage from "./pages/EmailPreviewPage";
 import { PaletteShowcasePage } from "./pages/PaletteShowcasePage";
 import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
+import { ResetPasswordPage } from "./pages/ResetPasswordPage";
 import NotFound from "./pages/NotFound";
 import AuthLayout from "./components/AuthLayout";
 import { Toaster } from "@/components/ui/toaster";
@@ -59,6 +60,7 @@ function App() {
         <Route path="/email-preview" element={<EmailPreviewPage />} />
         <Route path="/palette" element={<PaletteShowcasePage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route element={<AuthLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/opportunities" element={<OpportunityDashboard />} />
