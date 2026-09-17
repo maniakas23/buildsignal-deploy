@@ -2,15 +2,14 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { acquisitionCtaTarget } from "@/lib/customerJourney";
 import {
-  ArrowRight, Check, Mail, Phone, Shield, Lock, Eye,
-  TrendingUp, MapPin, FileText, BarChart3, Users, Zap,
-  Download, Search, Filter, Presentation, Building2,
-  LocateFixed, Mountain, Handshake,
+  ArrowRight, Check, TrendingUp,
+  Search, Filter, Presentation,
 } from "lucide-react";
 import { CredibilityBar } from "@/components/marketing/CredibilityBar";
 import { MarketPulseDemo } from "@/components/marketing/MarketPulseDemo";
 import { ROICalculator } from "@/components/marketing/ROICalculator";
 import { HomeFAQ } from "@/components/marketing/HomeFAQ";
+import { HomeCapabilities, HomeUseCases, HomeTrust } from "@/components/marketing/HomeSections";
 
 export default function Home() {
   const { isAuthenticated } = useAuth();
@@ -22,22 +21,6 @@ export default function Home() {
     { number: "01", title: "Capture", description: "Select counties, metros, and asset classes. Our system monitors municipal permits, zoning filings, and infrastructure investments across your target markets.", icon: Search },
     { number: "02", title: "Filter", description: "Apply intelligent filters by permit type, project value, timeline, and geography. Set custom alert thresholds to surface only the opportunities that match your strategy.", icon: Filter },
     { number: "03", title: "Present", description: "Receive actionable intelligence briefs with confidence scores, trend context, and clear next steps, delivered to your dashboard.", icon: Presentation },
-  ];
-
-  const capabilities = [
-    { icon: MapPin, title: "County Coverage", description: "Monitor construction activity across covered US counties with daily data aggregation and automated coverage expansion." },
-    { icon: FileText, title: "Permit Tracking", description: "Track municipal building permits as they are published. Filter by type, value, and geography to find relevant opportunities." },
-    { icon: BarChart3, title: "AI Predictions", description: "Machine learning models forecast construction surges with confidence scores. Methodology documented and transparent." },
-    { icon: Users, title: "User Analytics", description: "Per-account metrics and reporting dashboards. Track your research activity, saved searches, and team engagement." },
-    { icon: Zap, title: "ROI Tools", description: "Investment analysis and market comparison tools. Evaluate opportunity costs and projected returns across target regions." },
-    { icon: Download, title: "Reports", description: "Generate intelligence briefs with charts and narrative summaries from your dashboard." },
-  ];
-
-  const useCases = [
-    { icon: Building2, title: "Commercial Real Estate", description: "Spot emerging submarkets before land prices surge. Track permit velocity, zoning changes, and infrastructure investments across your target regions to identify development opportunities early." },
-    { icon: LocateFixed, title: "Site Selection", description: "Deliver data-backed location recommendations with confidence scores. Compare markets on growth trajectory, labor availability, and regulatory climate to make informed decisions." },
-    { icon: Mountain, title: "Land Investors", description: "Identify counties with accelerating construction activity. Get early signals on where demand is heating up so you can acquire ahead of the curve and maximize returns." },
-    { icon: Handshake, title: "Commercial Brokers", description: "Know which markets are primed for leasing activity before your competitors. Use permit data to time your outreach and win more listings in high-growth areas." },
   ];
 
   const plans = [
@@ -101,20 +84,63 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Platform Capabilities */}
-      <section className="py-20 md:py-28 bg-canvas">
+      <HomeCapabilities />
+
+      <MarketPulseDemo />
+
+      <HomeUseCases />
+
+      <ROICalculator />
+
+      {/* Pricing Tiers */}
+      <section id="pricing" className="py-20 md:py-28 bg-canvas">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-sm font-medium mb-4">
-              <Zap className="w-4 h-4" /><span>Platform Capabilities</span>
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-ink mb-4">What BuildSignal Delivers</h2>
-            <p className="text-lg text-muted max-w-2xl mx-auto">Core capabilities of the platform. Actual coverage and performance metrics are available to authenticated users.</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-ink mb-4">Pricing</h2>
+            <p className="text-lg text-muted">Simple Pricing, Powerful Results</p>
+            <p className="text-sm text-muted mt-2">Start with a 14-day free trial — $0 today, no credit card required.</p>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {capabilities.map((cap) => (
-              <div key={cap.title} className="bg-surface border border-border rounded-2xl p-6 hover:border-emerald-500/30 transition-colors">
-                <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center mb-4">
-                  <cap.icon className="w-5 h-5 text-emerald-400" />
+          <div className="grid md:grid-cols-3 gap-6">
+            {plans.map((plan) => (
+              <div key={plan.name} className={`bg-surface border rounded-2xl p-6 ${plan.highlighted ? "border-emerald-500/50 shadow-lg shadow-emerald-500/5" : "border-border"}`}>
+                {plan.highlighted && (
+                  <div className="inline-flex items-center px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-medium mb-4">Most Popular</div>
+                )}
+                <h3 className="text-xl font-semibold text-ink mb-2">{plan.name}</h3>
+                <div className="flex items-baseline gap-1 mb-2">
+                  <span className="text-3xl font-bold text-ink">{plan.price}</span>
+                  <span className="text-muted">{plan.period}</span>
                 </div>
-                <h3 className="text-lg font-semibold 
+                <p className="text-sm text-muted mb-6">{plan.description}</p>
+                <ul className="space-y-3 mb-6">
+                  {plan.features.map((feature) => (
+                    <li key={feature} className="flex items-center gap-2 text-sm text-muted">
+                      <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />{feature}
+                    </li>
+                  ))}
+                </ul>
+                <Link to={ctaTarget} className={`block w-full text-center px-4 py-2 rounded-lg font-semibold transition-colors ${plan.highlighted ? "bg-emerald-500 hover:bg-emerald-600 text-white" : "bg-canvas hover:bg-surface-hover text-ink border border-border"}`}>
+                  Get Started
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <HomeFAQ />
+
+      {/* Newsletter */}
+      <section className="py-20 md:py-28 bg-surface">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl font-bold text-ink mb-4">Stay Ahead of the Market</h2>
+          <p className="text-muted mb-8">Get weekly insights on construction market trends and new feature updates.</p>
+          <p className="text-sm text-muted mb-6">Email updates are not yet available — reach out and we will keep you posted.</p>
+          <Link to="/contact" className="inline-flex items-center justify-center px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition-colors">Contact Us</Link>
+        </div>
+      </section>
+
+      <HomeTrust />
+    </main>
+  );
+}
