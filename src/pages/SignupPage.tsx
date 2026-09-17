@@ -3,76 +3,21 @@ import { useNavigate, useSearchParams, Navigate } from "react-router-dom";
 import { trackEvent } from "@/hooks/usePageTracking";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { trpc } from "@/providers/trpc";
-import { selectPlans, isContactSalesPlan, type BillingPlan } from "./billingPlans";
+import { selectPlans } from "./billingPlans";
+import { selectTrial, signupGuardRedirect } from "@/lib/customerJourney";
+import { toWizardPlan, type Plan } from "./signup/wizardPlan";
+import { SignupAccountStep } from "./signup/SignupAccountStep";
+import { SignupPlanStep } from "./signup/SignupPlanStep";
+import { SignupSummaryStep } from "./signup/SignupSummaryStep";
+import { SignupSidebar } from "./signup/SignupSidebar";
 import {
-  selectTrial,
-  signupGuardRedirect,
-  trialDisclosure,
-  REGISTRATION_RECOVERY_MESSAGE,
-} from "@/lib/customerJourney";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Lock,
-  Shield,
-  Check,
-  AlertCircle,
-  Eye,
-  EyeOff,
-  Zap,
-  Building2,
-  Sparkles,
-  TrendingUp,
-  Database,
-  BrainCircuit,
-  FileText,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-
-interface Plan {
-  id: string;
-  name: string;
-  price: number;
-  interval: string;
-  description: string;
-  features: string[];
-  highlighted: boolean;
-  cta: string;
-  purchasable: boolean;
-}
-
-// m1(24C): no hardcoded plan fallbacks. The old defaultPlans table drifted
-// from the canonical production contract (e.g. Scout "5 counties" / "Weekly
-// email reports" vs the certified 1 county / 3 alerts per UTC day) and was
-// ALWAYS shown because `plansQuery.data?.length` is undefined for the live
-// { plans: [...], trial: {...} } wrapper. Plans now come exclusively from
-// the live API via the m1(24A) contract helper; when data is unavailable the
-// wizard shows a safe loading/error state instead of stale plan truth.
-function toWizardPlan(p: BillingPlan): Plan {
-  return {
-    id: p.id,
-    name: p.name ?? p.id,
-    price: p.price ?? 0,
-    interval: p.interval ?? "custom",
-    description: p.description ?? "",
-    features: p.features ?? [],
-    highlighted: p.popular ?? false,
-    cta: p.cta ?? "Get Started",
-    purchasable: p.purchasable !== false && !isContactSalesPlan(p),
-  };
-}
-
-const steps = [
-  { label: "Account", description: "Create your account" },
-  { label: "Plan", description: "Choose your plan" },
-  { label: "Get Started", description: "Start building intelligence" },
-];
+  SignupProgress,
+  SignupNavButtons,
+  validateAccountFields,
+} from "./signup/SignupChrome";
+import { ArrowLeft, Zap } from "lucide-react";
 
 export function SignupPage() {
   const navigate = useNavigate();
@@ -127,38 +72,19 @@ export function SignupPage() {
     return <Navigate to={guardRedirect} replace />;
   }
 
-  const validatePassword = (pwd: string): string | null => {
-    if (pwd.length < 8) return "Password must be at least 8 characters";
-    if (!/[A-Z]/.test(pwd)) return "Password must contain at least one uppercase letter";
-    if (!/[a-z]/.test(pwd)) return "Password must contain at least one lowercase letter";
-    if (!/[0-9]/.test(pwd)) return "Password must contain at least one number";
-    return null;
-  };
+  const clearError = (key: string) =>
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
 
-  const validateStep1 = () => {
-    const newErrors: Record<string, string> = {};
-    if (!name.trim()) {
-      newErrors.name = "Name is required";
-    }
-    if (!email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = "Please enter a valid email address";
-    }
-    const pwdError = validatePassword(password);
-    if (pwdError) {
-      newErrors.password = pwdError;
-    }
-    if (password !== confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
 
   const handleNext = () => {
     if (step === 1) {
-      if (validateStep1()) {
+      const newErrors = validateAccountFields(name, email, password, confirmPassword);
+      setErrors(newErrors);
+      if (Object.keys(newErrors).length === 0) {
         setStep(2);
       }
     } else if (step === 2) {
@@ -198,17 +124,12 @@ export function SignupPage() {
     }
   };
 
-  const getPlanById = (id: string | null) => {
-    return plans?.find((p) => p.id === id);
-  };
-
-  const selectedPlanData = getPlanById(selectedPlan);
+  const selectedPlanData = plans?.find((p) => p.id === selectedPlan);
 
   return (
     <div className="min-h-screen bg-[var(--bs-canvas)]">
       <div className="container mx-auto py-8 px-4">
         <div className="max-w-5xl mx-auto">
-          {/* Back to home */}
           <Button
             variant="ghost"
             onClick={() => navigate("/")}
@@ -219,7 +140,6 @@ export function SignupPage() {
           </Button>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Main Form */}
             <div className="lg:col-span-2">
               <Card className="border-[var(--bs-border)] shadow-sm">
                 <CardHeader>
@@ -230,16 +150,76 @@ export function SignupPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {/* Progress */}
-                  <div className="mb-8">
-                    <div className="flex items-center justify-between mb-2">
-                      {steps.map((s, idx) => (
-                        <div key={idx} className="flex flex-col items-center">
-                          <div
-                            className={cn(
-                              "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium mb-1",
-                              step > idx + 1
-                                ? "bg-[var(--bs-intelligence)] text-white"
-                                : step === idx + 1
-                                ? "bg-[var(--bs-action)] text-white"
-                                : "bg-[var(--bs-surface
+                  <SignupProgress step={step} />
+
+                  <form onSubmit={handleSubmit} className="space-y-5">
+                    {step === 1 && (
+                      <SignupAccountStep
+                        name={name}
+                        email={email}
+                        password={password}
+                        confirmPassword={confirmPassword}
+                        showPassword={showPassword}
+                        errors={errors}
+                        setName={setName}
+                        setEmail={setEmail}
+                        setPassword={setPassword}
+                        setConfirmPassword={setConfirmPassword}
+                        setShowPassword={setShowPassword}
+                        clearError={clearError}
+                      />
+                    )}
+
+                    {step === 2 && (
+                      <SignupPlanStep
+                        plans={plans}
+                        plansError={plansQuery.isError}
+                        trial={trial}
+                        selectedPlan={selectedPlan}
+                        selectedPlanData={selectedPlanData}
+                        errors={errors}
+                        onSelect={(id) => {
+                          setSelectedPlan(id);
+                          clearError("plan");
+                        }}
+                      />
+                    )}
+
+                    {step === 3 && (
+                      <SignupSummaryStep
+                        selectedPlanData={selectedPlanData}
+                        trial={trial}
+                        registerFailed={registerFailed}
+                        registerError={registerError}
+                        onGoToLogin={() => navigate("/login")}
+                      />
+                    )}
+
+                    <SignupNavButtons
+                      step={step}
+                      registerIsPending={registerIsPending}
+                      onBack={handleBack}
+                      onNext={handleNext}
+                    />
+                  </form>
+
+                  <div className="mt-6 text-center text-sm text-[var(--bs-text-tertiary)]">
+                    Already have an account?{" "}
+                    <button
+                      onClick={() => navigate("/login")}
+                      className="text-[var(--bs-action)] hover:underline font-medium"
+                    >
+                      Log in
+                    </button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <SignupSidebar />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
