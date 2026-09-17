@@ -140,7 +140,7 @@ export function PrivacyPage() {
           <ul className="space-y-1 list-disc list-inside">
             <li>
               <strong>Service Providers:</strong> Cloud hosting (AWS), payment
-              processing (Stripe), and email delivery (SendGrid)
+              processing (Stripe), and email delivery (Resend)
             </li>
             <li>
               <strong>Legal Compliance:</strong> When required by law or to
