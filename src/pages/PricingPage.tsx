@@ -29,6 +29,39 @@ export function MobileComparisonHint() {
   );
 }
 
+
+export interface PlanCtaDeps {
+  planId: string;
+  isEnterprise: boolean;
+  isAuthenticated: boolean;
+  checkout: { mutate: (input: { plan: string; successUrl: string; cancelUrl: string }) => void };
+  navigate: (to: string) => void;
+  origin: string;
+}
+
+/**
+ * m1(29): authenticated self-service plan selection initiates Stripe Checkout
+ * directly (server creates the session; browser only receives the URL).
+ * Guests sign up first; Enterprise stays Contact Sales and NEVER calls Checkout.
+ */
+export function handlePlanCta({ planId, isEnterprise, isAuthenticated, checkout, navigate, origin }: PlanCtaDeps) {
+  trackEvent("pricing_cta_click", { plan: planId });
+  if (isEnterprise || !isAuthenticated) {
+    navigate(`/signup?plan=${planId}`);
+    return;
+  }
+  checkout.mutate({
+    plan: planId,
+    successUrl: `${origin}/billing?upgraded=1`,
+    cancelUrl: `${origin}/pricing`,
+  });
+}
+
+/** Navigate toward Stripe Checkout only when the server returned a valid URL. */
+export function applyCheckoutResult(data: { url?: string | null } | undefined, assign: (url: string) => void) {
+  if (data?.url) assign(data.url);
+}
+
 export function PricingPage() {
   const navigate = useNavigate();
   const [expandedComparison, setExpandedComparison] = useState(false);
@@ -36,6 +69,9 @@ export function PricingPage() {
 
   // Plans are served by stripe.plans (billing.plans does not exist).
   const { data: plansData } = trpc.stripe.plans.useQuery();
+  const checkout = trpc.stripe.createCheckoutSession.useMutation({
+    onSuccess: (data) => applyCheckoutResult(data, (url) => { window.location.href = url; }),
+  });
   const trial = selectTrial(plansData as any);
 
   const rawPlans = (plansData as any)?.plans ?? plansData;
@@ -112,16 +148,17 @@ export function PricingPage() {
                 <Button
                   className="w-full"
                   variant={plan.id === "professional" ? "default" : "outline"}
-                  onClick={() => {
-                    trackEvent("pricing_cta_click", { plan: plan.id });
-                    // Signed-in users already have an account — send them straight
-                    // to Billing, where the plan checkout buttons live. Guests sign up first.
-                    if (!isEnterprise && isAuthenticated) {
-                      navigate("/billing");
-                    } else {
-                      navigate(`/signup?plan=${plan.id}`);
-                    }
-                  }}
+                  disabled={checkout.isPending}
+                  onClick={() =>
+                    handlePlanCta({
+                      planId: plan.id,
+                      isEnterprise,
+                      isAuthenticated,
+                      checkout,
+                      navigate,
+                      origin: window.location.origin,
+                    })
+                  }
                 >
                   {isEnterprise ? "Contact Sales" : "Get Started"}
                   <ArrowRight className="h-4 w-4 ml-2" />
