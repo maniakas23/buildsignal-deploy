@@ -21,6 +21,7 @@ describe("authenticated pricing CTA → checkout handoff", () => {
       planId: "starter", // canonical backend key for the $99 Scout plan
       isEnterprise: false,
       isAuthenticated: true,
+      hasSessionToken: true,
       checkout: { mutate },
       navigate,
       origin: ORIGIN,
@@ -36,23 +37,50 @@ describe("authenticated pricing CTA → checkout handoff", () => {
 
   it.each(["professional", "business"])("authenticated %s selection also goes straight to checkout", (planId) => {
     const { mutate, navigate } = spies();
-    handlePlanCta({ planId, isEnterprise: false, isAuthenticated: true, checkout: { mutate }, navigate, origin: ORIGIN });
+    handlePlanCta({ planId, isEnterprise: false, isAuthenticated: true, hasSessionToken: true, checkout: { mutate }, navigate, origin: ORIGIN });
     expect(mutate).toHaveBeenCalledTimes(1);
     expect(mutate.mock.calls[0][0].plan).toBe(planId);
   });
 
   it("guest selection routes to signup and never calls checkout", () => {
     const { mutate, navigate } = spies();
-    handlePlanCta({ planId: "starter", isEnterprise: false, isAuthenticated: false, checkout: { mutate }, navigate, origin: ORIGIN });
+    handlePlanCta({ planId: "starter", isEnterprise: false, isAuthenticated: false, hasSessionToken: false, checkout: { mutate }, navigate, origin: ORIGIN });
     expect(mutate).not.toHaveBeenCalled();
     expect(navigate).toHaveBeenCalledWith("/signup?plan=starter");
   });
 
   it("Enterprise NEVER calls checkout", () => {
     const { mutate, navigate } = spies();
-    handlePlanCta({ planId: "enterprise", isEnterprise: true, isAuthenticated: true, checkout: { mutate }, navigate, origin: ORIGIN });
+    handlePlanCta({ planId: "enterprise", isEnterprise: true, isAuthenticated: true, hasSessionToken: true, checkout: { mutate }, navigate, origin: ORIGIN });
     expect(mutate).not.toHaveBeenCalled();
     expect(navigate).toHaveBeenCalledTimes(1);
+  });
+
+
+  it("m1(29) race: session token present but auth.me unresolved still goes to checkout (no /signup bounce)", () => {
+    // useAuth.isAuthenticated is false until auth.me resolves; an authenticated
+    // customer clicking early must NOT be misrouted to /signup (the signup guard
+    // then bounced them to /billing — the observed flaky no-fire).
+    const { mutate, navigate } = spies();
+    handlePlanCta({
+      planId: "starter",
+      isEnterprise: false,
+      isAuthenticated: false, // auth.me still resolving
+      hasSessionToken: true,  // ...but a session token exists
+      checkout: { mutate },
+      navigate,
+      origin: ORIGIN,
+    });
+    expect(mutate).toHaveBeenCalledTimes(1);
+    expect(mutate.mock.calls[0][0].plan).toBe("starter");
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it("no token and unauthenticated is a true guest — routes to signup", () => {
+    const { mutate, navigate } = spies();
+    handlePlanCta({ planId: "professional", isEnterprise: false, isAuthenticated: false, hasSessionToken: false, checkout: { mutate }, navigate, origin: ORIGIN });
+    expect(mutate).not.toHaveBeenCalled();
+    expect(navigate).toHaveBeenCalledWith("/signup?plan=professional");
   });
 
   it("navigation toward Stripe happens only when the server returns a checkout URL", () => {

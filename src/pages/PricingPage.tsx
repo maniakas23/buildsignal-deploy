@@ -34,6 +34,15 @@ export interface PlanCtaDeps {
   planId: string;
   isEnterprise: boolean;
   isAuthenticated: boolean;
+  /**
+   * m1(29) race fix: true when a session token exists in localStorage at click
+   * time. useAuth's isAuthenticated stays false until auth.me resolves, so an
+   * authenticated customer clicking early was misrouted to /signup (and the
+   * signup guard then bounced them to /billing). The server re-validates the
+   * JWT inside createCheckoutSession — the browser never supplies authoritative
+   * Stripe IDs — so token presence is a safe checkout-eligibility signal.
+   */
+  hasSessionToken: boolean;
   checkout: { mutate: (input: { plan: string; successUrl: string; cancelUrl: string }) => void };
   navigate: (to: string) => void;
   origin: string;
@@ -44,9 +53,10 @@ export interface PlanCtaDeps {
  * directly (server creates the session; browser only receives the URL).
  * Guests sign up first; Enterprise stays Contact Sales and NEVER calls Checkout.
  */
-export function handlePlanCta({ planId, isEnterprise, isAuthenticated, checkout, navigate, origin }: PlanCtaDeps) {
+export function handlePlanCta({ planId, isEnterprise, isAuthenticated, hasSessionToken, checkout, navigate, origin }: PlanCtaDeps) {
   trackEvent("pricing_cta_click", { plan: planId });
-  if (isEnterprise || !isAuthenticated) {
+  const checkoutEligible = isAuthenticated || hasSessionToken;
+  if (isEnterprise || !checkoutEligible) {
     navigate(`/signup?plan=${planId}`);
     return;
   }
@@ -160,6 +170,8 @@ export function PricingPage() {
                       planId: plan.id,
                       isEnterprise,
                       isAuthenticated,
+                      // read at click time — immune to the auth.me resolution race
+                      hasSessionToken: !!localStorage.getItem("auth_token"),
                       checkout,
                       navigate,
                       origin: window.location.origin,
