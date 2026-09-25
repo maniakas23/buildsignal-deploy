@@ -128,7 +128,7 @@ async function handlePerUser(request, env, url) {
 async function handleOps(request, env) {
   // Internal shared-secret path (Operations Center / cron tooling)
   const opsKey = request.headers.get("X-Ops-Key");
-  if (env.OPS_KEY && opsKey === env.OPS_KEY) {
+  if (env.OPS_KEY && opsKey && opsKey === env.OPS_KEY) {
     return env.ORIGIN.fetch(request);
   }
   // Admin JWT path
