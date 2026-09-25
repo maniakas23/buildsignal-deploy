@@ -110,6 +110,7 @@ export function PricingPage() {
         </h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
           Straightforward monthly billing. No hidden fees, cancel anytime.
+          Applicable taxes are included in plan prices.
         </p>
       </div>
 
