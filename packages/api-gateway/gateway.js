@@ -128,7 +128,7 @@ async function handlePerUser(request, env, url) {
 async function handleOps(request, env) {
   // Internal shared-secret path (Operations Center / cron tooling)
   const opsKey = request.headers.get("X-Ops-Key");
-  if (env.OPS_KEY && opsKey && opsKey === env.OPS_KEY) {
+  if (env.OPS_KEY && opsKey === env.OPS_KEY) {
     return env.ORIGIN.fetch(request);
   }
   // Admin JWT path
@@ -149,20 +149,61 @@ function resolvePriceId(plan, env) {
   return map[String(plan || "").toLowerCase()] || null;
 }
 
+// m1(31): certified BuildSignal trial contract, ported to the production
+// checkout authority (this gateway). Pure + exported so contract tests can
+// verify the exact Stripe request deterministically — no live Stripe calls.
+const CHECKOUT_RETURN_ORIGIN = "https://buildsignal.net";
+
+function safeReturnUrl(candidate, fallback) {
+  try {
+    const u = new URL(String(candidate || ""));
+    if (u.protocol === "https:" && (u.hostname === "buildsignal.net" || u.hostname.endsWith(".buildsignal.net"))) {
+      return u.toString();
+    }
+  } catch { /* fall through */ }
+  return fallback;
+}
+
+export function buildCheckoutParams({ plan, priceId, userId, email, successUrl, cancelUrl }) {
+  return new URLSearchParams({
+    mode: "subscription",
+    success_url: safeReturnUrl(successUrl, CHECKOUT_RETURN_ORIGIN + "/billing?upgraded=1"),
+    cancel_url: safeReturnUrl(cancelUrl, CHECKOUT_RETURN_ORIGIN + "/pricing"),
+    client_reference_id: userId,
+    customer_email: email || "",
+    "line_items[0][price]": priceId,
+    "line_items[0][quantity]": "1",
+    "metadata[userId]": userId,
+    "metadata[plan]": String(plan),
+    "subscription_data[metadata][userId]": userId,
+    "subscription_data[metadata][plan]": String(plan),
+    // Certified 14-day trial: card optional at enrollment, $0 due today,
+    // no payment method at trial end -> subscription cancels (never charged).
+    "subscription_data[trial_period_days]": "14",
+    "subscription_data[trial_settings][end_behavior][missing_payment_method]": "cancel",
+    payment_method_collection: "if_required",
+    billing_address_collection: "required",
+    "automatic_tax[enabled]": "true",
+  });
+}
+
 async function handleCheckout(request, env) {
   const auth = await authenticate(request, env);
   if (!auth.ok) return trpcError("Unauthorized", "UNAUTHORIZED");
 
-  let plan;
+  let plan, successUrl, cancelUrl;
   try {
     const body = await request.json();
     plan = body?.["0"]?.json?.plan ?? body?.["0"]?.json?.planId;
+    successUrl = body?.["0"]?.json?.successUrl;
+    cancelUrl = body?.["0"]?.json?.cancelUrl;
   } catch {
     return trpcError("Invalid request body", "BAD_REQUEST");
   }
 
   const priceId = resolvePriceId(plan, env);
   if (!priceId) {
+    // Enterprise has no price mapping — self-service Checkout is impossible.
     return trpcError("Invalid or unavailable plan", "BAD_REQUEST");
   }
   if (!env.STRIPE_SECRET_KEY) {
@@ -170,18 +211,10 @@ async function handleCheckout(request, env) {
   }
 
   const userId = String(auth.user.id);
-  const params = new URLSearchParams({
-    mode: "subscription",
-    success_url: "https://buildsignal.net/settings?checkout=success",
-    cancel_url: "https://buildsignal.net/pricing?checkout=cancelled",
-    client_reference_id: userId,
-    customer_email: auth.user.email || "",
-    "line_items[0][price]": priceId,
-    "line_items[0][quantity]": "1",
-    "metadata[userId]": userId,
-    "metadata[plan]": String(plan),
-    "subscription_data[metadata][userId]": userId,
-    "subscription_data[metadata][plan]": String(plan),
+  const params = buildCheckoutParams({
+    plan, priceId, userId,
+    email: auth.user.email,
+    successUrl, cancelUrl,
   });
 
   let session;
