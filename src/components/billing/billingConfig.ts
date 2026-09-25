@@ -5,7 +5,11 @@ export const planConfig: Record<
   { name: string; color: string; features: string[] }
 > = {
   starter: {
-    name: "Starter",
+    // Plan id "starter" IS the Scout tier ($99/mo, stripe.plans id "starter",
+    // display name "Scout"). The webhook and billing context resolve the Scout
+    // price to this id, so the Billing page must call it what the customer
+    // bought (m1(32): a Scout trialing subscriber was shown "Starter").
+    name: "Scout",
     color: "bg-[var(--bs-text-tertiary)]",
     // Canonical Scout-tier entitlements: 1 county, 3 alert deliveries per UTC day.
     features: ["1 county", "3 alerts per day", "1 team member", "Email support"],
