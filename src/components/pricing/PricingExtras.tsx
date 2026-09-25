@@ -3,7 +3,7 @@
 // certified contract).
 import { useNavigate } from "react-router-dom";
 import {
-  Check, Shield, Lock, CreditCard, BadgeCheck, HelpCircle, MessageSquare,
+  Check, Shield, Lock, CreditCard, HelpCircle, MessageSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -78,10 +78,6 @@ export function PricingTrustAndCta() {
         <div className="flex items-center gap-2">
           <Shield className="h-4 w-4 text-[#4ade80]" />
           <span>No hidden fees</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <BadgeCheck className="h-4 w-4 text-[#4ade80]" />
-          <span>SOC 2 Program In Progress</span>
         </div>
       </div>
 
