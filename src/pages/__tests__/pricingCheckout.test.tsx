@@ -57,6 +57,11 @@ describe("authenticated pricing CTA → checkout handoff", () => {
 
   it("navigation toward Stripe happens only when the server returns a checkout URL", () => {
     const assign = vi.fn();
+    // Production worker field (m1(29) root cause: reading data.url never redirected)
+    applyCheckoutResult({ checkoutUrl: "https://checkout.stripe.com/c/pay/cs_live_example" } as any, assign);
+    expect(assign).toHaveBeenCalledWith("https://checkout.stripe.com/c/pay/cs_live_example");
+    // legacy shape tolerated
+    assign.mockClear();
     applyCheckoutResult({ url: "https://checkout.stripe.com/c/pay/cs_test_example" }, assign);
     expect(assign).toHaveBeenCalledWith("https://checkout.stripe.com/c/pay/cs_test_example");
     assign.mockClear();

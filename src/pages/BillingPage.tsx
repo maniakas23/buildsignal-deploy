@@ -32,9 +32,10 @@ export function BillingPage() {
     trpc.billing.usage.useQuery();
 
   const checkout = trpc.stripe.createCheckoutSession.useMutation({
-    onSuccess: (data) => {
-      // API returns { sessionId, url }
-      const url = data.url;
+    onSuccess: (data: any) => {
+      // API returns { checkoutUrl } (m1(29): data.url was never present —
+      // the redirect silently never happened); tolerate a legacy url field.
+      const url = data.checkoutUrl ?? data.url;
       if (url) window.location.href = url;
     },
   });

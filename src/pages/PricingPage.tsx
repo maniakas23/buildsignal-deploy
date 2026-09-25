@@ -57,9 +57,15 @@ export function handlePlanCta({ planId, isEnterprise, isAuthenticated, checkout,
   });
 }
 
-/** Navigate toward Stripe Checkout only when the server returned a valid URL. */
-export function applyCheckoutResult(data: { url?: string | null } | undefined, assign: (url: string) => void) {
-  if (data?.url) assign(data.url);
+/** Navigate toward Stripe Checkout only when the server returned a valid URL.
+ *  The worker returns { checkoutUrl } (m1(29): reading data.url silently
+ *  swallowed the handoff); tolerate a legacy { url } shape too. */
+export function applyCheckoutResult(
+  data: { checkoutUrl?: string | null; url?: string | null } | undefined,
+  assign: (url: string) => void
+) {
+  const u = data?.checkoutUrl ?? data?.url;
+  if (u) assign(u);
 }
 
 export function PricingPage() {
