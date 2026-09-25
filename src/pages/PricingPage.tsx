@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
+
 /** Explicit horizontal-scroll affordance for the comparison table on small screens. */
 export function MobileComparisonHint() {
   return (
@@ -39,4 +40,178 @@ export function PricingPage() {
 
   const rawPlans = (plansData as any)?.plans ?? plansData;
   // Enterprise is custom pricing ("Contact Sales") — never display a fixed monthly price for it
+  const apiPlans = Array.isArray(rawPlans)
+    ? rawPlans.map((pl: any) =>
+        pl && pl.id === "enterprise" ? { ...pl, price: null, interval: "custom" } : pl
+      )
+    : rawPlans;
   const plans = (Array.isArray(apiPlans) && apiPlans.length ? apiPlans : null) || PRICING_FALLBACK_PLANS;
+
+
+
+  return (
+    <div className="space-y-10">
+      {/* Header */}
+      <div className="text-center space-y-4">
+        <h1 className="text-4xl font-bold tracking-tight">
+          Simple, transparent pricing
+        </h1>
+        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          Straightforward monthly billing. No hidden fees, cancel anytime.
+        </p>
+      </div>
+
+      {/* Plans */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {plans.map((plan) => {
+          const price = getPriceDisplay(plan as any);
+          const isEnterprise = plan.price === null;
+
+          return (
+            <Card
+              key={plan.id}
+              className={`relative flex flex-col ${
+                plan.id === "professional"
+                  ? "border-primary shadow-lg"
+                  : "border-border"
+              }`}
+            >
+              {plan.id === "professional" && (
+                <Badge
+                  variant="default"
+                  className="absolute -top-2 -right-2 bg-[#4ade80] text-[#081018] text-[10px] px-1.5 py-0 font-semibold"
+                >
+                  Popular
+                </Badge>
+              )}
+              <CardHeader className="pb-3">
+                <div className="text-sm font-medium text-muted-foreground">
+                  {plan.name}
+                </div>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-3xl font-bold">{price.display}</span>
+                  {price.sub && (
+                    <span className="text-sm text-muted-foreground">
+                      {price.sub}
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {plan.description}
+                </p>
+              </CardHeader>
+              <CardContent className="flex-1 flex flex-col">
+                <div className="space-y-2 mb-6 flex-1">
+                  {(plan as any).features.map((feature: string) => (
+                    <div key={feature} className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-[#4ade80] shrink-0" />
+                      <span className="text-sm text-[var(--bs-text-primary)]">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+                <Button
+                  className="w-full"
+                  variant={plan.id === "professional" ? "default" : "outline"}
+                  onClick={() => {
+                    trackEvent("pricing_cta_click", { plan: plan.id });
+                    // Signed-in users already have an account — send them straight
+                    // to Billing, where the plan checkout buttons live. Guests sign up first.
+                    if (!isEnterprise && isAuthenticated) {
+                      navigate("/billing");
+                    } else {
+                      navigate(`/signup?plan=${plan.id}`);
+                    }
+                  }}
+                >
+                  {isEnterprise ? "Contact Sales" : "Get Started"}
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+                {!isEnterprise && (
+                  <p className="text-xs text-center text-[var(--bs-text-tertiary)] mt-2">
+                    {trialDisclosure(trial, { id: plan.id, price: plan.price })}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      <Separator />
+
+      {/* Feature Comparison */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold">Feature comparison</h2>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setExpandedComparison(!expandedComparison)}
+          >
+            {expandedComparison ? (
+              <>
+                <ChevronUp className="h-4 w-4 mr-1" />
+                Collapse
+              </>
+            ) : (
+              <>
+                <ChevronDown className="h-4 w-4 mr-1" />
+                Expand all
+              </>
+            )}
+          </Button>
+        </div>
+
+        <MobileComparisonHint />
+        <Card>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto pb-2">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left p-4 font-medium">Feature</th>
+                    {plans.map((plan) => (
+                      <th
+                        key={plan.id}
+                        className={`text-center p-4 font-medium ${
+                          plan.id === "professional" ? "bg-primary/5" : ""
+                        }`}
+                      >
+                        {plan.name}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {PRICING_COMPARISON_FEATURES.map((feature) => (
+                    <tr key={feature} className="border-b last:border-0">
+                      <td className="p-4 capitalize">{feature}</td>
+                      {plans.map((plan) => (
+                        <td
+                          key={plan.id}
+                          className={`text-center p-4 ${
+                            plan.id === "professional" ? "bg-primary/5" : ""
+                          }`}
+                        >
+                          <FeatureValue plan={plan as any} featureKey={feature} />
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Separator />
+
+      <PricingFaq />
+
+      <Separator />
+
+      <PricingTrustAndCta />
+    </div>
+  );
+}
