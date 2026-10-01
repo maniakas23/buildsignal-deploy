@@ -59,14 +59,16 @@ const faqs = [
     category: "getting-started",
     question: "What plans are available?",
     answer:
-      "BuildSignal offers Scout ($99/month), Professional ($249/month), and Business ($599/month) plans with simple monthly billing. You can upgrade, downgrade, or cancel anytime from your billing settings.",
+      "BuildSignal offers Scout ($99/month), Professional ($249/month), and Business ($599/month) plans with simple monthly billing. Every paid plan starts with a 14-day free trial — $0 today, no credit card required. You can upgrade, downgrade, or cancel anytime from your billing settings.",
   },
   {
     id: "gs-4",
     category: "getting-started",
     question: "What counties do you cover?",
     answer:
-      "Coverage is currently limited to a small set of counties and is expanding over time. Live production data is currently available for Charleston County, SC. You can search for specific counties in your dashboard, or contact us to inquire about a specific market.",
+      // m1(35): coverage statements must not name specific counties without
+      // verified live-production evidence; aligned with the homepage FAQ.
+      "BuildSignal covers a growing set of counties across the United States. Coverage is not nationwide. You can search for specific counties and markets within your BuildSignal dashboard, or contact us to inquire about a specific location.",
   },
   {
     id: "account-1",
@@ -87,7 +89,10 @@ const faqs = [
     category: "account",
     question: "Can I get a refund?",
     answer:
-      "We offer refunds within 7 days of your initial subscription purchase if you're not satisfied. Contact support@buildsignal.net with your account details.",
+      // m1(35): refund terms are under founder/legal review (the Terms page
+      // states a different policy). Until resolved, direct refund questions
+      // to support rather than stating an unverified policy.
+      "For refund questions, contact support@buildsignal.net with your account details and our team will review your request.",
   },
   {
     id: "data-1",
@@ -108,7 +113,9 @@ const faqs = [
     category: "data",
     question: "What is a 'signal'?",
     answer:
-      "A signal is a processed building permit record that contains actionable sales intelligence. Each signal includes project details, contact information for contractors and owners, estimated project value, and AI-generated insights about the opportunity.",
+      // m1(35): removed the unverified claim that every signal includes
+      // contractor/owner contact information.
+      "A signal is a processed building permit record that contains actionable sales intelligence. Signals include project details from the underlying public record plus AI-generated insights about the opportunity, with confidence scoring where available.",
   },
   {
     id: "integrations-1",
@@ -137,7 +144,7 @@ export function HelpPage() {
       faq.question.toLowerCase().includes(search.toLowerCase()) ||
       faq.answer.toLowerCase().includes(search.toLowerCase());
     const matchesCategory =
-      activeCategory === "all" || faq.category === activeCategory;
+      activeCategory === "all" || activeCategory === activeCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -167,7 +174,7 @@ export function HelpPage() {
         {categories.map((cat) => (
           <Button
             key={cat.id}
-            variant={activeCategory === cat.id ? "default" : "outline"}
+            variant={cat.id === activeCategory ? "default" : "outline"}
             size="sm"
             onClick={() => setActiveCategory(cat.id)}
             className="gap-2"
