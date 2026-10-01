@@ -1,10 +1,8 @@
-import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Building2,
-  Check,
   Mail,
   LayoutDashboard,
   Zap,
@@ -13,7 +11,6 @@ import {
   ArrowRight,
   Sparkles,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { OnboardingChecklist } from "@/components/onboarding/OnboardingChecklist";
 
 // m1(35): no fabricated work is claimed here. The previous version simulated
