@@ -1,4 +1,8 @@
-// Current Plan card — extracted from BillingPage (m1(24C)), behavior-identical.
+// Current Plan card — extracted from BillingPage (m1(24C)).
+// m1(34): subtext is now truth-preserving for canceled and scheduled-cancel
+// subscriptions — a canceled subscription never says "Current period ends"
+// (that implies an ongoing period), and a scheduled cancel always says the
+// access end date + "no renewal", never "renews".
 import {
   CreditCard,
   Check,
@@ -23,6 +27,35 @@ interface CurrentPlanCardProps {
   onManageBilling: () => void;
   onOpenCancelDialog: () => void;
   onGoToPricing: () => void;
+}
+
+// Truthful subtext for the Current Plan card (m1(34)).
+// Rules:
+//  - canceled: state that the subscription is canceled; no "current period"
+//    language, no renewal implication.
+//  - cancelAtPeriodEnd (scheduled cancel): give the access end date and say
+//    cancellation is scheduled + no renewal. Never the word "renews".
+//  - trialing (not scheduled): say the trial end date.
+//  - active (not scheduled): current period end date.
+//  - no subscription: free starter plan.
+export function getPlanSubtext(subscription: any): string {
+  if (!subscription) return "You are on the free starter plan";
+  const end = subscription.currentPeriodEnd
+    ? formatDate(subscription.currentPeriodEnd)
+    : null;
+  if (subscription.status === "canceled") {
+    return "Subscription canceled — no renewal, no further charges";
+  }
+  if (subscription.cancelAtPeriodEnd && end) {
+    return subscription.status === "trialing"
+      ? `Trial access ends on ${end} — cancellation scheduled, no renewal`
+      : `Access ends on ${end} — cancellation scheduled, no renewal`;
+  }
+  if (subscription.status === "trialing" && end) {
+    return `Trial ends on ${end}`;
+  }
+  if (end) return `Current period ends on ${end}`;
+  return "You are on the free starter plan";
 }
 
 export function CurrentPlanCard(p: CurrentPlanCardProps) {
@@ -53,11 +86,10 @@ export function CurrentPlanCard(p: CurrentPlanCardProps) {
                   {planInfo.name}
                 </h3>
                 <p className="text-sm text-[var(--bs-text-tertiary)] mt-0.5">
-                  {subscription?.currentPeriodEnd
-                    ? `Current period ends on ${formatDate(subscription.currentPeriodEnd)}`
-                    : "You are on the free starter plan"}
+                  {getPlanSubtext(subscription)}
                 </p>
-                {subscription?.cancelAtPeriodEnd && (
+                {subscription?.cancelAtPeriodEnd &&
+                  (subscription?.status === "active" || subscription?.status === "trialing") && (
                   <p className="text-sm text-red-400 mt-1 flex items-center gap-1">
                     <AlertTriangle className="h-3.5 w-3.5" />
                     Your subscription will cancel at the end of this period
