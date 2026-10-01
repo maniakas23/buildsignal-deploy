@@ -52,9 +52,13 @@ export function PricingFaq() {
             What's included in the Enterprise plan?
           </AccordionTrigger>
           <AccordionContent>
-            Enterprise includes everything in Business plus custom data
-            sources, SLA guarantees, dedicated support, and optional
-            on-premise deployment. Contact us for a custom quote.
+            {/* m1(35): no SLA or on-premise commitments — those are not
+                currently offered. Enterprise scope is defined per-customer
+                in a signed agreement. */}
+            Enterprise is tailored to large organizations with custom
+            requirements — options can include custom data sources and
+            dedicated support, defined in a signed agreement. Contact us for
+            a custom quote.
           </AccordionContent>
         </AccordionItem>
       </Accordion>
@@ -214,12 +218,13 @@ export const PRICING_FALLBACK_PLANS = [
     price: null,
     interval: "custom",
     description: "For large enterprises with custom requirements",
+    // m1(35): mirrors the live stripe.plans contract. Feature strings shown
+    // here are possibilities scoped per signed agreement, not commitments.
     features: [
       "Unlimited everything",
       "Dedicated account manager",
       "Custom data sources",
-      "SLA guarantees",
-      "On-premise option",
+      "Custom terms in a signed agreement",
     ],
   },
 ];
