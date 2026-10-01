@@ -68,8 +68,8 @@ export function handlePlanCta({ planId, isEnterprise, isAuthenticated, hasSessio
 }
 
 /** Navigate toward Stripe Checkout only when the server returned a valid URL.
- *  The worker returns { checkoutUrl } (m1(29): reading data.url silently
- *  swallowed the handoff); tolerate a legacy { url } shape too. */
+ *  The worker returns { checkoutUrl } (m1(29): reading data.url was never present —
+ *  the redirect silently never happened); tolerate a legacy { url } shape too. */
 export function applyCheckoutResult(
   data: { checkoutUrl?: string | null; url?: string | null } | undefined,
   assign: (url: string) => void
@@ -91,10 +91,22 @@ export function PricingPage() {
   const trial = selectTrial(plansData as any);
 
   const rawPlans = (plansData as any)?.plans ?? plansData;
-  // Enterprise is custom pricing ("Contact Sales") — never display a fixed monthly price for it
+  // Enterprise is custom pricing ("Contact Sales") — never display a fixed
+  // monthly price for it. m1(35): the live plan payload still carries an
+  // "SLA" feature string; no SLA is currently offered, so it is filtered
+  // from display here (display-only; the backend payload is unchanged).
   const apiPlans = Array.isArray(rawPlans)
     ? rawPlans.map((pl: any) =>
-        pl && pl.id === "enterprise" ? { ...pl, price: null, interval: "custom" } : pl
+        pl && pl.id === "enterprise"
+          ? {
+              ...pl,
+              price: null,
+              interval: "custom",
+              features: Array.isArray(pl.features)
+                ? pl.features.filter((f: string) => !/\bsla\b/i.test(f))
+                : pl.features,
+            }
+          : pl
       )
     : rawPlans;
   const plans = (Array.isArray(apiPlans) && apiPlans.length ? apiPlans : null) || PRICING_FALLBACK_PLANS;
