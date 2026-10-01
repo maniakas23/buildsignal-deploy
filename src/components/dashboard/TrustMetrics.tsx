@@ -1,16 +1,21 @@
 import { Shield, Lock, Eye, Database, Clock, TrendingUp, Globe, Server } from 'lucide-react';
 
+// m1(35): badges are verifiable, presently-implemented controls only.
+// No certification or compliance-program claims.
 const TRUST_ITEMS = [
-  { icon: Shield, label: 'SOC 2 (In Progress)', color: 'text-accent-teal' },
+  { icon: Shield, label: 'Tenant Isolation', color: 'text-accent-teal' },
   { icon: Lock, label: 'AES-256 Encrypted', color: 'text-accent-teal' },
   { icon: Eye, label: 'Transparent AI', color: 'text-accent-indigo' },
   { icon: Database, label: 'Public Data Only', color: 'text-accent-indigo' },
 ];
 
+// m1(35): stats must be production-verifiable. Provider count reflects the
+// live scheduler (44 providers). Lead time is labeled as historical observed
+// evidence, not a prediction. Unsupported counts were removed.
 const LIVE_STATS = [
-  { icon: Globe, label: 'Counties Covered', value: '25 (expanding)' },
-  { icon: Database, label: 'Providers Monitored', value: '12' },
-  { icon: Clock, label: 'Avg. Lead Time', value: '60-90 days' },
+  { icon: Globe, label: 'County Coverage', value: 'Select US counties' },
+  { icon: Database, label: 'Providers Monitored', value: '44' },
+  { icon: Clock, label: 'Observed Lead Time', value: 'Weeks (historical)' },
   { icon: Server, label: 'Platform Status', value: 'Monitored' },
   { icon: TrendingUp, label: 'Confidence', value: 'Per-signal' },
 ];
