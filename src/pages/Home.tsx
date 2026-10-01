@@ -39,11 +39,12 @@ export default function Home() {
             <TrendingUp className="w-4 h-4" />
             <span>Live permit intelligence in covered US markets</span>
           </div>
+          {/* m1(35): detection framing, not a prediction claim */}
           <h1 className="text-4xl md:text-6xl font-bold text-ink mb-6 tracking-tight">
-            Predict Construction Surges<br className="hidden md:block" /> Before Your Competitors
+            See Construction Surges Forming<br className="hidden md:block" /> Before Your Competitors
           </h1>
           <p className="text-xl text-muted max-w-2xl mx-auto mb-8">
-            AI-powered infrastructure intelligence for construction markets. Get actionable permit insights, growth forecasts, and market opportunities delivered to your inbox.
+            AI-powered infrastructure intelligence for construction markets. Get actionable permit insights, growth signals, and market opportunities delivered to your inbox.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to={ctaTarget} className="inline-flex items-center justify-center px-8 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition-colors">
