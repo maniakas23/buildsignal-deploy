@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Shield, ArrowRight, CheckCircle, Loader2, Zap, Users, Clock } from 'lucide-react';
+import { Shield, ArrowRight, CheckCircle, Loader2, Zap, Clock } from 'lucide-react';
 
 const VALID_CODES = ['BETA2026', 'SIGNALVIP', 'BUILDALPHA', 'EARLYACCESS'];
 
