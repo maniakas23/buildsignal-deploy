@@ -144,7 +144,7 @@ export function HelpPage() {
       faq.question.toLowerCase().includes(search.toLowerCase()) ||
       faq.answer.toLowerCase().includes(search.toLowerCase());
     const matchesCategory =
-      activeCategory === "all" || activeCategory === activeCategory;
+      activeCategory === "all" || faq.category === activeCategory;
     return matchesSearch && matchesCategory;
   });
 
