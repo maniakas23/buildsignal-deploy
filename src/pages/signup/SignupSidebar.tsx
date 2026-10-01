@@ -1,4 +1,6 @@
 // Signup sidebar (extracted verbatim from SignupPage for m1(24C)).
+// m1(35): trust copy contains only verifiable, presently-implemented facts —
+// no certification, compliance-program, or "bank-grade" claims.
 import {
   Lock,
   Shield,
@@ -32,7 +34,7 @@ export function SignupSidebar() {
             </li>
             <li className="flex items-center gap-2">
               <Shield className="h-4 w-4 text-[var(--bs-intelligence)] shrink-0" />
-              Bank-grade security &amp; SOC 2 program in progress
+              Encrypted transport, signed webhooks, tenant isolation
             </li>
           </ul>
         </div>
@@ -72,17 +74,17 @@ export function SignupSidebar() {
               <span className="font-medium text-sm text-[var(--bs-text-primary)]">Transparent AI methodology</span>
             </div>
             <p className="text-xs text-[var(--bs-text-tertiary)]">
-              Confidence scores on every prediction. Model performance published monthly. No black boxes.
+              Confidence scores on every signal. Methodology documented. No black boxes.
             </p>
           </div>
 
           <div className="bg-[var(--bs-surface)] border border-[var(--bs-border)] rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <Shield className="h-4 w-4 text-[var(--bs-intelligence)]" />
-              <span className="font-medium text-sm text-[var(--bs-text-primary)]">Enterprise-grade security</span>
+              <span className="font-medium text-sm text-[var(--bs-text-primary)]">Security practices</span>
             </div>
             <p className="text-xs text-[var(--bs-text-tertiary)]">
-              SOC 2 Type II program in progress. 256-bit AES encryption. SSO &amp; SAML 2.0 ready. Data never sold.
+              TLS 1.3 encryption in transit, AES-256 at rest. Rate-limited authentication. Data never sold.
             </p>
           </div>
 
@@ -109,7 +111,7 @@ export function SignupSidebar() {
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-sm text-[var(--bs-text-tertiary)]">
               <Lock className="h-4 w-4 text-[var(--bs-intelligence)]" />
-              256-bit SSL encryption
+              TLS 1.3 encrypted connection
             </div>
             <div className="flex items-center gap-2 text-sm text-[var(--bs-text-tertiary)]">
               <Shield className="h-4 w-4 text-[var(--bs-intelligence)]" />
@@ -117,7 +119,7 @@ export function SignupSidebar() {
             </div>
             <div className="flex items-center gap-2 text-sm text-[var(--bs-text-tertiary)]">
               <Check className="h-4 w-4 text-[var(--bs-intelligence)]" />
-              SOC 2 Type II (In Progress)
+              Organization-scoped tenant isolation
             </div>
           </div>
         </div>
