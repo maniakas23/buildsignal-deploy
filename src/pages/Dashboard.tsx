@@ -61,9 +61,12 @@ function relativeTime(dateStr: string): string {
 }
 
 function getHealthStatusColor(status: string | undefined) {
+  // m1(35) P6: an unknown/absent health status is UNKNOWN, not a failure —
+  // render it neutral instead of error red.
   const s = status?.toLowerCase() ?? 'unknown'
   if (s === 'healthy') return 'bg-accent-teal/10 text-accent-teal border-accent-teal/20'
   if (s === 'degraded') return 'bg-accent-amber/10 text-accent-amber border-accent-amber/20'
+  if (s === 'unknown' || s === 'undefined' || s === '') return 'bg-ink-wash/30 text-ink-tertiary border-ink-wash/40'
   return 'bg-accent-crimson/10 text-accent-crimson border-accent-crimson/20'
 }
 
@@ -71,6 +74,7 @@ function getHealthDotColor(status: string | undefined) {
   const s = status?.toLowerCase() ?? 'unknown'
   if (s === 'healthy') return 'bg-accent-teal'
   if (s === 'degraded') return 'bg-accent-amber'
+  if (s === 'unknown' || s === 'undefined' || s === '') return 'bg-ink-wash'
   return 'bg-accent-crimson'
 }
 
@@ -334,8 +338,10 @@ export function Dashboard() {
               <CheckCircle2 className="h-4 w-4 text-accent-teal" />
               <span className="text-sm text-ink-secondary">Status:</span>
               <span className="text-sm font-medium capitalize" style={{
+                // m1(35) P6: unknown status renders neutral, not error red.
                 color: healthScore.status === 'healthy' ? COLORS.insightTeal
                   : healthScore.status === 'degraded' ? COLORS.opportunityAmber
+                  : !healthScore.status || healthScore.status === 'unknown' ? 'var(--bs-text-tertiary)'
                   : COLORS.errorRed
               }}>
                 {healthScore.status ?? 'Unknown'}
@@ -624,20 +630,26 @@ export function Dashboard() {
                         </span>
                       </div>
                       <div className="col-span-2 text-center">
+                        {/* m1(35) P6: absent confidence is UNKNOWN — show an
+                            em dash and an empty bar, never a fake 0%. */}
+                        {opp.confidence == null ? (
+                          <span className="font-mono text-xs font-medium text-[var(--bs-text-tertiary)]">—</span>
+                        ) : (
                         <div className="flex items-center justify-center gap-2">
                           <div className="h-1.5 w-16 overflow-hidden rounded-full bg-[var(--bs-border)]">
                             <div
                               className="h-full rounded-full transition-all duration-500"
                               style={{
-                                width: `${Math.min(opp.confidence ?? 0, 100)}%`,
-                                backgroundColor: getConfidenceColor(opp.confidence ?? 0),
+                                width: `${Math.min(opp.confidence, 100)}%`,
+                                backgroundColor: getConfidenceColor(opp.confidence),
                               }}
                             />
                           </div>
                           <span className="font-mono text-xs font-medium text-[var(--bs-text-primary)]">
-                            {opp.confidence ?? 0}%
+                            {opp.confidence}%
                           </span>
                         </div>
+                        )}
                       </div>
                       <div className="col-span-3 text-right sm:col-span-1">
                         <p className="text-xs text-[var(--bs-text-tertiary)] font-mono">#{opp.id}</p>
