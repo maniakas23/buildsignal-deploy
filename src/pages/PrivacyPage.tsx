@@ -39,7 +39,7 @@ export function PrivacyPage() {
     setExpandedSection(expandedSection === id ? null : id);
   };
 
-  const lastUpdated = "January 15, 2025";
+  const lastUpdated = "October 1, 2026";
 
   const sections: PrivacySection[] = [
     {
@@ -139,8 +139,9 @@ export function PrivacyPage() {
           </p>
           <ul className="space-y-1 list-disc list-inside">
             <li>
-              <strong>Service Providers:</strong> Cloud hosting (AWS), payment
-              processing (Stripe), and email delivery (Resend)
+              <strong>Service Providers:</strong> Cloud hosting and database
+              (Cloudflare), payment processing (Stripe), and email delivery
+              (Resend)
             </li>
             <li>
               <strong>Legal Compliance:</strong> When required by law or to
@@ -152,8 +153,8 @@ export function PrivacyPage() {
             </li>
           </ul>
           <p>
-            All third-party service providers are bound by strict confidentiality
-            and data protection agreements.
+            Third-party service providers process data only as needed to deliver
+            their services to us.
           </p>
         </div>
       ),
@@ -163,9 +164,11 @@ export function PrivacyPage() {
       title: "Security Measures",
       icon: Lock,
       content: (
+        // m1(35): every item below describes a presently implemented control.
+        // No audit, certification, or monitoring claims beyond what exists.
         <div className="space-y-3 text-sm text-muted-foreground">
           <p>
-            We implement comprehensive security measures to protect your data:
+            We implement security measures to protect your data:
           </p>
           <ul className="space-y-1 list-disc list-inside">
             <li>
@@ -173,20 +176,21 @@ export function PrivacyPage() {
               for data at rest
             </li>
             <li>
-              <strong>Access Controls:</strong> Role-based access with SSO and
-              SAML 2.0 support
+              <strong>Access Controls:</strong> Organization-scoped access;
+              every API request requires a valid signed credential
             </li>
             <li>
-              <strong>Monitoring:</strong> 24/7 security monitoring and automated
-              threat detection
+              <strong>Authentication Protections:</strong> Rate-limited login
+              and registration; single-use password-reset links that expire
+              after 45 minutes
             </li>
             <li>
-              <strong>Audits:</strong> SOC 2 Type II audit in progress;
-              independent penetration testing planned
+              <strong>Webhook Verification:</strong> Billing webhooks are
+              cryptographically signature-verified and applied in event order
             </li>
             <li>
-              <strong>Backups:</strong> Encrypted, geographically distributed
-              backups
+              <strong>Monitoring:</strong> Automated operational monitoring of
+              data ingestion and platform health
             </li>
           </ul>
         </div>
