@@ -1,4 +1,5 @@
 // Home mid/trust sections (extracted verbatim from Home.tsx, m1(24C)).
+// m1(35): trust copy contains only verifiable, presently-implemented facts.
 import {
   Mail, Phone, Shield, Lock, Eye,
   MapPin, FileText, BarChart3, Users, Zap,
@@ -8,7 +9,7 @@ import {
 const capabilities = [
   { icon: MapPin, title: "County Coverage", description: "Monitor construction activity across covered US counties with daily data aggregation and automated coverage expansion." },
   { icon: FileText, title: "Permit Tracking", description: "Track municipal building permits as they are published. Filter by type, value, and geography to find relevant opportunities." },
-  { icon: BarChart3, title: "AI Predictions", description: "Machine learning models forecast construction surges with confidence scores. Methodology documented and transparent." },
+  { icon: BarChart3, title: "AI Signal Scoring", description: "Machine learning models score construction activity signals with confidence scores. Methodology documented and transparent." },
   { icon: Users, title: "User Analytics", description: "Per-account metrics and reporting dashboards. Track your research activity, saved searches, and team engagement." },
   { icon: Zap, title: "ROI Tools", description: "Investment analysis and market comparison tools. Evaluate opportunity costs and projected returns across target regions." },
   { icon: Download, title: "Reports", description: "Generate intelligence briefs with charts and narrative summaries from your dashboard." },
@@ -80,12 +81,12 @@ export function HomeTrust() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-ink mb-4">Trust and Contact</h2>
-          <p className="text-lg text-muted">Enterprise-Grade Security and Support</p>
+          <p className="text-lg text-muted">Security Practices and Support</p>
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[
-            { icon: Shield, title: "SOC 2 Type II (In Progress)", desc: "Security controls aligned to SOC 2 Type II. Certification audit not yet completed — not verified." },
-            { icon: Lock, title: "256-bit Encryption", desc: "AES-256 encryption at rest and in transit. Your data is never sold or shared with third parties." },
+            { icon: Shield, title: "Tenant Isolation", desc: "Every query is scoped to your organization. No account can access another account's data." },
+            { icon: Lock, title: "256-bit Encryption", desc: "AES-256 encryption at rest and TLS 1.3 in transit. Your data is never sold or shared with third parties." },
             { icon: Eye, title: "No Data Selling", desc: "We never sell, rent, or share your proprietary data with external parties. Your intelligence stays yours." },
             { icon: Mail, title: "Email Support", desc: "Reach our team at support@buildsignal.net. We typically respond within one business day." },
             { icon: Phone, title: "Phone Support", desc: "Available for Business plan customers. Contact support to schedule a call with our team." },
