@@ -7,14 +7,8 @@ interface Props {
   onAccessGranted: () => void;
 }
 
-// Customer avatar stack for social proof
-const CUSTOMER_AVATARS = [
-  { bg: 'bg-accent-indigo', init: 'JD' },
-  { bg: 'bg-accent-teal', init: 'MK' },
-  { bg: 'bg-accent-amber', init: 'SR' },
-  { bg: 'bg-accent-violet', init: 'AL' },
-  { bg: 'bg-accent-crimson', init: 'TW' },
-];
+// m1(35): the fake customer-avatar social-proof stack was removed — BuildSignal
+// has no customer proof it can show, and invented avatars imply real customers.
 
 export default function BetaAccessGate({ onAccessGranted }: Props) {
   const [code, setCode] = useState('');
@@ -60,28 +54,23 @@ export default function BetaAccessGate({ onAccessGranted }: Props) {
           <p className="text-sm text-ink-secondary">Infrastructure Intelligence Platform</p>
         </div>
 
-        {/* Value Proposition — answers the "why should I care?" question */}
+        {/* Value Proposition — answers the "why should I care?" question.
+            m1(35): lead time is labeled as historical observed evidence,
+            not a guaranteed or predicted outcome. */}
         <div className="bg-surface/50 border border-accent-indigo/10 rounded-xl p-4 mb-5 text-center">
           <p className="text-sm text-ink-primary font-medium mb-2 flex items-center justify-center gap-2">
             <Zap className="w-4 h-4 text-accent-amber" />
-            Get 45-60 day head starts on construction projects
+            Early signals on construction projects
           </p>
           <p className="text-xs text-ink-tertiary">
-            Monitor permits, zoning changes, and utility filings across covered US counties — before they go public.
+            Monitor permits, zoning changes, and utility filings across covered US counties. Historical observed lead times of weeks, based on past detections — not a guarantee of future results.
           </p>
         </div>
 
-        {/* Social Proof — authority by association */}
+        {/* Beta status */}
         <div className="flex items-center justify-center gap-3 mb-5">
-          <div className="flex -space-x-2">
-            {CUSTOMER_AVATARS.map((a, i) => (
-              <div key={i} className={`w-7 h-7 rounded-full ${a.bg} border-2 border-canvas flex items-center justify-center text-[9px] font-bold text-white`}>
-                {a.init}
-              </div>
-            ))}
-          </div>
           <div className="text-xs text-ink-secondary">
-            <span className="font-semibold text-ink-primary">Private beta</span> — limited seats
+            <span className="font-semibold text-ink-primary">Private beta</span> — access by invitation
           </div>
           <span className="text-ink-wash">|</span>
           <div className="flex items-center gap-1 text-xs text-accent-teal">
@@ -200,13 +189,13 @@ export default function BetaAccessGate({ onAccessGranted }: Props) {
           </div>
         )}
 
-        {/* Trust footer */}
+        {/* Trust footer — m1(35): verifiable facts only */}
         <div className="mt-6 flex items-center justify-center gap-4 text-[11px] text-ink-tertiary">
           <span className="flex items-center gap-1">
-            <Shield className="w-3 h-3" /> SOC 2 Program In Progress
+            <Shield className="w-3 h-3" /> Tenant Isolation
           </span>
           <span className="w-1 h-1 rounded-full bg-ink-wash" />
-          <span>GDPR Ready</span>
+          <span>Data Never Sold</span>
           <span className="w-1 h-1 rounded-full bg-ink-wash" />
           <span>Encrypted</span>
         </div>
