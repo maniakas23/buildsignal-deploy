@@ -134,7 +134,8 @@ export function FeatureValue({
       case "alerts":
         return lower.includes("alert");
       case "counties":
-        return lower.includes("count");
+        // m1(35): "Account Manager" must not match the counties row.
+        return lower.includes("count") && !lower.includes("account");
       case "watchlist":
         return lower.includes("watch") || lower.includes("track");
       case "api":
@@ -142,7 +143,9 @@ export function FeatureValue({
       case "sso":
         return lower.includes("sso") || lower.includes("saml");
       case "support":
-        return lower.includes("support") || lower.includes("dedicated");
+        // m1(35): match actual support features only — "dedicated" alone
+        // pulled "Dedicated Account Manager" into the support row.
+        return lower.includes("support");
       case "analytics":
         return lower.includes("analytic") || lower.includes("dashboard") || lower.includes("insight");
       case "whiteglove":
@@ -218,8 +221,8 @@ export const PRICING_FALLBACK_PLANS = [
     price: null,
     interval: "custom",
     description: "For large enterprises with custom requirements",
-    // m1(35): mirrors the live stripe.plans contract. Feature strings shown
-    // here are possibilities scoped per signed agreement, not commitments.
+    // m1(35): feature strings shown here are possibilities scoped per signed
+    // agreement, not commitments. No SLA or on-premise claims.
     features: [
       "Unlimited everything",
       "Dedicated account manager",
