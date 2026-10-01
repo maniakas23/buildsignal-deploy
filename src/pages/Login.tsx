@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Building2, ArrowRight, Eye, EyeOff, Mail, Lock, UserPlus, ArrowLeft } from "lucide-react";
+import { Building2, ArrowRight, Eye, EyeOff, Mail, Lock, UserPlus, ArrowLeft, Shield } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 
@@ -158,15 +158,15 @@ export function Login() {
             </div>
           </div>
 
-          {/* Trust footer */}
+          {/* Trust footer — m1(35): verifiable facts only, no certification claims */}
           <div className="flex items-center justify-center gap-4 text-xs text-[var(--bs-text-tertiary)]">
             <span className="flex items-center gap-1">
               <Lock className="h-3 w-3" />
-              SSL Secure
+              TLS 1.3 Encrypted
             </span>
             <span className="flex items-center gap-1">
-              <Building2 className="h-3 w-3" />
-              SOC 2 Type II (In Progress)
+              <Shield className="h-3 w-3" />
+              Tenant Isolation
             </span>
           </div>
         </div>
