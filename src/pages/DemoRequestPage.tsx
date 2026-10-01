@@ -62,6 +62,10 @@ export function DemoRequestPage() {
     if (step > 1) setStep(step - 1);
   };
 
+  // m1(35): this page previously discarded the request entirely (no API
+  // call) while promising a 24h follow-up — a fabricated commitment. There
+  // is no demo-request backend endpoint, so the honest handoff is a
+  // pre-filled email to the verified support address.
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     trackEvent("demo_request", {
@@ -69,6 +73,24 @@ export function DemoRequestPage() {
       use_case: form.useCase,
       company: form.company,
     });
+    const subject = `Demo request — ${form.company || form.name}`;
+    const lines = [
+      `Name: ${form.name}`,
+      `Email: ${form.email}`,
+      `Company: ${form.company}`,
+      `Role: ${form.role || "—"}`,
+      `Team size: ${form.teamSize || "—"}`,
+      `Use case: ${form.useCase || "—"}`,
+      `Demo type: ${form.demoType === "video" ? "Video call" : "Phone call"}`,
+      `Preferred date: ${form.preferredDate ? form.preferredDate.toDateString() : "—"}`,
+      `Preferred time: ${form.preferredTime || "—"}`,
+      "",
+      form.notes || "",
+    ];
+    const mailto = `mailto:support@buildsignal.net?subject=${encodeURIComponent(
+      subject
+    )}&body=${encodeURIComponent(lines.join("\n"))}`;
+    window.location.href = mailto;
     setSubmitted(true);
   };
 
@@ -136,10 +158,12 @@ export function DemoRequestPage() {
           <div className="mx-auto h-16 w-16 bg-green-500/10 rounded-full flex items-center justify-center">
             <CheckCircle2 className="h-8 w-8 text-green-500" />
           </div>
-          <h1 className="text-2xl font-bold">Demo Request Submitted!</h1>
+          <h1 className="text-2xl font-bold">Almost done — send your request</h1>
           <p className="text-muted-foreground">
-            Thanks for your interest! Our team will reach out within 24 hours to
-            confirm your demo time and send a calendar invite.
+            Your email app should have opened with your demo request pre-filled
+            to <strong>support@buildsignal.net</strong>. Press send to submit
+            it. If nothing opened, email us directly at that address and we
+            typically respond within one business day.
           </p>
           <div className="bg-muted rounded-lg p-4 text-sm space-y-2">
             <div className="flex justify-between">
@@ -193,8 +217,8 @@ export function DemoRequestPage() {
           </div>
           <h1 className="text-3xl font-bold mb-2">Request a Demo</h1>
           <p className="text-muted-foreground max-w-lg mx-auto">
-            See how BuildSignal can help you spot construction surges before your
-            competitors. Schedule a personalized demo with our team.
+            See how BuildSignal surfaces early construction activity in your
+            markets. Schedule a personalized demo with our team.
           </p>
         </div>
 
@@ -397,7 +421,6 @@ export function DemoRequestPage() {
                         )}
                       >
                         <Phone className="h-6 w-6 text-primary mx-auto mb-2" />
-                        <div className="font-medium text-sm">Phone Call</div>
                         <div className="text-xs text-muted-foreground">
                           We'll call you
                         </div>
@@ -480,11 +503,11 @@ export function DemoRequestPage() {
           </CardContent>
         </Card>
 
-        {/* Trust Signals */}
+        {/* Trust Signals — m1(35): verified response expectation only */}
         <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-green-500" />
-            <span>Response within 24h</span>
+            <span>We typically respond within one business day</span>
           </div>
           <div className="flex items-center gap-2">
             <Users className="h-4 w-4 text-green-500" />
