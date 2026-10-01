@@ -1,30 +1,36 @@
-import { Shield, Lock, Eye, Server, FileCheck, Fingerprint, Clock, Globe } from 'lucide-react';
+import { Shield, Lock, Eye, Server, FileCheck, KeyRound, Globe, MonitorCheck } from 'lucide-react';
 
-const CERTIFICATIONS = [
-  { name: 'SOC 2 Type II (In Progress)', description: 'Alignment program underway — certification audit not yet completed', icon: <FileCheck className="w-5 h-5 text-accent-teal" /> },
-  { name: 'GDPR Aligned', description: 'Controls aligned with EU data protection regulations', icon: <Shield className="w-5 h-5 text-accent-indigo" /> },
-  { name: 'CCPA Ready', description: 'California Consumer Privacy Act compliance', icon: <Eye className="w-5 h-5 text-accent-amber" /> },
-  { name: 'ISO 27001 (Planned)', description: 'Information security management certification — planned, not yet held', icon: <Lock className="w-5 h-5 text-accent-crimson" /> },
+// m1(35): every item below is a presently implemented, verifiable control.
+// No certification, audit-status, SLA, or compliance-program claims appear on
+// this page — BuildSignal holds none and none may be implied.
+const SECURITY_PRACTICES = [
+  { name: 'Encrypted Transport', description: 'All traffic served over HTTPS with TLS 1.3', icon: <Lock className="w-5 h-5 text-accent-teal" /> },
+  { name: 'Encryption at Rest', description: 'AES-256 encryption for stored data via our platform provider', icon: <Shield className="w-5 h-5 text-accent-indigo" /> },
+  { name: 'Signed Webhooks', description: 'Every Stripe webhook is signature-verified before processing', icon: <FileCheck className="w-5 h-5 text-accent-amber" /> },
+  { name: 'Tenant Isolation', description: 'Every query is scoped to your organization — no cross-account access', icon: <Eye className="w-5 h-5 text-accent-crimson" /> },
 ];
 
 const SECURITY_FEATURES = [
-  { title: 'End-to-End Encryption', description: 'All data encrypted in transit (TLS 1.3) and at rest (AES-256)', icon: <Lock className="w-5 h-5" /> },
-  { title: 'Zero-Trust Architecture', description: 'Every request authenticated and authorized, regardless of origin', icon: <Shield className="w-5 h-5" /> },
-  { title: 'Penetration Testing (Planned)', description: 'Independent penetration testing planned as part of the SOC 2 program', icon: <Fingerprint className="w-5 h-5" /> },
-  { title: '99.9% Uptime SLA', description: 'Enterprise-grade infrastructure with automatic failover', icon: <Clock className="w-5 h-5" /> },
-  { title: 'Data Residency Options', description: 'Choose where your data is stored and processed', icon: <Globe className="w-5 h-5" /> },
-  { title: 'Role-Based Access Control', description: 'Granular permissions for team members', icon: <Server className="w-5 h-5" /> },
-  { title: 'Audit Logging', description: 'Complete audit trail of all data access and changes', icon: <Eye className="w-5 h-5" /> },
-  { title: 'Automated Backups', description: 'Point-in-time recovery with 30-day retention', icon: <FileCheck className="w-5 h-5" /> },
+  { title: 'Encryption in Transit & at Rest', description: 'TLS 1.3 for data in transit; AES-256 for data at rest', icon: <Lock className="w-5 h-5" /> },
+  { title: 'Authenticated API Access', description: 'Every API request requires a valid signed credential', icon: <Shield className="w-5 h-5" /> },
+  { title: 'Webhook Signature Verification', description: 'Billing webhooks are cryptographically verified and processed in event order', icon: <FingerprintPlaceholder /> },
+  { title: 'Rate-Limited Authentication', description: 'Login and registration endpoints are rate-limited and fail closed', icon: <KeyRound className="w-5 h-5" /> },
+  { title: 'Single-Use Password Reset', description: 'Reset links expire after 45 minutes and can be used only once', icon: <Globe className="w-5 h-5" /> },
+  { title: 'Organization Access Controls', description: 'Account access is scoped to organization membership and roles', icon: <Server className="w-5 h-5" /> },
+  { title: 'Operational Monitoring', description: 'Data ingestion and platform health are continuously monitored', icon: <MonitorCheck className="w-5 h-5" /> },
+  { title: 'Account Deletion', description: 'You can permanently delete your account and personal data', icon: <Eye className="w-5 h-5" /> },
 ];
+
+// Icon wrapper keeps the diff small without claiming anything.
+function FingerprintPlaceholder() {
+  return <FileCheck className="w-5 h-5" />;
+}
 
 const PRIVACY_COMMITMENTS = [
   'We never sell your data to third parties',
-  'You own your data — export or delete anytime',
+  'You own your data — delete your account at any time',
   'Transparent AI — every recommendation shows its sources',
   'Minimum data collection — we only gather what we need',
-  'Breach notification within 24 hours',
-  'Independent privacy audits planned',
 ];
 
 export default function SecurityPage() {
@@ -37,23 +43,23 @@ export default function SecurityPage() {
             <div className="w-10 h-10 rounded-xl bg-accent-indigo/10 flex items-center justify-center">
               <Shield className="w-5 h-5 text-accent-indigo" />
             </div>
-            <span className="text-xs text-ink-tertiary uppercase tracking-wider">Enterprise Security</span>
+            <span className="text-xs text-ink-tertiary uppercase tracking-wider">Security</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-ink-primary mb-3">
             Your Data Security Is Our Priority
           </h1>
           <p className="text-sm text-ink-secondary leading-relaxed max-w-2xl">
-            BuildSignal implements enterprise-grade security controls to protect your data at every layer. 
-            We are actively working toward SOC 2 certification (not yet certified) and align our controls with GDPR requirements.
+            This page describes the security controls BuildSignal has implemented and operates today.
+            Each control listed here is live in production.
           </p>
         </div>
       </section>
 
-      {/* Certifications */}
+      {/* Security Practices */}
       <section className="max-w-content mx-auto px-6 py-10">
-        <h2 className="text-lg font-semibold text-ink-primary mb-5">Certifications & Compliance</h2>
+        <h2 className="text-lg font-semibold text-ink-primary mb-5">Security Practices</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {CERTIFICATIONS.map((cert) => (
+          {SECURITY_PRACTICES.map((cert) => (
             <div key={cert.name} className="bg-surface rounded-2xl p-5 shadow-card border border-ink-wash text-center">
               <div className="w-10 h-10 rounded-xl bg-accent-indigo/[0.06] flex items-center justify-center mx-auto mb-3">
                 {cert.icon}
@@ -104,7 +110,7 @@ export default function SecurityPage() {
           <h2 className="text-lg font-semibold text-ink-primary mb-3">Transparent AI</h2>
           <p className="text-sm text-ink-secondary leading-relaxed mb-4 max-w-2xl">
             BuildSignal&apos;s AI models are designed for transparency. Every recommendation includes 
-            a confidence breakdown showing signal counts, source diversity, historical accuracy, and data freshness.
+            a confidence breakdown showing signal counts, source diversity, and data freshness.
             You can always see why an opportunity was flagged and what data supports it.
           </p>
           <div className="flex items-center gap-2">
