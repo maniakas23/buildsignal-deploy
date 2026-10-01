@@ -14,9 +14,10 @@ export function Footer() {
               <Building2 className="h-5 w-5 text-primary" />
               <span className="font-bold">BuildSignal</span>
             </Link>
+            {/* m1(35): detection framing — no prediction claim */}
             <p className="text-sm text-muted-foreground">
-              Commercial intelligence for construction markets. Predict
-              opportunities before they happen.
+              Commercial intelligence for construction markets. Early signals
+              from public permit and development activity.
             </p>
           </div>
 
@@ -69,7 +70,8 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Contact */}
+          {/* Contact — m1(35): only the verified channel and response
+              expectation; no unverified office location or support hours */}
           <div className="space-y-3">
             <h4 className="font-medium text-sm">Contact</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
@@ -81,8 +83,7 @@ export function Footer() {
                   support@buildsignal.net
                 </a>
               </li>
-              <li>San Francisco, CA</li>
-              <li>Mon–Fri, 9AM–6PM ET</li>
+              <li>We typically respond within one business day.</li>
             </ul>
           </div>
         </div>
