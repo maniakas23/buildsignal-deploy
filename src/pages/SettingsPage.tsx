@@ -17,7 +17,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import {
   Select,
@@ -30,11 +29,11 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
 const planConfig: Record<string, { name: string; color: string; features: string[] }> = {
-  starter: { name: "Starter", color: "bg-[var(--bs-text-tertiary)]", features: ["1 county", "10 searches/mo", "1 report/mo"] },
-  scout: { name: "Scout", color: "bg-[var(--bs-action)]", features: ["5 counties", "100 searches/mo", "10 reports/mo", "Email alerts"] },
-  professional: { name: "Professional", color: "bg-[var(--bs-intelligence)]", features: ["20 counties", "500 searches/mo", "50 reports/mo", "API access"] },
-  business: { name: "Business", color: "bg-[var(--bs-text-primary)]", features: ["Unlimited counties", "Unlimited searches", "Full API", "Priority support"] },
-  enterprise: { name: "Enterprise", color: "bg-[#FFD700]", features: ["Custom integrations", "Unlimited seats", "SLA guarantee"] },
+  starter: { name: "Scout", color: "bg-[var(--bs-text-tertiary)]", features: ["1 county", "3 alerts per day", "1 team member", "Email support"] },
+  scout: { name: "Scout", color: "bg-[var(--bs-action)]", features: ["1 county", "3 alerts per day", "1 watchlist", "1 team member", "Email support"] },
+  professional: { name: "Professional", color: "bg-[var(--bs-intelligence)]", features: ["10 counties", "50 alerts per day", "Watchlists", "Basic analytics", "Priority support"] },
+  business: { name: "Business", color: "bg-[var(--bs-text-primary)]", features: ["All counties", "Unlimited alerts", "Advanced analytics", "SSO", "Dedicated support"] },
+  enterprise: { name: "Enterprise", color: "bg-[#FFD700]", features: ["Custom coverage", "White-glove onboarding", "Dedicated account manager"] },
 };
 
 export default function SettingsPage() {
@@ -296,12 +295,6 @@ export default function SettingsPage() {
                   </div>
                   <div>
                     <p className="font-semibold text-[var(--bs-text-primary)]">{planInfo.name}</p>
-                    <Badge
-                      variant="secondary"
-                      className="bg-[var(--bs-surface-hover)] text-[var(--bs-text-tertiary)] text-[10px] mt-0.5"
-                    >
-                      {currentPlan === "starter" ? "Free" : "Paid"}
-                    </Badge>
                   </div>
                 </div>
 

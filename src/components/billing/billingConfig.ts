@@ -32,7 +32,7 @@ export const planConfig: Record<
   enterprise: {
     name: "Enterprise",
     color: "bg-[var(--bs-opportunity)]",
-    features: ["Custom coverage", "SLA", "White-glove onboarding", "Dedicated account manager"],
+    features: ["Custom coverage", "White-glove onboarding", "Dedicated account manager"],
   },
 };
 
