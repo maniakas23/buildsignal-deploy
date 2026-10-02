@@ -119,7 +119,7 @@ function TodaySummary({ dashboard }: { dashboard: DashboardMetrics | null }) {
       <div className="bg-surface rounded-2xl p-5 shadow-card border border-ink-wash">
         <div className="flex items-center gap-2 mb-4"><Zap className="w-4 h-4 text-accent-teal" /><h2 className="text-sm font-semibold text-ink-primary">Today&apos;s Activity</h2><span className="text-xs text-ink-tertiary ml-auto">Last 24h</span></div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {[{ label: 'New Permits', value: newPermits || '—', icon: <FolderOpen className="w-4 h-4 text-accent-indigo" /> }, { label: 'Zoning Changes', value: zoningItems || '—', icon: <MapPin className="w-4 h-4 text-accent-amber" /> }, { label: 'Utility Requests', value: utilityReqs || '—', icon: <Zap className="w-4 h-4 text-accent-teal" /> }, { label: 'Total Signals', value: totalNew || '—', icon: <TrendingUp className="w-4 h-4 text-accent-crimson" />, highlight: true }].map((stat) => (
+          {[{ label: 'New Permits', value: newPermits || '—', icon: <FolderOpen className="w-4 h-4 text-accent-indigo" /> }, { label: 'Zoning Changes', value: zoningItems || '—', icon: <MapPin className="text-accent-amber" /> }, { label: 'Utility Requests', value: utilityReqs || '—', icon: <Zap className="w-4 h-4 text-accent-teal" /> }, { label: 'Total Signals', value: totalNew || '—', icon: <TrendingUp className="w-4 h-4 text-accent-crimson" />, highlight: true }].map((stat) => (
             <div key={stat.label} className={`rounded-xl p-3 ${stat.highlight ? 'bg-accent-indigo/[0.04] border border-accent-indigo/10' : 'bg-canvas'}`}>
               <div className="flex items-center gap-2 mb-1.5">{stat.icon}<span className="text-xs text-ink-tertiary uppercase tracking-wider">{stat.label}</span></div>
               <span className={`font-mono text-xl ${stat.highlight ? 'text-accent-indigo' : 'text-ink-primary'}`}>{stat.value}</span>
@@ -186,7 +186,7 @@ function ActionBadge({ action }: { action: string }) {
     'visit-site': { label: 'Visit Site', color: 'bg-accent-indigo/10 text-accent-indigo' }, 'watch-utilities': { label: 'Watch Utilities', color: 'bg-accent-teal/10 text-accent-teal' }, 'review-planning': { label: 'Review Planning', color: 'bg-accent-amber/10 text-accent-amber' },
   };
   const config = actions[action] || { label: action, color: 'bg-canvas text-ink-secondary' };
-  return <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium ${config.color}`}>{config.label}</span>;
+  return <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium ${config.label}`}>{config.label}</span>;
 }
 
 function RecommendationCard({ rec, index }: { rec: Recommendation; index: number }) {
@@ -376,7 +376,7 @@ export default function OpportunityDashboard() {
             <div className="space-y-4">{dashboard.zones.length === 0 && <EmptyState title="No coverage areas yet" message="BuildSignal is establishing coverage. Check back in 24 hours or contact support." />}{dashboard.zones.map((zone: Zone, i: number) => (<ZoneCard key={zone.id} zone={zone} index={i} />))}</div>
             <div className="bg-surface rounded-2xl p-5 shadow-card">
               <div className="flex items-center justify-between mb-4"><h3 className="text-base font-semibold text-ink-primary">Recent Activity</h3><ConfidenceBadge confidence={92} compact /></div>
-              {dashboard.recentSurges.length === 0 && <EmptyState title="No activity detected" message="BuildSignal is monitoring for activity." icon="bell" />}
+              {dashboard.recentSurges.length === 0 && <EmptyState title="No activity observed yet" message="BuildSignal is monitoring for activity." icon="bell" />}
               <div className="divide-y divide-ink-wash">{dashboard.recentSurges.map((alert: SurgeAlert, i: number) => (<SurgeItem key={alert.id} alert={alert} index={i} />))}</div>
             </div>
           </div>
