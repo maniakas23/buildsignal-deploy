@@ -172,7 +172,7 @@ export function EvidencePanel({
     return (
       <Card className={cn("w-full", className)}>
         <CardContent className="p-6 text-center text-muted-foreground text-sm">
-          No evidence data available for this recommendation.
+          Evidence not yet available for this recommendation.
         </CardContent>
       </Card>
     );
@@ -256,10 +256,7 @@ export function EvidencePanel({
             <CollapsibleContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pb-2 pl-6">
                 {keyMetrics.map((metric) => (
-                  <div
-                    key={metric.label}
-                    className="p-2.5 rounded-md border bg-card/50"
-                  >
+                  <div key={metric.label} className="p-2.5 rounded-md border bg-card/50">
                     <div className="text-xs text-muted-foreground mb-0.5">
                       {metric.label}
                     </div>
@@ -317,10 +314,7 @@ export function EvidencePanel({
             <CollapsibleContent>
               <div className="space-y-2 pb-2 pl-6">
                 {historicalContext.map((ctx) => (
-                  <div
-                    key={ctx.period}
-                    className="flex items-start gap-2 py-1"
-                  >
+                  <div key={ctx.period} className="flex items-start gap-2 py-1">
                     <TrendIcon trend={ctx.trend} />
                     <div>
                       <span className="text-sm font-medium">{ctx.period}</span>
