@@ -49,7 +49,7 @@ const PRODUCTION_RESPONSE = {
       description: "Custom solutions for large organizations",
       price: null,
       interval: null,
-      features: ["Custom Coverage", "SLA"],
+      features: ["Custom Coverage"],
       cta: "Contact Sales",
       purchasable: false,
       popular: false,

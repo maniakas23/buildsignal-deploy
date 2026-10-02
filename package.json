@@ -4,22 +4,21 @@
   "version": "1.0.0",
   "type": "module",
   "workspaces": [
-    "packages/*"
+    "packages/api",
+    "packages/frontend"
   ],
   "scripts": {
     "dev": "npm run dev --workspace=packages/frontend",
     "build": "npm run build --workspaces --if-present",
     "build:frontend": "npm run build --workspace=packages/frontend",
     "build:api": "npm run build --workspace=packages/api",
-    "build:signalcore": "npm run build --workspace=packages/signalcore",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "eslint packages/ --ext .ts,.tsx",
     "verify": "npm run typecheck && npm run lint && npm run build",
     "test": "vitest run",
     "deploy:frontend": "npm run deploy --workspace=packages/frontend",
     "deploy:api": "npm run deploy --workspace=packages/api",
-    "deploy:signalcore": "npm run deploy --workspace=packages/signalcore",
-    "deploy": "npm run deploy:api && npm run deploy:signalcore && npm run deploy:frontend",
+    "deploy": "npm run deploy:api && npm run deploy:frontend",
     "db:generate": "cd packages/api && drizzle-kit generate",
     "db:migrate": "cd packages/api && drizzle-kit migrate",
     "db:migrate:prod": "npx wrangler d1 migrations apply buildsignal-db-production --remote",

@@ -56,7 +56,6 @@ const PLAN_CONFIG = {
       "Everything in Business",
       "Custom integrations",
       "Unlimited team seats",
-      "SLA guarantee",
       "Dedicated account manager",
     ],
   },

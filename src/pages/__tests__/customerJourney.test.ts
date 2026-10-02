@@ -57,7 +57,7 @@ const PRODUCTION_RESPONSE = {
       description: "Custom solutions for large organizations",
       price: null,
       interval: null,
-      features: ["Custom Coverage", "SLA", "White-Glove Onboarding", "Dedicated Account Manager"],
+      features: ["Custom Coverage", "White-Glove Onboarding", "Dedicated Account Manager"],
       cta: "Contact Sales",
       purchasable: false,
       popular: false,
