@@ -31,8 +31,9 @@ export function TermsPage() {
     setExpandedSection(expandedSection === id ? null : id);
   };
 
-  const lastUpdated = "January 15, 2025";
-  const effectiveDate = "February 1, 2025";
+  // m1(36): dates reflect the actual terms revision deployed on 2026-10-02.
+  const lastUpdated = "October 2, 2026";
+  const effectiveDate = "October 2, 2026";
 
   const sections: TermsSection[] = [
     {
@@ -42,7 +43,8 @@ export function TermsPage() {
       content: (
         <div className="space-y-3 text-sm text-muted-foreground">
           <p>
-            By accessing or using BuildSignal, you agree to be bound by these
+            BuildSignal is operated by Parcel Lead Pro LLC. By accessing or
+            using BuildSignal, you agree to be bound by these
             Terms of Service and all applicable laws and regulations. If you do
             not agree with any of these terms, you are prohibited from using or
             accessing this platform.
@@ -97,12 +99,17 @@ export function TermsPage() {
               You may upgrade or downgrade your plan at any time
             </li>
             <li>
-              Refunds are provided per our 14-day money-back guarantee policy
+              You may cancel at any time; cancellation prevents future renewal
+              but does not create a refund
             </li>
           </ul>
           <p>
-            All fees are exclusive of taxes. You are responsible for any
-            applicable taxes based on your jurisdiction.
+            Subscription payments are non-refundable except where required by
+            applicable law.
+          </p>
+          <p>
+            Applicable taxes are included in displayed self-service plan
+            prices. Taxes are calculated at checkout based on your jurisdiction.
           </p>
         </div>
       ),
@@ -143,7 +150,7 @@ export function TermsPage() {
           </p>
           <p>
             BuildSignal data and insights (including predictions, reports, and
-            analytics) are the property of BuildSignal, Inc. You may use these
+            analytics) are the property of Parcel Lead Pro LLC. You may use these
             for your internal business purposes but may not resell or redistribute
             them without written consent.
           </p>
@@ -168,7 +175,7 @@ export function TermsPage() {
         <div className="space-y-3 text-sm text-muted-foreground">
           <p>
             All content, software, and materials on BuildSignal are the
-            intellectual property of BuildSignal, Inc. or our licensors. This
+            intellectual property of Parcel Lead Pro LLC or its licensors. This
             includes text, graphics, logos, icons, software, and AI models.
           </p>
           <p>

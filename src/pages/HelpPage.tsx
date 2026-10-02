@@ -89,10 +89,9 @@ const faqs = [
     category: "account",
     question: "Can I get a refund?",
     answer:
-      // m1(35): refund terms are under founder/legal review (the Terms page
-      // states a different policy). Until resolved, direct refund questions
-      // to support rather than stating an unverified policy.
-      "For refund questions, contact support@buildsignal.net with your account details and our team will review your request.",
+      // m1(36): founder-confirmed refund policy — non-refundable except where
+      // required by applicable law; cancellation stops future renewal only.
+      "Subscription payments are non-refundable except where required by applicable law. You can cancel at any time — cancellation prevents future renewal but does not create a refund. For billing questions, contact support@buildsignal.net.",
   },
   {
     id: "data-1",

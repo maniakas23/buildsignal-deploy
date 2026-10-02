@@ -100,11 +100,9 @@ export function ContactPage() {
                 <div>
                   <div className="font-medium text-sm">Company</div>
                   <div className="text-sm text-muted-foreground">
-                    BuildSignal, Inc.
+                    Parcel Lead Pro LLC
                     <br />
                     Remote-first team
-                    <br />
-                    San Francisco Bay Area
                   </div>
                 </div>
               </div>
