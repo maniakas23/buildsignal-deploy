@@ -158,7 +158,7 @@ function ExecutiveBrief({ dashboard, dashState, onNavigate }: { dashboard: Dashb
             { label: 'New Signals', value: newSignals || '—', icon: <Zap className="w-3.5 h-3.5" />, color: 'text-accent-indigo', action: 'alerts' },
             { label: 'High Confidence', value: highConf || '—', icon: <CheckCircle2 className="w-3.5 h-3.5" />, color: 'text-accent-teal', action: 'projects' },
             { label: 'Needs Review', value: attentionNeeded || '—', icon: <AlertTriangle className="w-3.5 h-3.5" />, color: 'text-accent-amber', action: 'alerts' },
-            { label: 'Active Areas', value: dashboard?.zones.length || '—', icon: <MapPin className="w-3.5 h-3.5" />, color: 'text-accent-teal', action: 'map' },
+            { label: 'Active Areas', value: dashboard?.zones.length || '—', icon: <MapPin className="w-4 h-4" />, color: 'text-accent-teal', action: 'map' },
           ].map((kpi) => (
             <button key={kpi.label} onClick={() => onNavigate(kpi.action)} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/[0.06] backdrop-blur-sm border border-white/[0.08] hover:bg-white/[0.1] transition-colors text-left">
               <span className={`${kpi.color}`}>{kpi.icon}</span>
@@ -259,7 +259,7 @@ function ActionBadge({ action }: { action: string }) {
     'review-planning': { label: 'Review Planning', color: 'bg-accent-amber/10 text-accent-amber' },
   };
   const config = actions[action] || { label: action, color: 'bg-canvas text-ink-secondary' };
-  return (<span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium ${config.color}`}>{config.label}</span>);
+  return (<span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium ${config.label}`}>{config.label}</span>);
 }
 
 function RecommendationCard({ rec, index }: { rec: Recommendation; index: number }) {
@@ -525,7 +525,7 @@ export default function OpportunityDashboard() {
                 </div>
                 <div className="bg-surface rounded-2xl p-5 shadow-card">
                   <div className="flex items-center justify-between mb-4"><h3 className="text-base font-semibold text-ink-primary">Recent Activity</h3><ConfidenceBadge score={92} /></div>
-                  {dashboard.recentSurges.length === 0 && <EmptyState title="No activity detected" message="BuildSignal is monitoring for activity." icon="bell" />}
+                  {dashboard.recentSurges.length === 0 && <EmptyState title="No activity observed yet" message="BuildSignal is monitoring for activity." icon="bell" />}
                   <div className="divide-y divide-ink-wash">{dashboard.recentSurges.map((alert: SurgeAlert, i: number) => (<SurgeItem key={alert.id} alert={alert} index={i} />))}</div>
                 </div>
               </div>
