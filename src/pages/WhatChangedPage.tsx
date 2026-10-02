@@ -95,6 +95,12 @@ export function WhatChangedPage() {
             </div>
           ))}
 
+          {items.length === 50 && (
+            <p className="text-center text-xs text-muted-foreground pt-2">
+              Showing the 50 most recent changes.
+            </p>
+          )}
+
           {visible.length === 0 && (
             <div className="text-center py-12 text-muted-foreground">
               <History className="mx-auto h-12 w-12 mb-4" />

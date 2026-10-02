@@ -45,6 +45,21 @@ export function RecommendationsPage() {
         </select>
       </div>
 
+      {recommendations.isError && (
+        <div className="p-6 border rounded-lg bg-card text-center mb-4">
+          <p className="font-medium">Couldn&rsquo;t load recommendations</p>
+          <p className="text-sm text-muted-foreground mb-4">
+            Recommendations are temporarily unavailable.
+          </p>
+          <button
+            onClick={() => recommendations.refetch()}
+            className="rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground hover:bg-primary/90"
+          >
+            Try again
+          </button>
+        </div>
+      )}
+
       <div className="space-y-4">
         {items.map((rec) => (
           <div key={rec.id} className="p-4 border rounded-lg bg-card">
@@ -66,7 +81,7 @@ export function RecommendationsPage() {
             </div>
           </div>
         ))}
-        {!recommendations.isLoading && items.length === 0 && (
+        {!recommendations.isLoading && !recommendations.isError && items.length === 0 && (
           <div className="text-center py-12 text-muted-foreground">
             <Lightbulb className="mx-auto h-12 w-12 mb-4" />
             <p>No recommendations available</p>
