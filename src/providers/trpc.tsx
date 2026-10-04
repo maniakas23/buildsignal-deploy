@@ -61,6 +61,9 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
       links: [
         httpBatchLink({
           url: "/api/trpc",
+          // buildsignal-worker only parses tRPC inputs from the POST body;
+          // GET query params are ignored, which silently dropped every input.
+          methodOverride: "POST",
           fetch: trpcFetch,
           headers() {
             const token = localStorage.getItem("auth_token");
