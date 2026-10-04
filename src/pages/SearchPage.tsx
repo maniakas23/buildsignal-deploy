@@ -24,8 +24,30 @@ interface SearchResult {
   county: string;
   state: string;
   type: string;
-  confidence: number;
-  date: string;
+  confidenceLabel: string | null;
+  date: string | null;
+}
+
+// Maps a worker search.search result item (events / patterns /
+// recommendations / counties) to the display shape. Internal provider IDs
+// are never rendered. Missing fields stay absent — no fabricated values.
+function mapResult(r: any): SearchResult {
+  const confRaw = r.canonicalConfidence;
+  const confNum =
+    typeof confRaw === "number" ? confRaw :
+    typeof r.confidence === "number" ? r.confidence : null;
+  return {
+    id: String(r.id ?? ""),
+    title: r.title || r.name || r.targetType || "Untitled result",
+    description: r.description || "",
+    county: r.county || "",
+    state: r.state || "",
+    type: r.eventType || r.patternType || r._type || "result",
+    confidenceLabel:
+      r.confidenceStatus != null ? String(r.confidenceStatus) :
+      confNum != null ? `${Math.round(confNum <= 1 ? confNum * 100 : confNum)}% confidence` : null,
+    date: r.createdAt || r.ingestedAt || r.firstDetectedAt || null,
+  };
 }
 
 export default function SearchPage() {
@@ -34,13 +56,19 @@ export default function SearchPage() {
   const [filters, setFilters] = useState({
     county: "",
     type: "",
-    minConfidence: 0,
   });
   const [showFilters, setShowFilters] = useState(false);
 
-  const { data: results, isLoading } = trpc.search.query.useQuery(
-    { q: query, ...filters },
-    { enabled: query.length > 0 }
+  const { data, isLoading, isError, refetch } = trpc.search.search.useQuery(
+    { query, types: ["events", "patterns", "recommendations", "counties"], limit: 20 },
+    { enabled: query.length > 1 }
+  );
+
+  const results: SearchResult[] = ((data as any)?.results ?? []).map(mapResult);
+  const filtered = results.filter(
+    (r) =>
+      (!filters.county || r.county.toLowerCase().includes(filters.county.toLowerCase())) &&
+      (!filters.type || r.type.toLowerCase().includes(filters.type.toLowerCase()))
   );
 
   const handleSearch = (e: React.FormEvent) => {
@@ -96,7 +124,7 @@ export default function SearchPage() {
         {showFilters && (
           <Card className="bg-[var(--bs-surface)] border-[var(--bs-border)] mb-6">
             <CardContent className="p-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-[var(--bs-text-primary)] mb-1 block">
                     County
@@ -117,19 +145,6 @@ export default function SearchPage() {
                     value={filters.type}
                     onChange={(e) => setFilters((f) => ({ ...f, type: e.target.value }))}
                     className="bg-[var(--bs-canvas)] border-[var(--bs-border)] text-[var(--bs-text-primary)]"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-[var(--bs-text-primary)] mb-1 block">
-                    Min Confidence: {filters.minConfidence}%
-                  </label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={filters.minConfidence}
-                    onChange={(e) => setFilters((f) => ({ ...f, minConfidence: parseInt(e.target.value) }))}
-                    className="w-full"
                   />
                 </div>
               </div>
@@ -154,9 +169,24 @@ export default function SearchPage() {
               </Card>
             ))}
           </div>
-        ) : results && results.length > 0 ? (
+        ) : isError ? (
+          <div className="text-center py-16">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--bs-surface)] flex items-center justify-center">
+              <Search className="w-7 h-7 text-[var(--bs-text-tertiary)]" />
+            </div>
+            <p className="text-lg font-medium text-[var(--bs-text-primary)] mb-2">
+              Search is temporarily unavailable
+            </p>
+            <p className="text-sm text-[var(--bs-text-tertiary)] mb-4">
+              The search service could not be reached. Your query was not lost.
+            </p>
+            <Button variant="outline" onClick={() => refetch()} className="gap-2 border-[var(--bs-border)] text-[var(--bs-text-primary)]">
+              Try again
+            </Button>
+          </div>
+        ) : filtered.length > 0 ? (
           <div className="space-y-3">
-            {results.map((result: SearchResult) => (
+            {filtered.map((result) => (
               <Card
                 key={result.id}
                 className="bg-[var(--bs-surface)] border-[var(--bs-border)] hover:border-[var(--bs-action)]/30 transition-all cursor-pointer"
@@ -180,18 +210,24 @@ export default function SearchPage() {
                         {result.description}
                       </p>
                       <div className="flex items-center gap-4 text-xs text-[var(--bs-text-tertiary)]">
-                        <span className="flex items-center gap-1">
-                          <MapPin className="w-3 h-3" />
-                          {result.county}, {result.state}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />
-                          {format(new Date(result.date), "MMM d, yyyy")}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <TrendingUp className="w-3 h-3" />
-                          {result.confidence}% confidence
-                        </span>
+                        {(result.county || result.state) && (
+                          <span className="flex items-center gap-1">
+                            <MapPin className="w-3 h-3" />
+                            {[result.county, result.state].filter(Boolean).join(", ")}
+                          </span>
+                        )}
+                        {result.date && !Number.isNaN(new Date(result.date).getTime()) && (
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            {format(new Date(result.date), "MMM d, yyyy")}
+                          </span>
+                        )}
+                        {result.confidenceLabel && (
+                          <span className="flex items-center gap-1">
+                            <TrendingUp className="w-3 h-3" />
+                            {result.confidenceLabel}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -199,7 +235,7 @@ export default function SearchPage() {
               </Card>
             ))}
           </div>
-        ) : query.length > 0 ? (
+        ) : query.length > 1 ? (
           <div className="text-center py-16">
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--bs-surface)] flex items-center justify-center">
               <Search className="w-7 h-7 text-[var(--bs-text-tertiary)]" />

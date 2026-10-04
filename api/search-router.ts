@@ -8,7 +8,13 @@ export const searchRouter = createRouter({
   search: publicQuery
     .input(
       z.object({
-        q: z.string().min(1).max(200),
+        // Production wire truth (buildsignal-worker handleSearchSearch):
+        // { query, types, limit, offset, provenance }. `q` and the filter
+        // fields below are legacy aliases kept for type compatibility only.
+        query: z.string().min(1).max(100).optional(),
+        types: z.array(z.enum(["events", "patterns", "recommendations", "counties"])).optional(),
+        provenance: z.enum(["LIVE", "SEED", "SAMPLE", "TEST", "SIMULATED"]).optional(),
+        q: z.string().min(1).max(200).optional(),
         county: z.string().optional(),
         state: z.string().optional(),
         city: z.string().optional(),
@@ -34,8 +40,9 @@ export const searchRouter = createRouter({
       const db = getDbFromContext();
       const conditions = [eq(kestovarCanonicalEvents.statusCanonical, "active")];
 
-      if (input.q) {
-        const query = `%${input.q}%`;
+      const qText = input.q ?? input.query;
+      if (qText) {
+        const query = `%${qText}%`;
         conditions.push(
           sql`(${kestovarCanonicalEvents.title} LIKE ${query} OR ${kestovarCanonicalEvents.description} LIKE ${query} OR ${kestovarCanonicalEvents.address} LIKE ${query} OR ${kestovarCanonicalEvents.contractorName} LIKE ${query} OR ${kestovarCanonicalEvents.ownerName} LIKE ${query})`
         );
@@ -89,7 +96,7 @@ export const searchRouter = createRouter({
       // Log search history
       try {
         await db.insert(searchHistory).values({
-          query: input.q,
+          query: qText ?? null,
           filters: JSON.stringify({
             county: input.county,
             state: input.state,
@@ -111,7 +118,7 @@ export const searchRouter = createRouter({
       return {
         results,
         total: results.length,
-        query: input.q,
+        query: qText ?? null,
         filters: {
           county: input.county,
           state: input.state,
