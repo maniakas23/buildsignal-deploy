@@ -148,6 +148,10 @@ export function FeatureValue({
         return lower.includes("support");
       case "analytics":
         return lower.includes("analytic") || lower.includes("dashboard") || lower.includes("insight");
+      case "advancedsearch":
+        return lower.includes("advanced search");
+      case "exports":
+        return lower.includes("export");
       case "whiteglove":
         return lower.includes("onboard") || lower.includes("white-glove") || lower.includes("whiteglove");
       default:
@@ -159,10 +163,10 @@ export function FeatureValue({
 
   if (hasFeature) {
     const matchingFeature = plan.features.find(matchFn);
-    // Show full feature text, but clean up for display
-    const displayText = matchingFeature
-      ?.replace(/^\d+\s*/, "") // Remove leading numbers only
-      .trim() || "";
+    // m1(45): keep the FULL feature text including quantities — stripping
+    // leading numbers made Scout ("1 County") and Professional ("10 Counties")
+    // indistinguishable in the comparison table, which misstates plan truth.
+    const displayText = (matchingFeature || "").trim();
     return (
       <div className="flex items-center justify-center gap-1.5">
         <Check className="h-4 w-4 text-[#4ade80] shrink-0" />
@@ -185,7 +189,7 @@ export const PRICING_FALLBACK_PLANS = [
     price: 99,
     interval: "month",
     description: "Perfect for individual investors",
-    features: ["1 County", "3 Alerts/Day", "Email Support"],
+    features: ["1 County", "3 Alerts/Day", "1 Watchlist", "Email Support"],
   },
   {
     id: "professional",
@@ -197,6 +201,9 @@ export const PRICING_FALLBACK_PLANS = [
       "10 Counties",
       "50 Alerts/Day",
       "Watchlists",
+      "API Access",
+      "Advanced Search",
+      "Exports",
       "Basic Analytics",
       "Priority Support",
     ],
@@ -210,6 +217,10 @@ export const PRICING_FALLBACK_PLANS = [
     features: [
       "All Counties",
       "Unlimited Alerts",
+      "Watchlists",
+      "API Access",
+      "Advanced Search",
+      "Exports",
       "Advanced Analytics",
       "SSO",
       "Dedicated Support",
@@ -237,6 +248,8 @@ export const PRICING_COMPARISON_FEATURES = [
   "alerts",
   "watchlist",
   "api",
+  "advancedsearch",
+  "exports",
   "analytics",
   "sso",
   "support",

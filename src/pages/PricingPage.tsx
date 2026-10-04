@@ -29,6 +29,19 @@ export function MobileComparisonHint() {
   );
 }
 
+const COMPARISON_FEATURE_LABELS: Record<string, string> = {
+  counties: "Counties",
+  alerts: "Alerts",
+  watchlist: "Watchlists",
+  api: "API access",
+  advancedsearch: "Advanced search",
+  exports: "Exports",
+  analytics: "Analytics",
+  sso: "SSO",
+  support: "Support",
+  whiteglove: "White-glove onboarding",
+};
+
 
 export interface PlanCtaDeps {
   planId: string;
@@ -253,7 +266,7 @@ export function PricingPage() {
                 <tbody>
                   {PRICING_COMPARISON_FEATURES.map((feature) => (
                     <tr key={feature} className="border-b last:border-0">
-                      <td className="p-4 capitalize">{feature}</td>
+                      <td className="p-4">{COMPARISON_FEATURE_LABELS[feature] || feature}</td>
                       {plans.map((plan) => (
                         <td
                           key={plan.id}
