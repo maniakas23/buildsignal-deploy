@@ -31,6 +31,7 @@ import EmailPreviewPage from "./pages/EmailPreviewPage";
 import { PaletteShowcasePage } from "./pages/PaletteShowcasePage";
 import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
 import { ResetPasswordPage } from "./pages/ResetPasswordPage";
+import SearchPage from "./pages/SearchPage";
 import NotFound from "./pages/NotFound";
 import AuthLayout from "./components/AuthLayout";
 import { Toaster } from "@/components/ui/toaster";
@@ -64,6 +65,8 @@ function App() {
         <Route element={<AuthLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/opportunities" element={<OpportunityDashboard />} />
+          {/* m1(45): SearchPage was built but never routed — wire it in */}
+          <Route path="/search" element={<SearchPage />} />
           <Route path="/opportunities/:sequenceId" element={<OpportunityDetailPage />} />
           <Route path="/counties/:id" element={<CountyDetail />} />
           <Route path="/county-coverage" element={<CountyCoveragePage />} />
@@ -78,8 +81,3 @@ function App() {
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>
-    </TRPCProvider>
-  );
-}
-
-export default App;
