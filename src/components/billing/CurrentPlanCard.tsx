@@ -22,6 +22,7 @@ interface CurrentPlanCardProps {
   subLoading: boolean;
   planInfo: { name: string; color: string; features: string[] };
   status: { label: string; color: string };
+  trial?: any;
   portalPending: boolean;
   cancelPending: boolean;
   onManageBilling: () => void;
@@ -37,9 +38,24 @@ interface CurrentPlanCardProps {
 //    cancellation is scheduled + no renewal. Never the word "renews".
 //  - trialing (not scheduled): say the trial end date.
 //  - active (not scheduled): current period end date.
+//  - no subscription but active internal trial (m1(45)): trial end date + $0/no-card terms.
 //  - no subscription: free starter plan.
-export function getPlanSubtext(subscription: any): string {
-  if (!subscription) return "You are on the free starter plan";
+export function getPlanSubtext(subscription: any, trial?: any): string {
+  // The worker returns { status: "inactive" } for accounts with no Stripe
+  // subscription — treat it the same as no subscription object.
+  const noSub =
+    !subscription ||
+    subscription.status === "inactive" ||
+    subscription.status === "none";
+  if (noSub && trial?.status === "active" && trial?.endsAt) {
+    const end = new Date(trial.endsAt).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+    return `Free trial ends on ${end} · $0 today · no credit card required`;
+  }
+  if (noSub) return "You are on the free starter plan";
   const end = subscription.currentPeriodEnd
     ? formatDate(subscription.currentPeriodEnd)
     : null;
@@ -55,11 +71,19 @@ export function getPlanSubtext(subscription: any): string {
     return `Trial ends on ${end}`;
   }
   if (end) return `Current period ends on ${end}`;
+  if (trial?.status === "active" && trial?.endsAt) {
+    const tEnd = new Date(trial.endsAt).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+    return `Free trial ends on ${tEnd} · $0 today · no credit card required`;
+  }
   return "You are on the free starter plan";
 }
 
 export function CurrentPlanCard(p: CurrentPlanCardProps) {
-  const { subscription, subLoading, planInfo, status } = p;
+  const { subscription, subLoading, planInfo, status, trial } = p;
   return (
     <Card className="border-[var(--bs-surface-hover)] shadow-sm">
       <CardHeader className="pb-4">
@@ -86,7 +110,7 @@ export function CurrentPlanCard(p: CurrentPlanCardProps) {
                   {planInfo.name}
                 </h3>
                 <p className="text-sm text-[var(--bs-text-tertiary)] mt-0.5">
-                  {getPlanSubtext(subscription)}
+                  {getPlanSubtext(subscription, trial)}
                 </p>
                 {subscription?.cancelAtPeriodEnd &&
                   (subscription?.status === "active" || subscription?.status === "trialing") && (

@@ -30,6 +30,10 @@ export function BillingPage() {
   const billingHistory = billingHistoryData?.invoices;
   const { data: usage, isLoading: usageLoading } =
     trpc.billing.usage.useQuery();
+  // m1(45): internal 14-day trial truth — an active trial is never
+  // "No Subscription"; it drives the Free Trial badge and trial subtext.
+  const { data: trial } = trpc.trial.status.useQuery();
+  const trialActive = (trial as any)?.status === "active";
 
   const checkout = trpc.stripe.createCheckoutSession.useMutation({
     onSuccess: (data: any) => {
@@ -59,7 +63,13 @@ export function BillingPage() {
   const hasPaidSubscription =
     subscription?.status === "active" || subscription?.status === "trialing";
   const planInfo = planConfig[currentPlan] || planConfig.starter;
-  const status = statusConfig[subscription?.status || "none"] || statusConfig.none;
+  const noPaidSub =
+    !subscription ||
+    subscription.status === "inactive" ||
+    subscription.status === "none";
+  const status = noPaidSub && trialActive
+    ? statusConfig.trial
+    : statusConfig[subscription?.status || "none"] || statusConfig.none;
 
   const handleUpgrade = (planId: string) => {
     const successUrl = `${window.location.origin}/billing?upgraded=1`;
@@ -106,6 +116,7 @@ export function BillingPage() {
               subLoading={subLoading}
               planInfo={planInfo}
               status={status}
+              trial={trial}
               portalPending={portal.isPending}
               cancelPending={cancel.isPending}
               onManageBilling={handleManageBilling}

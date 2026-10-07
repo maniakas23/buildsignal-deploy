@@ -11,8 +11,9 @@ export const planConfig: Record<
     // bought (m1(32): a Scout trialing subscriber was shown "Starter").
     name: "Scout",
     color: "bg-[var(--bs-text-tertiary)]",
-    // Canonical Scout-tier entitlements: 1 county, 3 alert deliveries per UTC day.
-    features: ["1 county", "3 alerts per day", "1 team member", "Email support"],
+    // Canonical Scout-tier entitlements: 1 county, 3 alert deliveries per UTC day,
+    // 1 alert rule, 1 watchlist (Worker PLAN_LIMITS.starter — m1(45)).
+    features: ["1 county", "3 alerts per day", "1 watchlist", "1 team member", "Email support"],
   },
   scout: {
     name: "Scout",
@@ -45,6 +46,8 @@ export const statusConfig: Record<
   past_due: { label: "Past Due", variant: "destructive", color: "bg-red-500 text-white" },
   canceled: { label: "Canceled", variant: "outline", color: "bg-[var(--bs-text-tertiary)] text-white" },
   none: { label: "No Subscription", variant: "outline", color: "bg-[var(--bs-surface-hover)] text-[var(--bs-text-tertiary)]" },
+  // m1(45): internal 14-day trial (no Stripe subscription yet) — never "No Subscription".
+  trial: { label: "Free Trial", variant: "secondary", color: "bg-[var(--bs-action)] text-white" },
 };
 
 export function formatDate(timestamp: number | null | undefined) {
