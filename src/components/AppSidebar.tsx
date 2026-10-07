@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
+  Search,
   Target,
   Activity,
   Bell,
@@ -41,6 +42,12 @@ const topNavItems: NavItem[] = [
     to: "/dashboard",
     icon: LayoutDashboard,
     ariaLabel: "Navigate to Dashboard",
+  },
+  {
+    label: "Search",
+    to: "/search",
+    icon: Search,
+    ariaLabel: "Navigate to Search",
   },
   {
     label: "Opportunities",
