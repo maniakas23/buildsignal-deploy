@@ -109,7 +109,9 @@ const bottomNavItems: NavItem[] = [
 ];
 
 const planBadgeConfig: Record<string, { label: string; className: string }> = {
-  starter: { label: "Starter", className: "bg-[var(--bs-surface-hover)] text-[var(--bs-text-tertiary)]" },
+  // m1(45): plan id "starter" IS the Scout tier (stripe.plans display name
+  // "Scout") — the badge must match what the billing/pricing pages call it.
+  starter: { label: "Scout", className: "bg-[var(--bs-surface-hover)] text-[var(--bs-text-tertiary)]" },
   scout: { label: "Scout", className: "bg-[var(--bs-action)]/10 text-[var(--bs-action)]" },
   professional: { label: "Pro", className: "bg-[var(--bs-intelligence)]/10 text-[var(--bs-intelligence)]" },
   business: { label: "Business", className: "bg-[var(--bs-text-primary)]/8 text-[var(--bs-text-primary)]" },
